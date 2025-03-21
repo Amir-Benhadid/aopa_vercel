@@ -10,71 +10,62 @@ Vercel has a 300MB size limit for serverless functions. If your API routes refer
 Error: The Serverless Function "api/fileExists" is X MB which exceeds the maximum size limit of 300MB.
 ```
 
-## Solution
+## Solution Implementation - STRICT APPROACH
 
-We've implemented the following solutions to work around this limitation:
+We've implemented the following aggressive solutions to work around this limitation:
 
 1. **Modified API Routes:**
 
-   - Optimized `fileExists` API to handle different file types appropriately:
-     - Small files (images): Uses direct filesystem access
-     - Large files (PDFs): Uses HTTP requests or assumed presence
-   - Updated `getDirectoryContents` API to use a static map of known directories
+   - **Complete isolation of APIs from large files**:
+     - `fileExists` API: No filesystem access in production
+     - `getDirectoryContents` API: Relies entirely on a static directory map
+   - **Environment-specific behavior**:
+     - Development: Uses filesystem access for convenience
+     - Production: Uses HTTP HEAD requests and known file maps
 
-2. **Added `vercel.json` configuration:**
+2. **Enhanced `vercel.json` configuration:**
 
-   - We've explicitly told Vercel to exclude large files (PDFs, etc.) from API routes while keeping images available.
+   - Completely excludes the entire `previous_congresses` directory from serverless functions
+   - Additionally excludes `.next` and `node_modules` directories for safety
 
-3. **Improved front-end components:**
+3. **Static Content Maps:**
+   - Expanded predefined maps of directories and files
+   - Returns empty arrays for unknown paths rather than 404 errors
 
-   - Added better error handling and fallbacks for images
-   - Added support for multiple image formats and progressive enhancement
+## File Access Strategy
 
-4. **Created utility functions:**
-   - `checkFileExists`: Checks if a file exists at a given path
-   - `getCongressImage`: Gets the best available image for a congress
-   - `getCongressPhotos`: Gets photos from a congress photos directory
+Our approach differs by environment:
 
-## File Type Strategy
+### Development Environment
 
-We use different strategies for different file types:
+- Direct filesystem access for convenience and accurate local development
+- Shows exact errors and file statuses
 
-### Images (JPG, PNG, etc.)
+### Production Environment
 
-- Accessed directly, as they're small enough not to cause size issues
-- Can be directly referenced in the filesystem
-
-### Large Documents (PDF, DOCX, etc.)
-
-- Excluded from serverless function bundling
-- Accessed via HTTP requests or assumed presence
-- Displayed using appropriate viewers (iframes for PDFs)
+- **No direct filesystem access** for any files
+- Images checked via HTTP HEAD requests
+- Large documents (PDFs) assumed to exist
+- Directory contents pulled from static maps
 
 ## Best Practices for Large Files
 
 1. **Prefer image files over PDFs for visuals:**
 
    - Use JPG files instead of PDFs whenever possible for banners, posters, etc.
-   - Convert PDF posters to JPG format for better performance
+   - Convert PDF posters to JPG format (max 1MB size) for better performance
 
-2. **Optimize large files:**
+2. **Optimize all files:**
 
-   - Compress PDFs before adding them to the project
-   - Convert large images to more efficient formats (WebP)
+   - Compress images before adding to the project
+   - Aim for < 100KB for thumbnail images
+   - Keep main images under 500KB when possible
 
-3. **For very large files (>50MB), consider alternative storage:**
+3. **For very large files (>50MB), consider external storage:**
    - Supabase Storage
    - AWS S3
    - Cloudinary
    - Vercel Blob Storage
-
-## Known Folders
-
-For the directory listing feature, we maintain a static map of known directories in the codebase. When you add new congress folders or images, make sure to:
-
-1. Add the new congress folder to the `directoryMap` in `src/app/api/getDirectoryContents/route.ts`
-2. Include all major files and subfolders in the mapping
-3. Prefer JPG images over PDFs for poster images
 
 ## Directory Structure
 
@@ -84,7 +75,7 @@ The expected directory structure for congress files is:
 public/
   previous_congresses/
     YYYYMMDD-title_with_underscores-city/
-      affiche.jpg       # Preferred poster format
+      affiche.jpg       # Preferred poster format (< 500KB)
       affiche.pdf       # Alternative poster format
       programme.pdf     # Congress program
       photos/           # Directory containing congress photos
@@ -93,45 +84,52 @@ public/
         ...
 ```
 
-## Troubleshooting Image Display Issues
+## When Adding New Congress Files
 
-If images stop displaying after deployment:
+When adding new congress content:
 
-1. **Check API Responses:**
+1. **Update the Static Maps**:
 
-   - Open your browser's network tab and check responses from `/api/fileExists` and `/api/getDirectoryContents`
-   - Ensure they're returning the expected data
+   - Add the new congress directory to `directoryMap` in `src/app/api/getDirectoryContents/route.ts`
+   - Include all major files and subfolders
 
-2. **Verify File Paths:**
+2. **Optimize Images**:
 
-   - Double-check that image paths are correctly formed
-   - Ensure files exist in the expected locations
+   - Convert PDFs to JPGs where possible
+   - Compress all images to reduce size
 
-3. **Update Directory Map:**
+3. **Test in Development**:
+   - Verify that all files load correctly
+   - Check both image and non-image content
 
-   - If you've added new congress directories or files, make sure to update the static map in `getDirectoryContents/route.ts`
+## Troubleshooting Deployment Issues
 
-4. **Check for 404 Errors:**
+If you're still seeing the serverless function size limit error:
 
-   - If you see 404 errors for images, verify the file paths and ensure they're accessible
+1. **Deploy with Debug Info**:
 
-5. **Utility Functions:**
-   - Use our utility functions in `src/lib/utils.ts` to consistently handle image loading:
-     - `getCongressImage(congress)`: Gets the best available image for a congress
-     - `getCongressPhotos(congress)`: Gets all photos for a congress
+   ```
+   vercel --debug
+   ```
 
-## Monitoring File Sizes
+2. **Check for Large Files**:
 
-Use our built-in script to identify large files before deployment:
+   ```
+   npm run find-large-files
+   ```
 
-```bash
-npm run find-large-files
-```
+3. **Further Restrict API Functions**:
 
-This will show files larger than 5MB in the public directory.
+   - Consider adding more specific exclusions in `vercel.json`
+   - Move large files to external storage
+
+4. **Contact Vercel Support**:
+   - If issues persist, Vercel support can help diagnose
+   - Consider upgrading to a Vercel plan with larger function limits
 
 ## Additional Resources
 
 - [Vercel Serverless Functions Size Limits](https://vercel.com/docs/functions/serverless-functions/runtimes#size-limits)
 - [Vercel Blob Storage](https://vercel.com/docs/storage/vercel-blob)
 - [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
+- [Vercel Function Configuration](https://vercel.com/docs/functions/serverless-functions/runtimes#including-additional-files)

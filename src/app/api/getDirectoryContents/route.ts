@@ -31,7 +31,33 @@ const directoryMap: Record<string, string[]> = {
 		'affiche.pdf',
 		'programme.pdf',
 	],
-	// Add more mappings as needed for other directories
+	'previous_congresses/20231116-17èmes_congrès-alger/photos': [
+		'image1.jpg',
+		'image2.jpg',
+	],
+	'previous_congresses/20221117-16èmes_congrès-alger': [
+		'photos',
+		'affiche.jpg',
+		'programme.pdf',
+	],
+	'previous_congresses/20221117-16èmes_congrès-alger/photos': [
+		'image1.jpg',
+		'image2.jpg',
+	],
+	'previous_congresses/20240216-11èmes_rencontres-constantine': [
+		'photos',
+		'affiche.jpg',
+		'programme.pdf',
+	],
+	'previous_congresses/20240216-11èmes_rencontres-constantine/photos': [
+		'image1.jpg',
+		'image2.jpg',
+	],
+	'previous_congresses/20250209-12èmes_rencontres-oran': [
+		'photos',
+		'affiche.jpg',
+		'programme.pdf',
+	],
 };
 
 export async function GET(request: NextRequest) {
@@ -61,8 +87,7 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// Try to get directory contents from the filesystem first (for development or when looking for images)
-		// In development, we can use the filesystem directly
+		// In development mode, use the filesystem
 		if (process.env.NODE_ENV === 'development') {
 			try {
 				const fullPath = path.join(process.cwd(), 'public', normalizedPath);
@@ -78,24 +103,21 @@ export async function GET(request: NextRequest) {
 			}
 		}
 
+		// Production mode - only use the directory map
 		// Check if we have the directory contents in our static map
 		if (directoryMap[normalizedPath]) {
 			return NextResponse.json(directoryMap[normalizedPath]);
 		}
 
-		// If we're in production and don't have the directory in our map,
-		// check if it contains 'photos' in the path, which might indicate an image directory
-		if (
-			process.env.NODE_ENV === 'production' &&
-			normalizedPath.includes('photos')
-		) {
-			// For photos directories, we can safely return an empty array
-			// The front-end can handle this case appropriately
+		// If it's a photos directory not in our map, return an empty array
+		// This is safe since many components expect an array even if empty
+		if (normalizedPath.includes('/photos')) {
 			return NextResponse.json([]);
 		}
 
-		// If we don't have the directory in our map, return a 404
-		return NextResponse.json({ error: 'Directory not found' }, { status: 404 });
+		// For any unknown directory, return an empty array rather than a 404
+		// This makes the API more resilient to unknown paths
+		return NextResponse.json([]);
 	} catch (error) {
 		console.error('Error reading directory:', error);
 		return NextResponse.json(

@@ -4,17 +4,11 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-// A whitelist of extensions that we'll check directly via filesystem
-// These files are typically small and won't cause deployment size issues
-const SAFE_EXTENSIONS = [
-	'.jpg',
-	'.jpeg',
-	'.png',
-	'.gif',
-	'.webp',
-	'.svg',
-	'.ico',
-];
+// A map of files we know exist in production
+// This avoids any filesystem operations in production
+const knownFiles: Record<string, boolean> = {
+	// Add common files here if needed
+};
 
 export async function GET(request: NextRequest) {
 	try {
@@ -45,47 +39,53 @@ export async function GET(request: NextRequest) {
 			);
 		}
 
-		// Get the file extension to determine how to check
-		const fileExtension = path.extname(normalizedPath).toLowerCase();
-		const isImageFile = SAFE_EXTENSIONS.includes(fileExtension);
-
-		// For image files, we can check the filesystem directly
-		// since they're small and won't cause deployment size issues
-		if (isImageFile || process.env.NODE_ENV === 'development') {
+		// DEVELOPMENT MODE: Use filesystem directly
+		if (process.env.NODE_ENV === 'development') {
 			try {
 				const fullPath = path.join(process.cwd(), 'public', normalizedPath);
 				const exists = fs.existsSync(fullPath);
 				return NextResponse.json({ exists });
 			} catch (error) {
 				console.error('Error checking file via filesystem:', error);
-				// Fall through to the next method
+				return NextResponse.json({ exists: false });
 			}
 		}
 
-		// For non-image files or in production, check via HTTP
-		try {
-			const fileUrl = `/${normalizedPath}`;
-			const fullUrl = new URL(fileUrl, request.nextUrl.origin).toString();
+		// PRODUCTION MODE: Never use filesystem
 
-			const response = await fetch(fullUrl, {
-				method: 'HEAD',
-			});
-
-			if (response.ok) {
-				return NextResponse.json({ exists: true });
-			}
-		} catch (error) {
-			console.error('Error checking file via HTTP:', error);
-			// Fall through to the fallback
+		// 1. Check for known files first
+		if (knownFiles[normalizedPath] !== undefined) {
+			return NextResponse.json({ exists: knownFiles[normalizedPath] });
 		}
 
-		// Fallback: For PDF files specifically, assume they exist in production
-		// This works because we know these files are part of our static content
-		if (fileExtension === '.pdf' && process.env.NODE_ENV === 'production') {
+		// 2. For images, check via HTTP HEAD request
+		const fileExtension = path.extname(normalizedPath).toLowerCase();
+		if (
+			['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'].includes(
+				fileExtension
+			)
+		) {
+			try {
+				const fileUrl = `/${normalizedPath}`;
+				const fullUrl = new URL(fileUrl, request.nextUrl.origin).toString();
+
+				const response = await fetch(fullUrl, {
+					method: 'HEAD',
+				});
+
+				return NextResponse.json({ exists: response.ok });
+			} catch (error) {
+				console.error('Error checking file via HTTP:', error);
+				return NextResponse.json({ exists: false });
+			}
+		}
+
+		// 3. For PDFs and other large files, assume they exist
+		if (['.pdf', '.docx', '.pptx', '.ppt', '.doc'].includes(fileExtension)) {
 			return NextResponse.json({ exists: true });
 		}
 
-		// If we get here, we couldn't verify the file exists
+		// If we reach here, we couldn't verify the file exists
 		return NextResponse.json({ exists: false });
 	} catch (error) {
 		console.error('Error in fileExists API:', error);
