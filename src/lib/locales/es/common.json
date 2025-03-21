@@ -1,0 +1,602 @@
+{
+	"app": {
+		"name": "Asociación de Oftalmología",
+		"tagline": "Avanzando juntos en el cuidado de los ojos",
+		"logoAlt": "Logo de la Asociación de Oftalmología",
+		"logoAltWithNumber": "Logo de la Asociación de Oftalmología {{number}}"
+	},
+	"navigation": {
+		"home": "Inicio",
+		"about": "Acerca de",
+		"congress": "Congreso",
+		"research": "Investigación",
+		"education": "Educación",
+		"contact": "Contacto",
+		"login": "Iniciar Sesión",
+		"register": "Registrarse",
+		"profile": "Perfil",
+		"logout": "Cerrar Sesión",
+		"dashboard": "Panel de Control",
+		"events": "Eventos",
+		"abstracts": "Resúmenes",
+		"news": "Noticias",
+		"resources": "Recursos",
+		"help": "Ayuda",
+		"settings": "Configuración",
+		"signOut": "Cerrar sesión",
+		"title": "Navegación",
+		"archives": "Archivos",
+		"sections": {
+			"main": "Principal",
+			"resources": "Recursos",
+			"account": "Cuenta",
+			"admin": "Administración"
+		},
+		"openMenu": "Abrir menú",
+		"closeMenu": "Cerrar menú",
+		"activities": "Actividades",
+		"sponsors": "Patrocinadores",
+		"reports": "Informes",
+		"upcomingEvent": "Próximo Evento",
+		"previousEvent": "Evento Anterior"
+	},
+	"auth": {
+		"email": "Correo Electrónico",
+		"password": "Contraseña",
+		"confirmPassword": "Confirmar Contraseña",
+		"forgotPassword": "¿Olvidó su Contraseña?",
+		"resetPassword": "Restablecer Contraseña",
+		"loginTitle": "Bienvenido de Nuevo",
+		"loginSubtitle": "Inicie sesión en su cuenta",
+		"registerTitle": "Crear una Cuenta",
+		"registerSubtitle": "Únase a la Asociación de Oftalmología",
+		"signOutSuccess": "Sesión cerrada con éxito",
+		"signOutError": "Error al cerrar sesión",
+		"signIn": "Iniciar sesión",
+		"signUp": "Registrarse",
+		"noAccount": "¿No tiene una cuenta?",
+		"haveAccount": "¿Ya tiene una cuenta?",
+		"signingIn": "Iniciando Sesión",
+		"signingInMessage": "Por favor espere mientras iniciamos su sesión...",
+		"signInSuccess": "Éxito",
+		"signInSuccessMessage": "¡Ha iniciado sesión con éxito!",
+		"signInFailed": "Error al Iniciar Sesión",
+		"signInFailedMessage": "Error al iniciar sesión. Por favor verifique sus credenciales e intente nuevamente.",
+		"creatingAccount": "Creando Cuenta",
+		"creatingAccountMessage": "Por favor espere mientras creamos su cuenta...",
+		"accountCreated": "Cuenta Creada",
+		"accountCreatedMessage": "¡Su cuenta ha sido creada con éxito! Verifique su correo electrónico para confirmar su cuenta.",
+		"signUpFailed": "Error al Registrarse",
+		"signUpFailedMessage": "Error al crear la cuenta. Por favor intente nuevamente.",
+		"sendingResetLink": "Enviando Enlace de Restablecimiento",
+		"sendingResetLinkMessage": "Por favor espere mientras le enviamos un enlace para restablecer su contraseña...",
+		"resetLinkSent": "Enlace de Restablecimiento Enviado",
+		"resetLinkSentMessage": "Se ha enviado un enlace para restablecer su contraseña a su correo electrónico. Por favor revise su bandeja de entrada.",
+		"resetLinkFailed": "Error al Enviar Enlace de Restablecimiento",
+		"resetLinkFailedMessage": "Error al enviar el correo de restablecimiento. Por favor intente nuevamente.",
+		"goToDashboard": "Ir al Panel de Control",
+		"firstName": "Nombre",
+		"lastName": "Apellido",
+		"createAccount": "Crear Cuenta",
+		"termsOfService": "Acepto los Términos de Servicio y la Política de Privacidad"
+	},
+	"abstracts": {
+		"title": "Resúmenes",
+		"newAbstract": "Enviar Nuevo Resumen",
+		"search": "Buscar resúmenes...",
+		"submitted": "Enviado",
+		"typeChanged": "Tipo de resumen cambiado a {{type}}",
+		"fileSelected": "Archivo \"{{name}}\" seleccionado para subir",
+		"downloadingTemplate": "Descargando plantilla...",
+		"templateDownloaded": "Plantilla descargada con éxito",
+		"downloadingFinalVersion": "Descargando tu versión final...",
+		"finalVersionDownloaded": "Versión final descargada con éxito",
+		"getTemplate": "Obtener Plantilla",
+		"upload": "Subir",
+		"changeType": "Cambiar Tipo",
+		"filters": {
+			"allCongresses": "Todos los Congresos",
+			"allStatuses": "Todos los Estados",
+			"allTypes": "Todos los Tipos",
+			"submitted": "Enviado",
+			"reviewing": "En Revisión",
+			"approved": "Aprobado",
+			"rejected": "Rechazado",
+			"typeChange": "Cambio de Tipo",
+			"finalVersion": "Versión Final",
+			"poster": "Póster",
+			"oral": "Oral"
+		},
+		"submission": {
+			"title": "Enviar Nuevo Resumen",
+			"subtitle": "Complete los detalles a continuación para enviar su resumen",
+			"guidelines": {
+				"title": "Directrices para el Envío de Resúmenes",
+				"subtitle": "Por favor, revise las siguientes directrices antes de enviar su resumen",
+				"maxLength": "Longitud máxima del resumen: 300 palabras",
+				"deadline": "Fecha límite de envío: {{date}}",
+				"presentingAuthor": "Un autor presentador por resumen",
+				"maxCoAuthors": "Se permite un máximo de 5 coautores",
+				"requiredFields": "Todos los campos son obligatorios",
+				"review": "Los resúmenes serán revisados por nuestro comité científico"
+			},
+			"form": {
+				"title": "Título",
+				"titlePlaceholder": "Ingrese el título del resumen",
+				"introduction": "Introducción",
+				"introductionPlaceholder": "Ingrese la introducción del resumen",
+				"materials": "Materiales",
+				"results": "Resultados",
+				"observations": "Observaciones",
+				"conclusion": "Conclusión",
+				"discussion": "Discusión",
+				"type": "Tipo",
+				"theme": "Tema",
+				"themePlaceholder": "Ingrese el tema del resumen",
+				"coAuthors": "Coautores",
+				"coAuthorsPlaceholder": "Ingrese coautores (separados por comas)",
+				"submit": "Enviar Resumen",
+				"submitting": "Enviando...",
+				"cancel": "Cancelar"
+			}
+		},
+		"success": {
+			"title": "Resumen Enviado",
+			"message": "Su resumen ha sido enviado con éxito para revisión.",
+			"viewAbstracts": "Ver Mis Resúmenes"
+		},
+		"error": {
+			"title": "Error",
+			"incompleteProfile": "Por favor, complete su perfil antes de enviar un resumen."
+		},
+		"noAbstracts": "No se encontraron resúmenes. Envíe su primer resumen para comenzar."
+	},
+	"profile": {
+		"title": "Mi Perfil",
+		"personalInfo": "Información Personal",
+		"academicInfo": "Información Académica",
+		"contactInfo": "Información de Contacto",
+		"setup": {
+			"title": "Complete Su Perfil",
+			"description": "Por favor, tómese un momento para completar la información de su perfil. Esto nos ayudará a personalizar su experiencia.",
+			"later": "Completar Más Tarde"
+		},
+		"validation": {
+			"nameRequired": "El nombre es obligatorio",
+			"surnameRequired": "El apellido es obligatorio",
+			"genderRequired": "El género es obligatorio",
+			"statusRequired": "El estado es obligatorio",
+			"professionRequired": "La profesión es obligatoria",
+			"professionalStatusRequired": "El estado profesional es obligatorio"
+		},
+		"errors": {
+			"selectImage": "Debe seleccionar una imagen para cargar.",
+			"uploadFailed": "Error al cargar el avatar"
+		},
+		"success": {
+			"avatarUploaded": "Avatar cargado con éxito",
+			"profileUpdated": "Perfil actualizado con éxito"
+		},
+		"form": {
+			"firstName": "Nombre",
+			"lastName": "Apellido",
+			"email": "Correo Electrónico",
+			"phone": "Teléfono",
+			"institution": "Institución",
+			"department": "Departamento",
+			"position": "Posición",
+			"bio": "Biografía",
+			"address": "Dirección",
+			"city": "Ciudad",
+			"country": "País",
+			"save": "Guardar Cambios",
+			"saving": "Guardando...",
+			"profilePicture": "Foto de Perfil",
+			"profilePictureDescription": "Suba una foto de perfil para personalizar su cuenta",
+			"changePhoto": "Cambiar Foto",
+			"uploadPhoto": "Subir Foto",
+			"gender": "Género",
+			"selectGender": "Seleccionar Género",
+			"status": "Estado",
+			"selectStatus": "Seleccionar Estado",
+			"profession": "Profesión",
+			"professionalStatus": "Estado Profesional",
+			"genders": {
+				"male": "Masculino",
+				"female": "Femenino",
+				"other": "Otro"
+			},
+			"statuses": {
+				"practicing": "En Práctica",
+				"resident": "Residente",
+				"fellow": "Fellow",
+				"professor": "Profesor",
+				"retired": "Jubilado",
+				"student": "Estudiante"
+			},
+			"specialties": {
+				"ophthalmology": "Oftalmología",
+				"retina": "Retina",
+				"glaucoma": "Glaucoma",
+				"cornea": "Córnea",
+				"pediatric_ophthalmology": "Oftalmología Pediátrica",
+				"oculoplastics": "Oculoplástica",
+				"neuro_ophthalmology": "Neuro-oftalmología",
+				"other": "Otro"
+			}
+		}
+	},
+	"common": {
+		"loading": "Cargando...",
+		"error": "Ha ocurrido un error",
+		"retry": "Reintentar",
+		"save": "Guardar",
+		"cancel": "Cancelar",
+		"submit": "Enviar",
+		"delete": "Eliminar",
+		"edit": "Editar",
+		"view": "Ver",
+		"back": "Atrás",
+		"next": "Siguiente",
+		"previous": "Anterior",
+		"learnMore": "Más información",
+		"toggleTheme": "Cambiar tema",
+		"lightMode": "Modo Claro",
+		"darkMode": "Modo Oscuro",
+		"tryAgain": "Intentar de nuevo",
+		"download": "Descargar",
+		"unknown": "Desconocido",
+		"subscribed": "¡Suscrito!",
+		"user": "Usuario",
+		"viewDetails": "Ver Detalles",
+		"featured": "Destacado",
+		"regular": "Regular",
+		"confirmDelete": "Confirmar Eliminación",
+		"deleteWarning": "¿Está seguro de que desea eliminar este elemento? Esta acción no se puede deshacer.",
+		"deleting": "Eliminando...",
+		"close": "Cerrar",
+		"changeLanguage": "Cambiar idioma",
+		"more": "más",
+		"goToImage": "Ir a la imagen",
+		"previousImage": "Imagen anterior",
+		"nextImage": "Imagen siguiente"
+	},
+	"congress": {
+		"title": "Congreso Anual",
+		"dates": "{{startDate}} - {{endDate}}",
+		"location": "Ubicación: {{location}}",
+		"register": "Registrarse",
+		"program": "Programa",
+		"speakers": "Ponentes",
+		"abstracts": "Resúmenes",
+		"sponsors": "Patrocinadores",
+		"registrationOpen": "Inscripción Abierta",
+		"date": "Fecha",
+		"type": "Tipo",
+		"hybridNote": "(transmisiones disponibles el día del evento)",
+		"registerNow": "Inscribirse Ahora",
+		"viewProgram": "Ver Programa",
+		"learnMore": "Más Información",
+		"startsIn": "Comienza en",
+		"days": "días",
+		"daysUntil": "días hasta el evento",
+		"status": "Estado",
+		"completed": "Completado",
+		"ongoing": "En Curso",
+		"aboutEvent": "Sobre el Evento",
+		"gallery": "Galería de Fotos",
+		"affiche": "Cartel del Evento",
+		"programme": "Programa",
+		"eventDetails": "Detalles del Evento",
+		"eventVideos": "Videos del Evento",
+		"registrationDeadline": "Fecha Límite de Inscripción",
+		"abstractDeadline": "Fecha Límite para Envío de Resúmenes",
+		"joinUs": "Únase a Nosotros en el Evento",
+		"registrationCTA": "Asegure su lugar en este importante evento de oftalmología. Inscríbase ahora para conectarse con colegas y aprender de expertos.",
+		"share": "Compartir Este Evento",
+		"shareEvent": "Compartir",
+		"upcomingEvent": "Próximo Evento",
+		"ongoingEvent": "Evento en Curso",
+		"pastEvent": "Evento Pasado",
+		"registrationClosed": "Inscripción Cerrada",
+		"registrationClosedInfo": "La inscripción está actualmente cerrada para este evento",
+		"joinWaitlist": "Unirse a la Lista de Espera",
+		"waitlistCTA": "La inscripción está actualmente cerrada, pero puede unirse a nuestra lista de espera para ser notificado si hay plazas disponibles.",
+		"joinWaitlistButton": "Unirse a la Lista de Espera",
+		"alternativeOptions": "Opciones Alternativas y Recursos",
+		"virtualAttendance": "Asistencia Virtual",
+		"virtualAttendanceInfo": "¿No puede asistir en persona? Considere nuestra opción de asistencia virtual para la transmisión en vivo de las sesiones clave.",
+		"learnMoreButton": "Más Información",
+		"futureEvents": "Eventos Futuros",
+		"futureEventsInfo": "Explore nuestros próximos eventos y congresos para los que puede inscribirse.",
+		"viewEventsButton": "Ver Eventos",
+		"educationalResources": "Recursos Educativos",
+		"educationalResourcesInfo": "Acceda a nuestra biblioteca de materiales educativos, incluyendo grabaciones y presentaciones de congresos anteriores.",
+		"exploreResourcesButton": "Explorar Recursos",
+		"frequentlyAskedQuestions": "Preguntas Frecuentes",
+		"stillHaveQuestions": "¿Todavía Tiene Preguntas?",
+		"contactInfo": "Contacte a nuestro equipo para más información sobre este evento u opciones alternativas.",
+		"contactUsButton": "Contáctenos",
+		"eventNotFound": "Evento no encontrado",
+		"keyInformation": "Información Clave",
+		"daysLeft": "Días Restantes",
+		"open": "Abierto",
+		"closed": "Cerrado",
+		"registration": "Registro",
+		"submitAbstract": "Enviar Resumen",
+		"type": {
+			"in-person": "Presencial",
+			"virtual": "Virtual",
+			"hybrid": "Híbrido"
+		},
+		"faq": {
+			"waitlistQuestion": "¿Cómo funciona la lista de espera?",
+			"waitlistAnswer": "Cuando se une a la lista de espera, se le notificará si hay plazas disponibles debido a cancelaciones. La prioridad se da según el orden de registro en la lista de espera.",
+			"virtualQuestion": "¿Qué incluye la asistencia virtual?",
+			"virtualAnswer": "La asistencia virtual incluye transmisión en vivo de las sesiones principales, acceso a materiales digitales y la posibilidad de enviar preguntas a los ponentes.",
+			"materialsQuestion": "¿Puedo acceder a los materiales del evento sin inscribirme?",
+			"materialsAnswer": "Algunos materiales como el programa y los resúmenes estarán disponibles después del evento, pero el acceso completo a las presentaciones requiere inscripción.",
+			"nextEventQuestion": "¿Cuándo es el próximo evento en el que puedo inscribirme?",
+			"nextEventAnswer": "Consulte nuestra página de eventos para conocer los próximos congresos y actividades. Normalmente organizamos varios eventos educativos a lo largo del año."
+		}
+	},
+	"activityTypes": {
+		"workshop": "Taller",
+		"symposium": "Simposio",
+		"course": "Curso",
+		"webinar": "Webinar",
+		"atelier": "Atelier",
+		"wetlab": "Laboratorio Húmedo",
+		"cour": "Curso",
+		"lunch-symposium": "Simposio de Almuerzo"
+	},
+	"home": {
+		"hero": {
+			"registerNow": "Registrarse Ahora",
+			"viewProgram": "Ver Programa",
+			"registrationStatus": "El registro está abierto",
+			"registrationClosed": "El registro está cerrado",
+			"registrationOpens": "El registro se abre el",
+			"learnMore": "Más información",
+			"title": "Bienvenido a Nuestra Plataforma",
+			"subtitle": "Descubra el futuro de la innovación con soluciones de vanguardia y tecnologías revolucionarias.",
+			"getStarted": "Comenzar",
+			"backgroundAlt": "Fondo de Héroe",
+			"upcomingEvent": "Próximo Evento",
+			"registrationProgress": "Progreso de Registro",
+			"titleCompletion": "De Oftalmología Práctica"
+		},
+		"quickActions": {
+			"learnMore": "Saber más",
+			"program": {
+				"title": "Ver Programa",
+				"description": "Consulte el programa del congreso más reciente",
+				"action": "Ver Programa"
+			},
+			"profile": {
+				"title": "Mi Perfil",
+				"description": "Actualice su información personal",
+				"action": "Ir al Perfil"
+			}
+		},
+		"featuredActivities": {
+			"title": "Actividades Destacadas",
+			"subtitle": "Explore nuestras últimas investigaciones y actividades educativas",
+			"viewAll": "Ver todas las actividades"
+		},
+		"previousCongress": {
+			"label": "Congreso Anterior"
+		},
+		"upcomingCongress": {
+			"label": "Próximo Congreso",
+			"learnMore": "Más Información",
+			"viewDetails": "Ver Detalles"
+		},
+		"team": {
+			"title": "Nuestro Equipo",
+			"subtitle": "Conozca a los expertos detrás de nuestra asociación",
+			"joinUs": "Únase a nuestro equipo",
+			"members": "Miembros activos",
+			"countries": "Países representados",
+			"publications": "Publicaciones",
+			"aboutButton": "Sobre Nosotros",
+			"teamButton": "Conocer al Equipo",
+			"presentation": "La Asociación de Oftalmología es una organización global líder dedicada a avanzar en el cuidado de los ojos a través de la investigación, la educación y la excelencia clínica. Fundada en 1988, reunimos a oftalmólogos, investigadores y profesionales de la salud de todo el mundo para colaborar en soluciones innovadoras para la salud visual. Nuestra misión es mejorar los resultados de los pacientes a través de investigación de vanguardia, programas educativos integrales y la promoción de las mejores prácticas en oftalmología.",
+			"mission": "Nuestra Misión",
+			"missionStatement": "Mejorar los resultados de los pacientes a través de investigación de vanguardia, educación y mejores prácticas en oftalmología.",
+			"values": {
+				"innovation": "Innovación",
+				"globalReach": "Alcance Global",
+				"patientCare": "Atención al Paciente"
+			},
+			"stats": {
+				"countries": "Países representados",
+				"countriesCount": "42",
+				"members": "Miembros activos",
+				"membersCount": "5.200+",
+				"years": "Años de experiencia",
+				"yearsCount": "35",
+				"publications": "Publicaciones",
+				"publicationsCount": "1.800+"
+			},
+			"roles": {
+				"president": "Presidente",
+				"vicePresident": "Vicepresidente",
+				"secretary": "Secretario",
+				"treasurer": "Tesorero"
+			}
+		},
+		"reports": {
+			"title": "Informes Anuales",
+			"subtitle": "Revise nuestros logros y hitos anuales",
+			"download": "Descargar Informe",
+			"2023Description": "Aspectos destacados de la investigación innovadora e iniciativas globales en oftalmología para 2023.",
+			"2022Description": "Resumen de avances clínicos y programas educativos durante 2022.",
+			"2021Description": "Visión general de colaboraciones de investigación y actividades de divulgación comunitaria en 2021."
+		},
+		"annualReports": {
+			"title": "Informes Anuales",
+			"subtitle": "Revise nuestros logros y hitos anuales",
+			"fileSize": "Tamaño del Archivo",
+			"viewAllReports": "Ver Todos los Informes",
+			"backgroundAlt": "Imagen de fondo médico",
+			"report2023": {
+				"title": "Informe Anual 2023"
+			},
+			"report2022": {
+				"title": "Informe Anual 2022"
+			},
+			"report2021": {
+				"title": "Informe Anual 2021"
+			}
+		},
+		"previousEvents": {
+			"title": "Eventos Anteriores",
+			"subtitle": "Explore nuestros congresos y talleres pasados",
+			"viewAllEvents": "Ver Todos los Eventos",
+			"viewDetails": "Ver Detalles",
+			"congress2023": {
+				"title": "Congreso Anual 2023",
+				"description": "Nuestro evento principal con ponentes destacados de todo el mundo discutiendo los últimos avances en oftalmología.",
+				"location": "París, Francia",
+				"date": "Junio 2023"
+			},
+			"workshop2023": {
+				"title": "Taller de Técnicas Quirúrgicas",
+				"description": "Sesión práctica de formación para oftalmólogos para aprender y practicar técnicas quirúrgicas de vanguardia.",
+				"location": "Berlín, Alemania",
+				"date": "Septiembre 2023"
+			},
+			"symposium2023": {
+				"title": "Simposio de Investigación",
+				"description": "Una reunión de investigadores que presentan sus últimos hallazgos en ciencias de la visión y oftalmología clínica.",
+				"location": "Barcelona, España",
+				"date": "Noviembre 2023"
+			}
+		},
+		"newsletter": {
+			"title": "Manténgase Actualizado",
+			"description": "Suscríbase a nuestro boletín para recibir las últimas actualizaciones, hallazgos de investigación y anuncios de eventos.",
+			"emailPlaceholder": "Ingrese su correo electrónico",
+			"subscribe": "Suscribirse",
+			"success": "¡Gracias por suscribirse! Recibirá nuestro próximo boletín pronto.",
+			"error": "Hubo un error al suscribirse. Por favor, inténtelo de nuevo.",
+			"privacy": "Sus datos están seguros",
+			"frequency": "Solo actualizaciones mensuales",
+			"emailRequired": "Por favor, ingrese su correo electrónico"
+		},
+		"errors": {
+			"dataLoadFailed": "Error al cargar los datos. Por favor, inténtelo de nuevo más tarde."
+		},
+		"congressGallery": {
+			"title": "Galería del Congreso",
+			"subtitle": "Explore momentos de nuestros congresos de oftalmología alrededor del mundo",
+			"imageAlt": "Imagen de la galería del congreso"
+		}
+	},
+	"dashboard": {
+		"welcome": "Bienvenido de nuevo",
+		"overview": "Aquí hay una visión general de su actividad reciente y estadísticas",
+		"search": "Buscar...",
+		"stats": {
+			"totalMembers": "Miembros Totales",
+			"activeAbstracts": "Resúmenes Activos",
+			"upcomingEvents": "Próximos Eventos",
+			"publications": "Publicaciones",
+			"vsLastMonth": "vs mes anterior"
+		},
+		"recentActivity": {
+			"title": "Actividad Reciente",
+			"viewAll": "Ver toda la actividad"
+		},
+		"upcomingEvents": {
+			"title": "Próximos Eventos",
+			"subtitle": "Mantente atento a nuestros próximos eventos y actividades",
+			"viewAll": "Ver todos los eventos",
+			"comingSoon": "Próximamente",
+			"stayUpdated": "Mantente Actualizado",
+			"notifyMe": "Suscríbete a nuestro boletín para recibir notificaciones cuando se anuncien nuevos eventos.",
+			"subscribe": "Suscribirse",
+			"noEvents": "No hay eventos programados actualmente",
+			"checkBack": "Por favor, vuelve más tarde para ver los próximos eventos"
+		},
+		"navigation": {
+			"overview": "Visión General",
+			"abstracts": "Resúmenes",
+			"events": "Eventos",
+			"analytics": "Análisis",
+			"messages": "Mensajes",
+			"profile": "Perfil",
+			"settings": "Configuración"
+		}
+	},
+	"footer": {
+		"aboutUs": "Sobre Nosotros",
+		"aboutDescription": "Estamos dedicados a avanzar en la ciencia y práctica de la oftalmología.",
+		"quickLinks": "Enlaces Rápidos",
+		"followUs": "Síguenos",
+		"twitter": "Twitter",
+		"github": "GitHub",
+		"copyright": "© {{year}} Asociación de Oftalmología. Todos los derechos reservados.",
+		"socialMedia": {
+			"linkedin": "LinkedIn",
+			"twitter": "Twitter",
+			"facebook": "Facebook",
+			"instagram": "Instagram"
+		}
+	},
+	"congressTypes": {
+		"in-person": "Presencial",
+		"virtual": "Virtual",
+		"hybrid": "Híbrido"
+	},
+	"archives": {
+		"title": "Archivos",
+		"description": "Explore nuestra colección de eventos pasados, e-posters y webinars.",
+		"pastEvents": "Eventos Pasados",
+		"pastEventsDescription": "Explore nuestros congresos y eventos anteriores.",
+		"ePosters": "E-Posters",
+		"ePostersDescription": "Navegue por nuestra colección de e-posters de eventos pasados.",
+		"webinars": "Webinars",
+		"webinarsDescription": "Vea webinars y presentaciones grabadas de nuestros expertos. Manténgase actualizado con los últimos avances en oftalmología.",
+		"viewMore": "Ver Más",
+		"viewEvent": "Ver Evento",
+		"browsePosters": "Explorar Posters",
+		"watchWebinars": "Ver Webinars",
+		"searchEvents": "Buscar eventos...",
+		"searchPosters": "Buscar posters...",
+		"searchWebinars": "Buscar webinars...",
+		"noEvents": "No hay eventos pasados disponibles.",
+		"noEventsFound": "No se encontraron eventos que coincidan con su búsqueda.",
+		"noPosters": "No hay e-posters disponibles.",
+		"noPostersFound": "No se encontraron e-posters que coincidan con su búsqueda.",
+		"noWebinars": "No hay webinars disponibles.",
+		"noWebinarsFound": "No se encontraron webinars que coincidan con su búsqueda.",
+		"viewPoster": "Ver Poster",
+		"watchWebinar": "Ver Webinar",
+		"back": "Volver"
+	},
+	"languages": {
+		"english": "Inglés",
+		"spanish": "Español",
+		"french": "Francés",
+		"arabic": "Árabe"
+	},
+	"activities": {
+		"price": "Precio",
+		"speakers": "Ponentes",
+		"date": "Fecha y Hora",
+		"location": "Ubicación",
+		"register": "Registrarse",
+		"viewDetails": "Ver Detalles",
+		"upcoming": "Próximas Actividades",
+		"past": "Actividades Pasadas",
+		"featured": "Actividades Destacadas",
+		"all": "Todas las Actividades",
+		"noActivities": "No se encontraron actividades",
+		"filterBy": "Filtrar por",
+		"sortBy": "Ordenar por",
+		"type": "Tipo",
+		"allTypes": "Todos los Tipos"
+	}
+}

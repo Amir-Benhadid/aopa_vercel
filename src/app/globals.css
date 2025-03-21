@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--background: #ffffff;
+	--foreground: #000000;
+	--card: #ffffff;
+	--card-foreground: #000000;
+	--accent: #f3f4f6;
+	--accent-foreground: #000000;
+	--input: #e5e7eb;
+	--primary-50: #f0f9ff;
+	--primary-100: #e0f2fe;
+	--primary-200: #bae6fd;
+	--primary-300: #7dd3fc;
+	--primary-400: #38bdf8;
+	--primary-500: #0ea5e9;
+	--primary-600: #0284c7;
+	--primary-700: #0369a1;
+	--primary-800: #075985;
+	--primary-900: #0c4a6e;
+
+	/* Card Colors */
+	--poster-abstract-card-color: #2084c721;
+	--poster-abstract-card-text: #328bc7;
+
+	--oral-abstract-card-color: #c01e9727;
+	--oral-abstract-card-text: #c01e98;
+
+	/* Activity Card Colors */
+	--workshop-card-color: #fde68a20; /* Light yellow */
+	--workshop-card-text: #f59e0b;
+
+	--keynote-card-color: #a5b4fc20; /* Light indigo */
+	--keynote-card-text: #6366f1;
+
+	--panel-card-color: #fbcfe820; /* Light pink */
+	--panel-card-text: #ec4899;
+
+	--networking-card-color: #bbf7d020; /* Light green */
+	--networking-card-text: #22c55e;
+
+	/* Abstract Status Colors */
+	--submitted-card-color: #93c5fd20; /* Light blue */
+	--submitted-card-text: #3b82f6;
+
+	--approved-card-color: #86efac20; /* Light green */
+	--approved-card-text: #22c55e;
+
+	--rejected-card-color: #fca5a520; /* Light red */
+	--rejected-card-text: #ef4444;
+
+	--type-change-card-color: #fde04720; /* Light yellow */
+	--type-change-card-text: #eab308;
+
+	--final-version-card-color: #c4b5fd20; /* Light purple */
+	--final-version-card-text: #8b5cf6;
+
+	/* Add these under the existing abstract status colors */
+	--reviewing-card-color: #fcd34d20; /* Light amber */
+	--reviewing-card-text: #f59e0b;
+
+	--withdrawn-card-color: #94a3b820; /* Light slate */
+	--withdrawn-card-text: #64748b;
+}
+
+[data-theme='dark'] {
+	--background: #000000;
+	--foreground: #ffffff;
+	--card: #111827;
+	--card-foreground: #ffffff;
+	--accent: #374151;
+	--accent-foreground: #ffffff;
+	--input: #374151;
+	--primary-50: #0c4a6e;
+	--primary-100: #075985;
+	--primary-200: #0369a1;
+	--primary-300: #0284c7;
+	--primary-400: #0ea5e9;
+	--primary-500: #38bdf8;
+	--primary-600: #7dd3fc;
+	--primary-700: #bae6fd;
+	--primary-800: #e0f2fe;
+	--primary-900: #f0f9ff;
+
+	/* Dark mode versions */
+	--workshop-card-color: #92400e20;
+	--workshop-card-text: #f59e0b;
+
+	--keynote-card-color: #3730a320;
+	--keynote-card-text: #818cf8;
+
+	--panel-card-color: #9d174d20;
+	--panel-card-text: #f472b6;
+
+	--networking-card-color: #16653420;
+	--networking-card-text: #4ade80;
+
+	/* Dark mode versions */
+	--submitted-card-color: #1e3a8a20;
+	--submitted-card-text: #60a5fa;
+
+	--approved-card-color: #16653420;
+	--approved-card-text: #4ade80;
+
+	--rejected-card-color: #7f1d1d20;
+	--rejected-card-text: #f87171;
+
+	--type-change-card-color: #92400e20;
+	--type-change-card-text: #fbbf24;
+
+	--final-version-card-color: #4c1d9520;
+	--final-version-card-text: #a78bfa;
+
+	/* Dark mode versions */
+	--reviewing-card-color: #92400e20;
+	--reviewing-card-text: #fbbf24;
+
+	--withdrawn-card-color: #1e293b20;
+	--withdrawn-card-text: #94a3b8;
+}
+
+body {
+	color: var(--foreground);
+	background: var(--background);
+}
+
+/* In a global stylesheet or Tailwind's @layer utilities */
+.ios-like-scrollbar {
+	/* For Firefox */
+	scrollbar-width: thin;
+	scrollbar-color: rgba(0, 0, 0, 0.5) transparent;
+
+	/* For iOS momentum scrolling (only works on iOS) */
+	-webkit-overflow-scrolling: touch;
+}
+
+/* WebKit-based browsers (Chrome, Safari, Edge, Opera) */
+.ios-like-scrollbar::-webkit-scrollbar {
+	width: 4px; /* super thin */
+}
+.ios-like-scrollbar::-webkit-scrollbar-track {
+	background: transparent; /* no track behind it */
+}
+.ios-like-scrollbar::-webkit-scrollbar-thumb {
+	background-color: rgba(0, 0, 0, 0.5); /* darker thumb, semi-transparent */
+	border-radius: 4px;
+}
+
+html {
+	background: linear-gradient(to right, #99a, #eee, #99a);
+}
+
+.ios-like-hide-scrollbar-until-hover {
+	/* Enable iOS momentum scrolling (only works on iOS) */
+	-webkit-overflow-scrolling: touch;
+
+	/* Hide scrollbar in Firefox */
+	scrollbar-width: none;
+
+	/* Hide scrollbar in IE/Edge (older) */
+	-ms-overflow-style: none;
+}
+
+/* Hide scrollbar in Chrome, Safari, Opera by default */
+.ios-like-hide-scrollbar-until-hover::-webkit-scrollbar {
+	width: 0px;
+	background: transparent;
+}
+
+/* On hover, show a thin scrollbar */
+.ios-like-hide-scrollbar-until-hover:hover {
+	/* Firefox: switch to thin scrollbar */
+	scrollbar-width: thin;
+}
+
+.ios-like-hide-scrollbar-until-hover:hover::-webkit-scrollbar {
+	width: 4px; /* thin scrollbar width */
+}
+
+.ios-like-hide-scrollbar-until-hover:hover::-webkit-scrollbar-track {
+	background: transparent; /* no visible track */
+}
+
+.ios-like-hide-scrollbar-until-hover:hover::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.5); /* semi-transparent thumb */
+	border-radius: 4px;
+}

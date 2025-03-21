@@ -1,0 +1,100 @@
+/* 3D Card Flip Animation Styles */
+.perspective-1000 {
+	perspective: 1000px;
+}
+
+.transform-style-3d {
+	transform-style: preserve-3d;
+}
+
+.rotate-y-180 {
+	transform: rotateY(180deg);
+}
+
+.backface-hidden {
+	backface-visibility: hidden;
+}
+
+.card-3d-container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	transform-style: preserve-3d;
+}
+
+.card-3d-face {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	backface-visibility: hidden;
+	border-radius: 0.75rem;
+	overflow: hidden;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card-3d-front {
+	z-index: 2;
+}
+
+.card-3d-back {
+	transform: rotateY(180deg);
+}
+
+/* Card thickness effect */
+.card-3d-container::before,
+.card-3d-container::after {
+	content: '';
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	border-radius: 0.75rem;
+	background: rgba(255, 255, 255, 0.1);
+	transform: translateZ(-1px);
+	pointer-events: none;
+}
+
+.card-3d-container::after {
+	transform: translateZ(1px);
+}
+
+/* Edge effect for thickness */
+.card-edge {
+	position: absolute;
+	background: rgba(0, 0, 0, 0.05);
+	transform-style: preserve-3d;
+}
+
+.card-edge-right {
+	width: 10px;
+	height: 100%;
+	right: -5px;
+	top: 0;
+	transform: rotateY(90deg) translateZ(calc(100% - 5px));
+}
+
+.card-edge-left {
+	width: 10px;
+	height: 100%;
+	left: -5px;
+	top: 0;
+	transform: rotateY(-90deg) translateZ(5px);
+}
+
+.card-edge-top {
+	width: 100%;
+	height: 10px;
+	top: -5px;
+	left: 0;
+	transform: rotateX(90deg) translateZ(5px);
+}
+
+.card-edge-bottom {
+	width: 100%;
+	height: 10px;
+	bottom: -5px;
+	left: 0;
+	transform: rotateX(-90deg) translateZ(5px);
+}

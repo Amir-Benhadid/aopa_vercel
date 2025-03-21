@@ -1,0 +1,23 @@
+{
+	"previousCongress": {
+		"label": "Previous Congress"
+	},
+	"partners": {
+		"title": "Partners",
+		"subtitle": "Join the Ophthalmology Association and become a partner today!",
+		"advertiseTitle": "Advertise with us",
+		"advertiseDescription": "We are always looking for new ways to promote our association and grow our community. If you have a creative idea, we would love to hear from you!",
+		"becomePartner": "Become a Partner"
+	},
+	"resultsPlaceholder": "Enter abstract results",
+	"observationsPlaceholder": "Enter abstract observations",
+	"conclusionPlaceholder": "Enter abstract conclusion",
+	"discussionPlaceholder": "Enter abstract discussion",
+	"viewDetails": "View Details",
+	"allYears": "All Years",
+	"allCategories": "All Categories",
+	"congresses": "Congresses",
+	"sponsors": "Sponsors",
+	"reports": "Reports",
+	"media": "Media"
+}

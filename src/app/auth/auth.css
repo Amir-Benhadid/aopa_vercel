@@ -1,0 +1,133 @@
+/* auth.css */
+.flip-card-container {
+	width: 100%;
+	max-width: 520px;
+	height: 600px;
+	perspective: 1500px;
+	margin: 0 auto;
+}
+
+.flip-card {
+	background-color: transparent;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Improved easing */
+	transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-front {
+	transform: rotateY(-180deg);
+}
+
+.flip-card.flipped .flip-card-back {
+	transform: rotateY(0);
+}
+
+.flip-card-front,
+.flip-card-back {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	backface-visibility: hidden;
+	transition: transform 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smoother animation */
+}
+
+.flip-card-front {
+	transform: rotateY(0);
+	z-index: 2;
+}
+
+.flip-card-back {
+	transform: rotateY(180deg);
+}
+
+/* Card glow effect */
+.card-glow {
+	box-shadow: 0 0 20px rgba(79, 70, 229, 0.15);
+	transition: box-shadow 0.5s ease,
+		transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy transform */
+}
+
+.card-glow:hover {
+	box-shadow: 0 0 30px rgba(79, 70, 229, 0.25);
+	transform: translateY(-5px);
+}
+
+/* Form field animations */
+.group {
+	transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy animation */
+	will-change: transform; /* Performance optimization */
+}
+
+.group:hover {
+	transform: translateY(-2px);
+}
+
+/* Input field focus animation */
+.auth-input-field {
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-input-field:focus {
+	border-color: rgba(79, 70, 229, 0.5);
+	box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+}
+
+/* Button animations */
+.auth-button {
+	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transform: translateY(0);
+}
+
+.auth-button:hover {
+	transform: translateY(-2px) scale(1.01);
+}
+
+.auth-button:active {
+	transform: translateY(1px) scale(0.99);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+	.card-glow {
+		box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+	}
+
+	.card-glow:hover {
+		box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+	.flip-card-container {
+		max-width: 100%;
+		height: 650px;
+	}
+}
+
+/* Page transition animations */
+.page-enter {
+	opacity: 0;
+	transform: scale(0.95);
+}
+
+.page-enter-active {
+	opacity: 1;
+	transform: scale(1);
+	transition: opacity 0.3s ease,
+		transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.page-exit {
+	opacity: 1;
+	transform: scale(1);
+}
+
+.page-exit-active {
+	opacity: 0;
+	transform: scale(0.95);
+	transition: opacity 0.3s ease,
+		transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
