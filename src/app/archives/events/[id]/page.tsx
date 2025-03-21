@@ -232,13 +232,13 @@ export default function CongressDetailPage() {
 
 							// Use getCongressEPosters function to get e-posters
 							if (
-								congressData['e-posters'] &&
-								Array.isArray(congressData['e-posters']) &&
-								congressData['e-posters'].length > 0
+								congressData['eposters'] &&
+								Array.isArray(congressData['eposters']) &&
+								congressData['eposters'].length > 0
 							) {
 								console.log(
 									'E-posters from database:',
-									congressData['e-posters']
+									congressData['eposters']
 								);
 								const ePostersFromDb = await import('@/lib/utils').then((m) =>
 									m.getCongressEPosters(congressData)

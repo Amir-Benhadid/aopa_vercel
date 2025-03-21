@@ -434,7 +434,16 @@
 		"venueLocation": "Venue Location",
 		"viewEvents": "View Events",
 		"waitlistInfo": "Waitlist Information",
-		"nextEvent": "Next Event"
+		"nextEvent": "Next Event",
+		"dates": "Dates",
+		"information": "Information",
+		"photos": "Photos",
+		"videos": "Videos",
+		"documents": "Documents",
+		"viewAll": "View All",
+		"eposters": "E-Posters",
+		"about": "About the Event",
+		"past": "Finished"
 	},
 	"activityTypes": {
 		"workshop": "Workshop",

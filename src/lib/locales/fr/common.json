@@ -754,7 +754,16 @@
 		"viewAllPosters": "Voir toutes les affiches",
 		"viewAllWebinars": "Voir tous les webinaires",
 		"viewDetails": "Voir les détails",
-		"viewDocument": "Voir le document"
+		"viewDocument": "Voir le document",
+		"dates": "Dates",
+		"information": "Informations",
+		"photos": "Photos",
+		"videos": "Vidéos",
+		"documents": "Documents",
+		"viewAll": "Voir tout",
+		"eposters": "E-Posters",
+		"about": "A propos de l'événement",
+		"past": "Terminé"
 	},
 	"reports": {
 		"download": "Télécharger",
