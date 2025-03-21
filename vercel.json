@@ -1,11 +1,7 @@
 {
 	"functions": {
 		"api/**/*": {
-			"excludeFiles": [
-				"public/previous_congresses/**/*",
-				"**/.next/**",
-				"**/node_modules/**"
-			]
+			"excludeFiles": "{public/previous_congresses/**/*,**/.next/**,**/node_modules/**}"
 		}
 	}
 }
