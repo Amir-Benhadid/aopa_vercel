@@ -224,29 +224,53 @@ export async function checkFileExists(path: string): Promise<boolean> {
 		// Remove leading slash if present for the API call
 		const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
 
+		// Skip checking for non-congress files (use default behavior)
+		if (!normalizedPath.startsWith('previous_congresses/')) {
+			return true;
+		}
+
 		// Use our API endpoint to check if the file exists
 		const response = await fetch(
 			`/api/fileExists?path=${encodeURIComponent(normalizedPath)}`
 		);
+
+		if (!response.ok) {
+			console.warn(
+				`Failed to check file existence for ${path}: API returned ${response.status}`
+			);
+			return true; // Assume file exists if API fails
+		}
+
 		const data = await response.json();
+		console.log(
+			`File check for ${normalizedPath}: ${
+				data.exists ? 'EXISTS' : 'NOT FOUND'
+			}`
+		);
 
 		return data.exists;
 	} catch (error) {
 		console.error('Error checking file existence:', error);
-		return false;
+		return true; // Assume file exists on error
 	}
 }
 
 /**
  * Gets the best available image for a congress
  * Tries multiple options in order of preference:
- * 1. JPG poster (affiche.jpg)
- * 2. PDF poster (affiche.pdf)
+ * 1. First numbered image (1.jpg) in the photos directory
+ * 2. PDF or PPT poster (1.pdf or 1.ppt)
  * 3. Banner from congress object
  * 4. Image from congress object
  * 5. Default fallback image
  */
 export async function getCongressImage(congress: any): Promise<string> {
+	// Ensure we have a valid congress object
+	if (!congress) {
+		console.warn('getCongressImage called with null or undefined congress');
+		return '/images/congress-default.jpg';
+	}
+
 	// First get the folder path
 	let locationName = '';
 	if (congress.location) {
@@ -264,33 +288,40 @@ export async function getCongressImage(congress: any): Promise<string> {
 	});
 
 	if (!folderPath) {
-		// If we can't determine the folder path, use fallbacks
+		console.log(
+			`Could not determine folder path for congress "${congress.title}"`
+		);
 		return congress.image || congress.banner || '/images/congress-default.jpg';
 	}
 
-	// Try JPG poster first (preferred for web)
-	const jpgPath = `${folderPath}/affiche.jpg`;
-	const jpgExists = await checkFileExists(jpgPath);
-	if (jpgExists) {
-		return jpgPath;
+	const validFolderPath = folderPath.startsWith('/')
+		? folderPath
+		: '/' + folderPath;
+	console.log(
+		`Using folder path for congress "${congress.title}": ${validFolderPath}`
+	);
+
+	// Check if we have numbered images
+	if (typeof congress.images === 'number' && congress.images > 0) {
+		// Return the first image
+		return `${validFolderPath}/photos/1.jpg`;
 	}
 
-	// Then try PDF poster
-	const pdfPath = `${folderPath}/affiche.pdf`;
-	const pdfExists = await checkFileExists(pdfPath);
-	if (pdfExists) {
-		return `${pdfPath}#page=1`;
-	}
-
-	// Fall back to congress.banner or congress.image or default
-	return congress.banner || congress.image || '/images/congress-default.jpg';
+	// Check for first poster - either 1.pdf or 1.ppt
+	return `${validFolderPath}/1.pdf`;
 }
 
 /**
- * Load images from a congress photos directory
- * Returns an array of image paths that exist
+ * Load images from a congress photos directory based on the numeric count
+ * Returns an array of image paths (1.jpg, 2.jpg, etc.)
  */
 export async function getCongressPhotos(congress: any): Promise<string[]> {
+	// Ensure we have a valid congress object
+	if (!congress) {
+		console.warn('getCongressPhotos called with null or undefined congress');
+		return ['/images/congress-default.jpg'];
+	}
+
 	// First get the folder path
 	let locationName = '';
 	if (congress.location) {
@@ -309,41 +340,99 @@ export async function getCongressPhotos(congress: any): Promise<string[]> {
 
 	if (!folderPath) {
 		// If we can't determine the folder path, use fallbacks
-		return (
-			congress.images || [congress.image || '/images/congress-default.jpg']
-		);
-	}
-
-	// Use our API endpoint to get directory contents
-	const photosPath = `${folderPath}/photos`;
-	try {
-		const response = await fetch(
-			`/api/getDirectoryContents?path=${encodeURIComponent(
-				photosPath.slice(1)
-			)}`
+		console.log(
+			`Could not determine folder path for congress photos "${congress.title}"`
 		);
 
-		if (response.ok) {
-			const files = await response.json();
-
-			// Filter for image files
-			const imageFiles = files.filter((file: string) =>
-				file.match(/\.(jpg|jpeg|png|gif|webp)$/i)
-			);
-
-			if (imageFiles.length > 0) {
-				// Return full paths to the images
-				return imageFiles.map((file: string) => `${photosPath}/${file}`);
-			}
+		if (Array.isArray(congress.images) && congress.images.length > 0) {
+			return congress.images;
 		}
-	} catch (error) {
-		console.error('Error fetching congress photos:', error);
+		return [
+			congress.image || congress.banner || '/images/congress-default.jpg',
+		];
 	}
 
-	// Fallbacks
-	if (congress.images && congress.images.length > 0) {
+	const validFolderPath = folderPath.startsWith('/')
+		? folderPath
+		: '/' + folderPath;
+	console.log(
+		`Folder path for congress photos "${congress.title}": ${validFolderPath}`
+	);
+
+	// If congress.images is a number, it indicates how many numbered images exist
+	if (typeof congress.images === 'number' && congress.images > 0) {
+		console.log(`Congress has ${congress.images} numbered images`);
+		const images = [];
+
+		// Generate paths for all numbered images
+		for (let i = 1; i <= congress.images; i++) {
+			images.push(`${validFolderPath}/photos/${i}.jpg`);
+		}
+
+		return images;
+	}
+
+	// If congress.images is an array, use that
+	if (Array.isArray(congress.images) && congress.images.length > 0) {
 		return congress.images;
 	}
 
+	// Fallback to a single image
 	return [await getCongressImage(congress)];
+}
+
+/**
+ * Load e-posters from a congress directory
+ * @param congress - The congress object
+ * @returns Array of e-poster paths
+ */
+export async function getCongressEPosters(congress: any): Promise<string[]> {
+	// Ensure we have a valid congress object
+	if (!congress) {
+		console.warn('getCongressEPosters called with null or undefined congress');
+		return [];
+	}
+
+	// First get the folder path
+	let locationName = '';
+	if (congress.location) {
+		if (typeof congress.location === 'object') {
+			locationName = congress.location.name || '';
+		} else if (typeof congress.location === 'string') {
+			locationName = congress.location;
+		}
+	}
+
+	const folderPath = getCongressFolderPath({
+		start_date: congress.start_date,
+		title: congress.title,
+		location: locationName,
+	});
+
+	if (!folderPath) {
+		console.log(
+			`Could not determine folder path for congress e-posters "${congress.title}"`
+		);
+		return [];
+	}
+
+	const validFolderPath = folderPath.startsWith('/')
+		? folderPath
+		: '/' + folderPath;
+	console.log(
+		`Folder path for congress e-posters "${congress.title}": ${validFolderPath}`
+	);
+
+	// If congress.eposters is an array of filenames
+	if (Array.isArray(congress.eposters) && congress.eposters.length > 0) {
+		console.log(`Congress has ${congress.eposters.length} e-posters`);
+
+		// Generate paths for all e-posters
+		return congress.eposters.map(
+			(filename: string) => `${validFolderPath}/e-posters/${filename}`
+		);
+	}
+
+	// If no e-posters found
+	return [];
 }

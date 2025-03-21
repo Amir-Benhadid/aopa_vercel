@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { getPastCongresses } from '@/lib/api';
-import { getCongressFolderPath, getCongressPhotos } from '@/lib/utils';
+import { getCongressEPosters, getCongressFolderPath } from '@/lib/utils';
 import { Congress } from '@/types/database';
 import { motion } from 'framer-motion';
 import {
@@ -83,19 +83,65 @@ export default function EventsArchivePage() {
 		fetchPastEvents();
 	}, []);
 
-	// Load images for a congress from its folder - replace with our new utility
-	const loadCongressImages = async (congress: Congress) => {
+	// Helper function to load images for a congress
+	async function loadCongressImages(congress: any) {
 		try {
-			// Use our helper function to get photos from the congress
-			return await getCongressPhotos(congress);
+			if (!congress) {
+				return ['/images/congress-default.jpg'];
+			}
+
+			// If congress.images is a number, generate paths for 1.jpg, 2.jpg, etc.
+			if (typeof congress.images === 'number' && congress.images > 0) {
+				// Get folder path
+				let locationName = '';
+				if (congress.location) {
+					if (typeof congress.location === 'object') {
+						locationName = congress.location.name || '';
+					} else if (typeof congress.location === 'string') {
+						locationName = congress.location;
+					}
+				}
+
+				const folderPath = getCongressFolderPath({
+					start_date: congress.start_date,
+					title: congress.title,
+					location: locationName,
+				});
+
+				if (!folderPath) {
+					// Fallback if we can't determine the folder path
+					return [
+						congress.image || congress.banner || '/images/congress-default.jpg',
+					];
+				}
+
+				// Ensure folder path has leading slash
+				const validFolderPath = folderPath.startsWith('/')
+					? folderPath
+					: '/' + folderPath;
+
+				// Generate paths for all numbered images
+				const images = [];
+				for (let i = 1; i <= congress.images; i++) {
+					images.push(`${validFolderPath}/photos/${i}.jpg`);
+				}
+
+				return images;
+			}
+
+			// For backward compatibility, if congress.images is an array
+			if (Array.isArray(congress.images) && congress.images.length > 0) {
+				return congress.images;
+			}
+
+			// Fallback to a single image
+			return [
+				congress.image || congress.banner || '/images/congress-default.jpg',
+			];
 		} catch (error) {
-			console.error('Error loading congress images:', error);
-			// Return a fallback image if there's an error
-			if (congress.banner) return [congress.banner];
-			if (congress.image) return [congress.image];
-			return ['/images/default-congress.jpg'];
+			return ['/images/congress-default.jpg'];
 		}
-	};
+	}
 
 	// Format date range
 	const formatDateRange = (start: string, end: string) => {
@@ -161,85 +207,40 @@ export default function EventsArchivePage() {
 			const allEPosters: EPoster[] = [];
 
 			// Loop through each past congress
-			pastEvents.forEach((congress: Congress) => {
-				if (congress.eposters && congress.eposters.length > 0) {
-					// Process each e-poster
-					congress.eposters.forEach((eposter) => {
-						if (typeof eposter === 'string') {
-							// Get the e-poster filename from the path
-							const filename = eposter.split('/').pop() || 'E-Poster';
+			for (const congress of pastEvents) {
+				try {
+					const eposterPaths = await getCongressEPosters(congress);
+
+					if (eposterPaths.length > 0) {
+						// Process each e-poster path into a structured object
+						const congressEPosters = eposterPaths.map((path) => {
+							// Extract the filename from the path
+							const filename = path.split('/').pop() || 'E-Poster';
 							const title = filename
 								.replace(/\.[^/.]+$/, '')
 								.replace(/_/g, ' ');
 
-							// Create the proper path
-							let path = eposter;
-							if (!path.startsWith('/') && !path.startsWith('http')) {
-								// For relative paths, construct full path
-								let locationName = '';
-								if (
-									congress.location &&
-									typeof congress.location === 'object'
-								) {
-									locationName = congress.location.name || '';
-								}
-
-								const folderPath = getCongressFolderPath({
-									start_date: congress.start_date,
-									title: congress.title,
-									location: locationName,
-								});
-								path = folderPath
-									? `${folderPath}/${eposter}`
-									: `/e-posters/${eposter}`;
-							}
-
-							allEPosters.push({
-								id: `${congress.id}-${eposter}`,
+							return {
+								id: `${congress.id}-${filename}`,
 								title: title,
 								path: path,
 								congress: congress,
 								category: 'General',
 								authors: 'Various Authors',
-							});
-						} else if (typeof eposter === 'object' && eposter !== null) {
-							// If it's an object with detailed information
-							// Create the proper path
-							let path = eposter.path;
-							if (!path.startsWith('/') && !path.startsWith('http')) {
-								// For relative paths, construct full path
-								let locationName = '';
-								if (
-									congress.location &&
-									typeof congress.location === 'object'
-								) {
-									locationName = congress.location.name || '';
-								}
+							};
+						});
 
-								const folderPath = getCongressFolderPath({
-									start_date: congress.start_date,
-									title: congress.title,
-									location: locationName,
-								});
-								path = folderPath
-									? `${folderPath}/${eposter.path}`
-									: `/e-posters/${eposter.path}`;
-							}
-
-							allEPosters.push({
-								id: `${congress.id}-${eposter.path}`,
-								title: eposter.title,
-								path: path,
-								congress: congress,
-								category: eposter.category || 'General',
-								authors: eposter.authors || 'Various Authors',
-							});
-						}
-					});
-				} else {
-					console.log(`No e-posters found for congress ${congress.title}`);
+						allEPosters.push(...congressEPosters);
+					} else {
+						console.log(`No e-posters found for congress ${congress.title}`);
+					}
+				} catch (err) {
+					console.error(
+						`Error loading e-posters for congress ${congress.id}:`,
+						err
+					);
 				}
-			});
+			}
 
 			return allEPosters;
 		} catch (err) {

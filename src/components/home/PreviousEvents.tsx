@@ -39,53 +39,41 @@ export function PreviousEvents({ events }: PreviousEventsProps) {
 			return [event.image || '/images/congress-default.jpg'];
 		}
 
-		const folderPath = getCongressFolderPath(event);
+		// If congress.images is a number, it indicates how many numbered images exist
+		if (typeof event.images === 'number' && event.images > 0) {
+			const folderPath = getCongressFolderPath(event);
 
+			if (!folderPath) {
+				return [event.image || '/images/congress-default.jpg'];
+			}
+
+			// Ensure folderPath starts with a '/'
+			const validFolderPath = folderPath.startsWith('/')
+				? folderPath
+				: '/' + folderPath;
+			console.log('valid folder path:', validFolderPath);
+
+			// Generate paths for all numbered images
+			const images = [];
+			for (let i = 1; i <= event.images; i++) {
+				images.push(`${validFolderPath}/photos/${i}.jpg`);
+			}
+
+			return images;
+		}
+
+		// For backward compatibility - if congress.images is an array
+		if (Array.isArray(event.images) && event.images.length > 0) {
+			return event.images;
+		}
+
+		// Try to get the folder path for older approach
+		const folderPath = getCongressFolderPath(event);
 		console.log('folderPath', folderPath);
 
 		if (!folderPath) return [event.image || '/images/congress-default.jpg'];
 
-		console.log('checkout', folderPath);
-
-		try {
-			const photosPath = `${folderPath}/photos`;
-
-			// Use our API endpoint to get directory contents
-			const imageFilesResponse = await fetch(
-				`/api/getDirectoryContents?path=${encodeURIComponent(
-					photosPath.slice(1)
-				)}`,
-				{
-					cache: 'no-store', // Ensure we don't cache the results
-				}
-			);
-
-			if (imageFilesResponse.ok) {
-				const imageFiles = await imageFilesResponse.json();
-
-				// Filter for image files only
-				const filteredFiles = imageFiles.filter(
-					(file: string) =>
-						file.toLowerCase().endsWith('.jpg') ||
-						file.toLowerCase().endsWith('.jpeg') ||
-						file.toLowerCase().endsWith('.png')
-				);
-
-				// Create full paths for images
-				const imagePaths = filteredFiles.map(
-					(file: string) => `${photosPath}/${file}`
-				);
-
-				// Return the images or fallback to the event image if no images found
-				return imagePaths.length > 0
-					? imagePaths
-					: [event.image || '/images/congress-default.jpg'];
-			}
-		} catch (err) {
-			console.error(`Error loading images for event ${event.id}:`, err);
-		}
-
-		// Fallback to default image if needed
+		// Fallback to default image
 		return [event.image || '/images/congress-default.jpg'];
 	};
 

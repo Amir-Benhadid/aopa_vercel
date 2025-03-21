@@ -1,7 +1,0 @@
-{
-	"functions": {
-		"src/app/api/**/*": {
-			"excludeFiles": "{public/previous_congresses/**/*,**/.next/**,**/node_modules/**}"
-		}
-	}
-}
