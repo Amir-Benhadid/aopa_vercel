@@ -44,6 +44,14 @@ function ResetPasswordContent() {
 		// We just need to check if we're on this page with a valid session
 		const checkToken = async () => {
 			try {
+				console.log('Checking reset token validity...');
+				console.log('Current URL:', window.location.href);
+				console.log(
+					'Search params:',
+					Object.fromEntries([...searchParams.entries()])
+				);
+				console.log('Hash fragment:', window.location.hash);
+
 				// Check if we have a hash fragment in the URL (Supabase sometimes uses this)
 				const hasAccessToken =
 					window.location.hash &&
@@ -57,37 +65,71 @@ function ResetPasswordContent() {
 				const hasType = searchParams.has('type');
 				const isPasswordRecovery = searchParams.get('type') === 'recovery';
 
+				console.log('Token validation details:', {
+					hasAccessToken,
+					hasToken,
+					hasCode,
+					hasType,
+					isPasswordRecovery,
+				});
+
 				// If we have a code parameter, we need to exchange it for a session
 				if (hasCode && hasType && isPasswordRecovery) {
-					console.log('Found code parameter, exchanging for session');
-					// Exchange the code for a session directly in the client
-					const { error } = await supabase.auth.exchangeCodeForSession(
-						searchParams.get('code') || ''
+					console.log(
+						'Found code parameter, exchanging for session with code:',
+						searchParams.get('code')
 					);
+					try {
+						// Exchange the code for a session directly in the client
+						const { data, error } = await supabase.auth.exchangeCodeForSession(
+							searchParams.get('code') || ''
+						);
 
-					if (error) {
-						console.error('Error exchanging code for session:', error);
+						console.log('Exchange result:', { data, error });
+
+						if (error) {
+							console.error('Error exchanging code for session:', error);
+							setIsTokenValid(false);
+
+							// Show error dialog for invalid code
+							setFeedbackDialog({
+								isOpen: true,
+								title: 'Invalid Reset Link',
+								message:
+									'This password reset link is invalid or has expired. Please request a new one.',
+								type: 'error',
+								actionLabel: 'Back to Login',
+								onAction: () => router.push('/auth'),
+							});
+
+							return;
+						}
+
+						console.log('Session exchange successful');
+
+						// Verify that we now have a valid session
+						const sessionCheck = await supabase.auth.getSession();
+						console.log('Session after exchange:', sessionCheck);
+
+						// Remove the code from the URL to prevent reusing it
+						const newUrl = new URL(window.location.href);
+						newUrl.searchParams.delete('code');
+						newUrl.searchParams.delete('type');
+						window.history.replaceState({}, '', newUrl.toString());
+					} catch (exchangeError) {
+						console.error('Exception during code exchange:', exchangeError);
 						setIsTokenValid(false);
-
-						// Show error dialog for invalid code
 						setFeedbackDialog({
 							isOpen: true,
-							title: 'Invalid Reset Link',
+							title: 'Error Processing Reset Link',
 							message:
-								'This password reset link is invalid or has expired. Please request a new one.',
+								'An error occurred while processing your password reset request.',
 							type: 'error',
 							actionLabel: 'Back to Login',
 							onAction: () => router.push('/auth'),
 						});
-
 						return;
 					}
-
-					// Remove the code from the URL to prevent reusing it
-					const newUrl = new URL(window.location.href);
-					newUrl.searchParams.delete('code');
-					newUrl.searchParams.delete('type');
-					window.history.replaceState({}, '', newUrl.toString());
 				}
 
 				// Valid if we have a code parameter and it's a recovery type, or if we have a hash fragment with access token
@@ -97,6 +139,7 @@ function ResetPasswordContent() {
 					hasAccessToken;
 
 				if (!isValid) {
+					console.error('No valid token parameters found in URL');
 					setIsTokenValid(false);
 
 					// Show error dialog for missing token
@@ -111,16 +154,16 @@ function ResetPasswordContent() {
 					});
 				} else if (hasAccessToken) {
 					// If we have an access token in the hash, we need to set the session
-					console.log('Found access token in URL hash');
-
-					// The hash contains all the session data we need
-					// Supabase will automatically use this when we call updateUser
+					console.log('Found access token in URL hash, continuing with reset');
 					setIsTokenValid(true);
 				} else {
 					// Check if we have a valid session for password reset
+					console.log('Checking for valid session');
 					const { data, error } = await supabase.auth.getSession();
+					console.log('Session check result:', { data, error });
+
 					if (error || !data.session) {
-						console.log('No valid session for password reset');
+						console.error('No valid session for password reset:', error);
 						setIsTokenValid(false);
 
 						// Show error dialog for invalid session
@@ -134,6 +177,7 @@ function ResetPasswordContent() {
 							onAction: () => router.push('/auth'),
 						});
 					} else {
+						console.log('Valid session found, proceeding with password reset');
 						setIsTokenValid(true);
 					}
 				}
@@ -170,29 +214,49 @@ function ResetPasswordContent() {
 				onAction: () => {},
 			});
 
+			console.log('Attempting to reset password');
+
 			// Check if we have an access token in the hash
 			const hasAccessToken =
 				window.location.hash &&
 				window.location.hash.includes('access_token=') &&
 				window.location.hash.includes('type=recovery');
 
+			console.log('Has access token in hash?', hasAccessToken);
+
 			let error = null;
+
+			// Check current session state
+			const { data: sessionData } = await supabase.auth.getSession();
+			console.log('Current session before password update:', sessionData);
 
 			if (hasAccessToken) {
 				console.log('Using access token from hash for password reset');
 				// When we have the access token in the URL, we can directly call updateUser
 				// Supabase client will automatically use the token from the URL
-				const { error: directError } = await supabase.auth.updateUser({
+				const updateResult = await supabase.auth.updateUser({
 					password,
 				});
-				error = directError;
+				console.log('Direct updateUser result:', updateResult);
+				error = updateResult.error;
 			} else {
 				// Use the normal method through our AuthProvider
-				const { error: authError } = await updatePassword(password);
-				error = authError;
+				console.log('Using auth provider for password reset');
+				const updateResult = await updatePassword(password);
+				console.log('AuthProvider updatePassword result:', updateResult);
+				error = updateResult.error;
 			}
 
-			if (error) throw error;
+			if (error) {
+				console.error('Password update error:', error);
+				throw error;
+			}
+
+			console.log('Password update successful');
+
+			// Check session after update
+			const postUpdateSession = await supabase.auth.getSession();
+			console.log('Session after password update:', postUpdateSession);
 
 			// Show success dialog
 			setFeedbackDialog({
@@ -219,8 +283,9 @@ function ResetPasswordContent() {
 				title: 'Password Reset Failed',
 				message: error.message || 'Failed to reset password. Please try again.',
 				type: 'error',
-				actionLabel: '',
-				onAction: () => {},
+				actionLabel: 'Try Again',
+				onAction: () =>
+					setFeedbackDialog((prev) => ({ ...prev, isOpen: false })),
 			});
 
 			return { success: false, error };

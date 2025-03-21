@@ -423,11 +423,22 @@ export async function getCongressEPosters(congress: any): Promise<string[]> {
 		`Folder path for congress e-posters "${congress.title}": ${validFolderPath}`
 	);
 
-	// If congress.eposters is an array of filenames
-	if (Array.isArray(congress.eposters) && congress.eposters.length > 0) {
-		console.log(`Congress has ${congress.eposters.length} e-posters`);
+	// If congress.e-posters is an array of filenames
+	if (Array.isArray(congress.e_posters) && congress.e_posters.length > 0) {
+		console.log(`Congress has ${congress.e_posters.length} e-posters`);
 
 		// Generate paths for all e-posters
+		return congress.e_posters.map(
+			(filename: string) => `${validFolderPath}/e-posters/${filename}`
+		);
+	}
+
+	// For backward compatibility, check if eposters field exists (without underscore)
+	if (Array.isArray(congress.eposters) && congress.eposters.length > 0) {
+		console.log(
+			`Congress has ${congress.eposters.length} e-posters (using eposters field)`
+		);
+
 		return congress.eposters.map(
 			(filename: string) => `${validFolderPath}/e-posters/${filename}`
 		);

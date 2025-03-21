@@ -32,7 +32,7 @@ For each congress, images should be stored in the following structure:
 In Supabase, the congress record should include:
 
 - `images`: A number indicating how many sequentially numbered images (1.jpg, 2.jpg, etc.) exist in the photos directory
-- `eposters`: An array of filenames to be loaded from the e-posters directory
+- `e_posters`: An array of filenames to be loaded from the e-posters directory
 - `image`: (Optional) A fallback image URL if no photos are found
 - `banner`: (Optional) Another fallback image option
 
@@ -41,7 +41,7 @@ In Supabase, the congress record should include:
 1. The application constructs the folder path based on the congress metadata (date, location, title)
 2. If `congress.images` is a number > 0, it generates paths for each numbered image (1.jpg, 2.jpg, etc.)
 3. For poster display, it tries to load `1.pdf` or `1.ppt` from the congress folder
-4. For e-posters, it constructs paths for each filename in the `congress.eposters` array
+4. For e-posters, it constructs paths for each filename in the `congress.e_posters` array
 5. If no images are found, it falls back to the `congress.image` or `congress.banner` fields
 6. As a last resort, it uses a default image
 
@@ -74,7 +74,7 @@ When adding a new congress:
 4. Add e-posters to the `e-posters` subdirectory with descriptive filenames
 5. Update the database record with:
    - The correct `images` count (number of photos)
-   - The array of e-poster filenames in `eposters` field
+   - The array of e-poster filenames in `e_posters` field
 
 ## Troubleshooting
 

@@ -19,6 +19,7 @@ export const supabase = createClient<Database>(
 			autoRefreshToken: true,
 			detectSessionInUrl: true,
 			flowType: 'pkce',
+			debug: true,
 			storage: {
 				getItem: (key) => {
 					if (typeof window !== 'undefined') {
