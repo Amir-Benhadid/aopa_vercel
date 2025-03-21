@@ -6,7 +6,8 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"find-large-files": "node scripts/find-large-files.js 5 public"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",

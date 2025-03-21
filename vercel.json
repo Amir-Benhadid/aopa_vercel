@@ -1,0 +1,7 @@
+{
+	"functions": {
+		"api/**/*": {
+			"excludeFiles": "public/previous_congresses/**/*.{pdf,docx,pptx}"
+		}
+	}
+}

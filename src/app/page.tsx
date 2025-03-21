@@ -16,7 +16,7 @@ import {
 	getPreviousCongress,
 	getUpcomingCongress,
 } from '@/lib/api';
-import { getCongressFolderPath } from '@/lib/utils';
+import { getCongressFolderPath, getCongressPhotos } from '@/lib/utils';
 import { Activity, Congress, Report } from '@/types/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -61,56 +61,16 @@ export default function Home() {
 		return newArray;
 	};
 
-	// Function to load images from a congress folder
+	// Function to load images from a congress folder - replace with our new utility
 	const loadCongressImages = async (congress: Congress) => {
-		// Get the location name safely
-		let locationName = '';
-		if (congress.location) {
-			if (typeof congress.location === 'object') {
-				locationName = congress.location.name || '';
-			} else if (typeof congress.location === 'string') {
-				locationName = congress.location;
-			}
-		}
-
-		const folderPath = getCongressFolderPath({
-			start_date: congress.start_date,
-			title: congress.title,
-			location: locationName,
-		});
-
-		if (!folderPath)
+		try {
+			// Use our helper function to get photos from the congress
+			return await getCongressPhotos(congress);
+		} catch (error) {
+			console.error('Error loading congress images:', error);
+			// Return a fallback image if there's an error
 			return [congress.image || '/images/congress-default-banner.jpg'];
-
-		// For Vercel deployment, we can't use the API to dynamically list files
-		// Instead, check if we have images in the congress.images array
-		if (congress.images && congress.images.length > 0) {
-			// Use predefined images from the Congress object if available
-			return congress.images.map((imagePath) => {
-				// If the path is already a full URL, use it directly
-				if (imagePath.startsWith('http')) {
-					return imagePath;
-				}
-				// If path starts with a slash, make sure it points to the public directory
-				if (imagePath.startsWith('/')) {
-					return imagePath;
-				}
-				// Otherwise, construct the proper path with the congress folder without the '/photos' segment
-				return `${folderPath}/${imagePath}`;
-			});
 		}
-
-		// Fallback - if we don't have predefined images, try the banner or default
-		if (congress.banner) {
-			return [congress.banner];
-		}
-
-		if (congress.image) {
-			return [congress.image];
-		}
-
-		// Ultimate fallback
-		return ['/images/congress-default-banner.jpg'];
 	};
 
 	// Handle carousel navigation

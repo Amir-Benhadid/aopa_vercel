@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { useCongress } from '@/contexts/CongressContext';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getCongressImage } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -22,63 +22,53 @@ interface EventCardProps {
 export function EventCard({ congress }: EventCardProps) {
 	const { setCurrentCongressId } = useCongress();
 	const [posterImage, setPosterImage] = useState<string | null>(null);
+	const [imageError, setImageError] = useState<boolean>(false);
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		// Try to find the congress folder and check if affiche.pdf exists
-		// Only attempt to get folder path if location is defined
-		if (congress.location) {
-			// Create folder path manually instead of using getCongressFolderPath
-			const startDate = new Date(congress.start_date);
-			const dateStr = startDate.toISOString().slice(0, 10).replace(/-/g, '');
-			const titleFormatted = congress.title.replace(/\s+/g, '_').toLowerCase();
-			const cityFormatted = congress.location
-				.replace(/\s+/g, '_')
-				.toLowerCase();
-
-			const folderPath = `/previous_congresses/${dateStr}-${titleFormatted}-${cityFormatted}`;
-
-			if (folderPath) {
-				const affichePath = `${folderPath}/affiche.pdf`;
-
-				// Check if affiche.pdf exists using our API endpoint
-				fetch(
-					`/api/fileExists?path=${encodeURIComponent(affichePath.slice(1))}`
-				)
-					.then((res) => res.json())
-					.then((data) => {
-						if (data.exists) {
-							// If affiche.pdf exists, use it as the poster image
-							// We'll use a thumbnail version or the first page
-							setPosterImage(`${folderPath}/affiche.pdf#page=1`);
-						} else if (congress.image) {
-							// Fallback to congress.image if available
-							setPosterImage(congress.image);
-						}
-					})
-					.catch(() => {
-						// If there's an error, fallback to congress.image if available
-						if (congress.image) {
-							setPosterImage(congress.image);
-						}
-					});
+		// Load congress image using our utility function
+		const loadImage = async () => {
+			try {
+				// Get the best available image for this congress
+				const imagePath = await getCongressImage(congress);
+				setPosterImage(imagePath);
+			} catch (error) {
+				console.error('Error loading image for EventCard:', error);
+				// Fallback to default or congress.image
+				if (congress.image) {
+					setPosterImage(congress.image);
+				} else {
+					setPosterImage('/images/congress-default.jpg');
+				}
 			}
-		} else if (congress.image) {
-			// If no location, fallback to congress.image if available
-			setPosterImage(congress.image);
-		}
+		};
+
+		loadImage();
 	}, [congress]);
+
+	// Handle image loading errors
+	const handleImageError = () => {
+		setImageError(true);
+		// Fall back to a default image or placeholder
+		if (congress.image && posterImage !== congress.image) {
+			setPosterImage(congress.image);
+		} else {
+			// If congress.image is already failing or not available, use a placeholder
+			setPosterImage('/images/congress-default.jpg');
+		}
+	};
 
 	return (
 		<Card className="overflow-hidden">
 			<div className="relative h-48 bg-gradient-to-r from-primary-600 to-primary-400">
-				{posterImage && (
+				{posterImage && !imageError ? (
 					<div className="absolute inset-0">
 						{posterImage.endsWith('.pdf#page=1') ? (
 							<iframe
 								src={posterImage}
 								className="w-full h-full"
 								title={`${t('congress.affiche')}: ${congress.title}`}
+								onError={() => handleImageError()}
 							/>
 						) : (
 							<Image
@@ -87,8 +77,16 @@ export function EventCard({ congress }: EventCardProps) {
 								fill
 								className="object-cover"
 								sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+								onError={handleImageError}
 							/>
 						)}
+					</div>
+				) : (
+					// Placeholder when no image is available or there's an error
+					<div className="absolute inset-0 flex items-center justify-center">
+						<div className="text-white/80 text-lg font-medium">
+							{congress.title}
+						</div>
 					</div>
 				)}
 			</div>

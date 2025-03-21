@@ -214,3 +214,136 @@ function extractCityFromLocation(location: string): string {
 	// Fallback to just the first part
 	return parts[0].trim();
 }
+
+/**
+ * Helper function to check if an image or file exists in the congress directory
+ * This is designed to work with our optimized fileExists API
+ */
+export async function checkFileExists(path: string): Promise<boolean> {
+	try {
+		// Remove leading slash if present for the API call
+		const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+
+		// Use our API endpoint to check if the file exists
+		const response = await fetch(
+			`/api/fileExists?path=${encodeURIComponent(normalizedPath)}`
+		);
+		const data = await response.json();
+
+		return data.exists;
+	} catch (error) {
+		console.error('Error checking file existence:', error);
+		return false;
+	}
+}
+
+/**
+ * Gets the best available image for a congress
+ * Tries multiple options in order of preference:
+ * 1. JPG poster (affiche.jpg)
+ * 2. PDF poster (affiche.pdf)
+ * 3. Banner from congress object
+ * 4. Image from congress object
+ * 5. Default fallback image
+ */
+export async function getCongressImage(congress: any): Promise<string> {
+	// First get the folder path
+	let locationName = '';
+	if (congress.location) {
+		if (typeof congress.location === 'object') {
+			locationName = congress.location.name || '';
+		} else if (typeof congress.location === 'string') {
+			locationName = congress.location;
+		}
+	}
+
+	const folderPath = getCongressFolderPath({
+		start_date: congress.start_date,
+		title: congress.title,
+		location: locationName,
+	});
+
+	if (!folderPath) {
+		// If we can't determine the folder path, use fallbacks
+		return congress.image || congress.banner || '/images/congress-default.jpg';
+	}
+
+	// Try JPG poster first (preferred for web)
+	const jpgPath = `${folderPath}/affiche.jpg`;
+	const jpgExists = await checkFileExists(jpgPath);
+	if (jpgExists) {
+		return jpgPath;
+	}
+
+	// Then try PDF poster
+	const pdfPath = `${folderPath}/affiche.pdf`;
+	const pdfExists = await checkFileExists(pdfPath);
+	if (pdfExists) {
+		return `${pdfPath}#page=1`;
+	}
+
+	// Fall back to congress.banner or congress.image or default
+	return congress.banner || congress.image || '/images/congress-default.jpg';
+}
+
+/**
+ * Load images from a congress photos directory
+ * Returns an array of image paths that exist
+ */
+export async function getCongressPhotos(congress: any): Promise<string[]> {
+	// First get the folder path
+	let locationName = '';
+	if (congress.location) {
+		if (typeof congress.location === 'object') {
+			locationName = congress.location.name || '';
+		} else if (typeof congress.location === 'string') {
+			locationName = congress.location;
+		}
+	}
+
+	const folderPath = getCongressFolderPath({
+		start_date: congress.start_date,
+		title: congress.title,
+		location: locationName,
+	});
+
+	if (!folderPath) {
+		// If we can't determine the folder path, use fallbacks
+		return (
+			congress.images || [congress.image || '/images/congress-default.jpg']
+		);
+	}
+
+	// Use our API endpoint to get directory contents
+	const photosPath = `${folderPath}/photos`;
+	try {
+		const response = await fetch(
+			`/api/getDirectoryContents?path=${encodeURIComponent(
+				photosPath.slice(1)
+			)}`
+		);
+
+		if (response.ok) {
+			const files = await response.json();
+
+			// Filter for image files
+			const imageFiles = files.filter((file: string) =>
+				file.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+			);
+
+			if (imageFiles.length > 0) {
+				// Return full paths to the images
+				return imageFiles.map((file: string) => `${photosPath}/${file}`);
+			}
+		}
+	} catch (error) {
+		console.error('Error fetching congress photos:', error);
+	}
+
+	// Fallbacks
+	if (congress.images && congress.images.length > 0) {
+		return congress.images;
+	}
+
+	return [await getCongressImage(congress)];
+}

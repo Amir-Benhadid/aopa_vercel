@@ -104,3 +104,24 @@ yarn dev
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Deployment
+
+This project can be deployed to Vercel.
+
+### Handling Large Files
+
+When deploying to Vercel, be aware of the 300MB size limit for serverless functions. Large files in your public directory (especially PDFs and images) might cause deployment errors if they are referenced by API routes.
+
+We've implemented solutions to avoid these issues:
+
+1. Using URL-based file access instead of direct filesystem access in API routes
+2. Configuring `vercel.json` to exclude large directories from API bundles
+
+To identify large files before deployment:
+
+```bash
+npm run find-large-files
+```
+
+For more details, see [LARGE_FILES.md](./docs/LARGE_FILES.md).

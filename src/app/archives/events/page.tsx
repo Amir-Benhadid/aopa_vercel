@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { getPastCongresses } from '@/lib/api';
-import { getCongressFolderPath } from '@/lib/utils';
+import { getCongressFolderPath, getCongressPhotos } from '@/lib/utils';
 import { Congress } from '@/types/database';
 import { motion } from 'framer-motion';
 import {
@@ -83,61 +83,18 @@ export default function EventsArchivePage() {
 		fetchPastEvents();
 	}, []);
 
-	// Load images for a congress from its folder
+	// Load images for a congress from its folder - replace with our new utility
 	const loadCongressImages = async (congress: Congress) => {
-		// Get the location name safely
-		let locationName = '';
-		if (congress.location) {
-			if (typeof congress.location === 'object') {
-				locationName = congress.location.name || '';
-			} else if (typeof congress.location === 'string') {
-				locationName = congress.location;
-			}
+		try {
+			// Use our helper function to get photos from the congress
+			return await getCongressPhotos(congress);
+		} catch (error) {
+			console.error('Error loading congress images:', error);
+			// Return a fallback image if there's an error
+			if (congress.banner) return [congress.banner];
+			if (congress.image) return [congress.image];
+			return ['/images/default-congress.jpg'];
 		}
-
-		const folderPath = getCongressFolderPath({
-			start_date: congress.start_date,
-			title: congress.title,
-			location: locationName,
-		});
-
-		if (!folderPath) return [congress.image || '/images/default-congress.jpg'];
-
-		if (congress.images && congress.images.length > 0) {
-			// Use predefined images and prepend the 'photos' subfolder
-			return congress.images.map((imagePath) => {
-				if (imagePath.startsWith('http')) return imagePath;
-				if (imagePath.startsWith('/')) return imagePath;
-				return `${folderPath}/photos/${imagePath}`;
-			});
-		} else {
-			// No predefined images, so try to fetch from the folder's 'photos' subfolder using the API
-			const photosPath = `${folderPath}/photos`;
-			try {
-				const res = await fetch(
-					`/api/getDirectoryContents?path=${encodeURIComponent(
-						photosPath.slice(1)
-					)}`,
-					{ cache: 'no-store' }
-				);
-				if (res.ok) {
-					const files = await res.json();
-					const imageFiles = files.filter((file: string) =>
-						file.match(/\.(jpg|jpeg|png)$/i)
-					);
-					if (imageFiles.length > 0) {
-						return imageFiles.map((file: string) => `${photosPath}/${file}`);
-					}
-				}
-			} catch (err) {
-				console.error('Error fetching event images:', err);
-			}
-		}
-
-		// Fallbacks if no images are found
-		if (congress.banner) return [congress.banner];
-		if (congress.image) return [congress.image];
-		return ['/images/default-congress.jpg'];
 	};
 
 	// Format date range
