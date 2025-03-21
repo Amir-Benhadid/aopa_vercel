@@ -751,7 +751,8 @@
 		"viewAllEvents": "View All Events",
 		"viewAllPosters": "View All Posters",
 		"viewAllWebinars": "View All Webinars",
-		"viewDetails": "View Details"
+		"viewDetails": "View Details",
+		"viewDocument": "View Document"
 	},
 	"reports": {
 		"download": "Download",

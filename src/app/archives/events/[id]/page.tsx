@@ -129,37 +129,56 @@ export default function CongressDetailPage() {
 					if (folderPath) {
 						// Check if photos folder exists and load images
 						try {
-							const photosPath = `${folderPath}/photos`;
-
-							// Use our API endpoint to get directory contents
-							const imageFilesResponse = await fetch(
-								`/api/getDirectoryContents?path=${encodeURIComponent(
-									photosPath.slice(1)
-								)}`,
-								{
-									cache: 'no-store', // Ensure we don't cache the results
-								}
-							);
-
-							if (imageFilesResponse.ok) {
-								const imageFiles = await imageFilesResponse.json();
-
-								// Filter for JPG images only (not NEF or other formats)
-								const filteredFiles = imageFiles.filter(
-									(file: string) =>
-										file.toLowerCase().endsWith('.jpg') ||
-										file.toLowerCase().endsWith('.jpeg') ||
-										file.toLowerCase().endsWith('.png')
+							// Use getCongressPhotos function to get images based on the numeric count
+							if (
+								typeof congressData.images === 'number' &&
+								congressData.images > 0
+							) {
+								console.log(
+									`Congress has ${congressData.images} numbered images from database`
 								);
-
-								// Create full paths for images
-								const images = filteredFiles.map(
-									(file: string) => `${photosPath}/${file}`
+								const photosFromDb = await import('@/lib/utils').then((m) =>
+									m.getCongressPhotos(congressData)
 								);
-								setCongressImages(images);
+								console.log(
+									'Loaded photos using getCongressPhotos:',
+									photosFromDb
+								);
+								setCongressImages(photosFromDb);
 							} else {
-								// Fallback to default images if needed
-								setCongressImages(congressData.images || []);
+								// Fallback to directory listing if no images count in DB
+								const photosPath = `${folderPath}/photos`;
+
+								// Use our API endpoint to get directory contents
+								const imageFilesResponse = await fetch(
+									`/api/getDirectoryContents?path=${encodeURIComponent(
+										photosPath.slice(1)
+									)}`,
+									{
+										cache: 'no-store', // Ensure we don't cache the results
+									}
+								);
+
+								if (imageFilesResponse.ok) {
+									const imageFiles = await imageFilesResponse.json();
+
+									// Filter for JPG images only (not NEF or other formats)
+									const filteredFiles = imageFiles.filter(
+										(file: string) =>
+											file.toLowerCase().endsWith('.jpg') ||
+											file.toLowerCase().endsWith('.jpeg') ||
+											file.toLowerCase().endsWith('.png')
+									);
+
+									// Create full paths for images
+									const images = filteredFiles.map(
+										(file: string) => `${photosPath}/${file}`
+									);
+									setCongressImages(images);
+								} else {
+									// Fallback to default images if needed
+									setCongressImages(congressData.images || []);
+								}
 							}
 						} catch (err) {
 							console.error('Error loading congress images:', err);
@@ -211,31 +230,48 @@ export default function CongressDetailPage() {
 						try {
 							const ePostersPath = `${folderPath}/e-posters`;
 
-							// Use our API endpoint to get directory contents
-							const ePostersResponse = await fetch(
-								`/api/getDirectoryContents?path=${encodeURIComponent(
-									ePostersPath.slice(1)
-								)}`,
-								{
-									cache: 'no-store', // Ensure we don't cache the results
-								}
-							);
-
-							if (ePostersResponse.ok) {
-								const posterFiles = await ePostersResponse.json();
-
-								// Filter for PDF files
-								const filteredFiles = posterFiles.filter((file: string) =>
-									file.toLowerCase().endsWith('.pdf')
+							// Use getCongressEPosters function to get e-posters
+							if (
+								congressData['e-posters'] &&
+								Array.isArray(congressData['e-posters']) &&
+								congressData['e-posters'].length > 0
+							) {
+								console.log(
+									'E-posters from database:',
+									congressData['e-posters']
 								);
-
-								// Create full paths for e-posters
-								const posters = filteredFiles.map(
-									(file: string) => `${ePostersPath}/${file}`
+								const ePostersFromDb = await import('@/lib/utils').then((m) =>
+									m.getCongressEPosters(congressData)
 								);
-								setEPosters(posters);
+								console.log('Loaded e-posters:', ePostersFromDb);
+								setEPosters(ePostersFromDb);
 							} else {
-								setEPosters([]);
+								// Fallback to directory listing if no e-posters in DB
+								const ePostersResponse = await fetch(
+									`/api/getDirectoryContents?path=${encodeURIComponent(
+										ePostersPath.slice(1)
+									)}`,
+									{
+										cache: 'no-store', // Ensure we don't cache the results
+									}
+								);
+
+								if (ePostersResponse.ok) {
+									const posterFiles = await ePostersResponse.json();
+
+									// Filter for PDF files
+									const filteredFiles = posterFiles.filter((file: string) =>
+										file.toLowerCase().endsWith('.pdf')
+									);
+
+									// Create full paths for e-posters
+									const posters = filteredFiles.map(
+										(file: string) => `${ePostersPath}/${file}`
+									);
+									setEPosters(posters);
+								} else {
+									setEPosters([]);
+								}
 							}
 						} catch (err) {
 							console.error('Error loading e-posters:', err);

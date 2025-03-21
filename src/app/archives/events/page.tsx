@@ -61,7 +61,7 @@ export default function EventsArchivePage() {
 
 				// Load images for all congresses
 				const imagesPromises = pastCongresses.map(async (congress) => {
-					const images = await loadCongressImages(congress);
+					const { images } = await loadCongressImages(congress);
 					return { id: congress.id, images };
 				});
 
@@ -87,7 +87,7 @@ export default function EventsArchivePage() {
 	async function loadCongressImages(congress: any) {
 		try {
 			if (!congress) {
-				return ['/images/congress-default.jpg'];
+				return { images: ['/images/congress-default.jpg'], current: 0 };
 			}
 
 			// If congress.images is a number, generate paths for 1.jpg, 2.jpg, etc.
@@ -110,9 +110,14 @@ export default function EventsArchivePage() {
 
 				if (!folderPath) {
 					// Fallback if we can't determine the folder path
-					return [
-						congress.image || congress.banner || '/images/congress-default.jpg',
-					];
+					return {
+						images: [
+							congress.image ||
+								congress.banner ||
+								'/images/congress-default.jpg',
+						],
+						current: 0,
+					};
 				}
 
 				// Ensure folder path has leading slash
@@ -126,20 +131,24 @@ export default function EventsArchivePage() {
 					images.push(`${validFolderPath}/photos/${i}.jpg`);
 				}
 
-				return images;
+				return { images, current: 0 };
 			}
 
 			// For backward compatibility, if congress.images is an array
 			if (Array.isArray(congress.images) && congress.images.length > 0) {
-				return congress.images;
+				return { images: congress.images, current: 0 };
 			}
 
 			// Fallback to a single image
-			return [
-				congress.image || congress.banner || '/images/congress-default.jpg',
-			];
+			return {
+				images: [
+					congress.image || congress.banner || '/images/congress-default.jpg',
+				],
+				current: 0,
+			};
 		} catch (error) {
-			return ['/images/congress-default.jpg'];
+			console.error('Error loading congress images:', error);
+			return { images: ['/images/congress-default.jpg'], current: 0 };
 		}
 	}
 

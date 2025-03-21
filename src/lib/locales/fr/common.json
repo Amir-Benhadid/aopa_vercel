@@ -752,7 +752,9 @@
 		"searchArchives": "Rechercher dans les archives...",
 		"viewAllEvents": "Voir tous les événements",
 		"viewAllPosters": "Voir toutes les affiches",
-		"viewAllWebinars": "Voir tous les webinaires"
+		"viewAllWebinars": "Voir tous les webinaires",
+		"viewDetails": "Voir les détails",
+		"viewDocument": "Voir le document"
 	},
 	"reports": {
 		"download": "Télécharger",

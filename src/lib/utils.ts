@@ -433,6 +433,20 @@ export async function getCongressEPosters(congress: any): Promise<string[]> {
 		);
 	}
 
+	// Check if e-posters field exists (with dash)
+	if (
+		Array.isArray(congress['e-posters']) &&
+		congress['e-posters'].length > 0
+	) {
+		console.log(
+			`Congress has ${congress['e-posters'].length} e-posters (using e-posters field)`
+		);
+
+		return congress['e-posters'].map(
+			(filename: string) => `${validFolderPath}/e-posters/${filename}`
+		);
+	}
+
 	// For backward compatibility, check if eposters field exists (without underscore)
 	if (Array.isArray(congress.eposters) && congress.eposters.length > 0) {
 		console.log(

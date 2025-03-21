@@ -69,21 +69,78 @@ export default function EPostersArchivePage() {
 					const congressYear = new Date(congress.start_date).getFullYear();
 					years.add(congressYear.toString());
 
-					// Get the congress folder path
-					const folderPath = getCongressFolderPath({
-						start_date: congress.start_date,
-						title: congress.title,
-						location:
-							typeof congress.location === 'string'
-								? congress.location
-								: congress.location?.name || '',
-					});
-
-					if (!folderPath) continue;
-
-					// Get e-posters from the folder
-					const ePostersPath = `${folderPath}/e-posters`;
 					try {
+						// First try to get e-posters from the database field
+						if (
+							congress.eposters &&
+							Array.isArray(congress.eposters) &&
+							congress.eposters.length > 0
+						) {
+							console.log(
+								`Congress ${congress.id} has e-posters in database field`
+							);
+							const ePosterPaths = await import('@/lib/utils').then((m) =>
+								m.getCongressEPosters(congress)
+							);
+							console.log('Loaded e-posters paths:', ePosterPaths);
+
+							if (ePosterPaths && ePosterPaths.length > 0) {
+								ePosterPaths.forEach((posterPath: string, index: number) => {
+									const fileName = posterPath.split('/').pop() || '';
+									const posterName = fileName
+										.replace(/_/g, ' ')
+										.replace('.pdf', '');
+
+									// Extract category from filename if possible (e.g., "Glaucoma - Study Title.pdf")
+									let category = 'General';
+									let title = posterName;
+									if (posterName.includes(' - ')) {
+										const parts = posterName.split(' - ');
+										category = parts[0].trim();
+										title = parts.slice(1).join(' - ').trim();
+										categories.add(category);
+									}
+
+									const posterId = `${congress.id}-poster-${index}`;
+									initialImageIndices[posterId] = 0;
+
+									// Set a default thumbnail image based on category
+									posterImagesMap[posterId] = [
+										`/images/poster-thumbnails/${category
+											.toLowerCase()
+											.replace(/\s+/g, '-')}.jpg`,
+									];
+
+									allPosters.push({
+										id: posterId,
+										title: title,
+										congressId: congress.id,
+										congressTitle: congress.title,
+										path: posterPath,
+										year: congressYear,
+										category: category,
+										authors: '', // This would be populated from metadata if available
+									});
+								});
+								continue; // Skip directory listing if we found e-posters in the database
+							}
+						}
+
+						// Fallback to checking directory contents if no e-posters in database
+						// Get the congress folder path
+						const folderPath = getCongressFolderPath({
+							start_date: congress.start_date,
+							title: congress.title,
+							location:
+								typeof congress.location === 'string'
+									? congress.location
+									: congress.location?.name || '',
+						});
+
+						if (!folderPath) continue;
+
+						// Get e-posters from the folder
+						const ePostersPath = `${folderPath}/e-posters`;
 						const response = await fetch(
 							`/api/getDirectoryContents?path=${encodeURIComponent(
 								ePostersPath.slice(1)
@@ -145,7 +202,11 @@ export default function EPostersArchivePage() {
 							allPosters.push(...posters);
 						}
 					} catch (err) {
-						console.error('Error loading e-posters:', err);
+						console.error(
+							`Error loading e-posters for congress ${congress.id}:`,
+							err
+						);
+						console.log(`Attempting to continue with next congress...`);
 					}
 				}
 
@@ -397,54 +458,83 @@ export default function EPostersArchivePage() {
 														rel="noopener noreferrer"
 														className="block h-full"
 													>
-														<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
-															<div className="h-48 relative overflow-hidden">
-																{posterImages[poster.id] ? (
-																	<div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600">
-																		<img
-																			src={posterImages[poster.id][0]}
-																			alt={poster.title}
-																			className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
-																		/>
-																	</div>
-																) : (
-																	<div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-																		<FileText className="w-16 h-16 text-white/70" />
-																	</div>
-																)}
-																<div className="absolute top-3 right-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 text-xs font-medium py-1 px-2 rounded-full">
-																	PDF
-																</div>
-																<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-																<div className="absolute bottom-0 left-0 p-4">
-																	<div className="flex items-center">
-																		<span className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-																			{poster.year}
+														<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 h-full flex flex-col border border-gray-200 dark:border-gray-700">
+															{/* Document header with file type */}
+															<div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+																<div className="flex items-center">
+																	{poster.path
+																		.toLowerCase()
+																		.endsWith('.pdf') ? (
+																		<div className="w-10 h-10 flex items-center justify-center bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded">
+																			<FileText className="w-6 h-6" />
+																		</div>
+																	) : poster.path
+																			.toLowerCase()
+																			.endsWith('.ppt') ||
+																	  poster.path
+																			.toLowerCase()
+																			.endsWith('.pptx') ? (
+																		<div className="w-10 h-10 flex items-center justify-center bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded">
+																			<FileText className="w-6 h-6" />
+																		</div>
+																	) : (
+																		<div className="w-10 h-10 flex items-center justify-center bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
+																			<FileText className="w-6 h-6" />
+																		</div>
+																	)}
+																	<div className="ml-3">
+																		<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+																			{poster.path
+																				.toLowerCase()
+																				.endsWith('.pdf')
+																				? 'PDF Document'
+																				: poster.path
+																						.toLowerCase()
+																						.endsWith('.ppt')
+																				? 'PowerPoint'
+																				: poster.path
+																						.toLowerCase()
+																						.endsWith('.pptx')
+																				? 'PowerPoint'
+																				: 'Document'}
 																		</span>
-																		{poster.category && (
-																			<span className="ml-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded text-xs">
-																				{poster.category}
-																			</span>
-																		)}
 																	</div>
 																</div>
+																<span className="bg-blue-600 text-white text-xs font-medium py-1 px-2 rounded">
+																	{poster.year}
+																</span>
 															</div>
-															<div className="p-5 flex-grow">
-																<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-																	{poster.title}
-																</h3>
-																<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-																	{poster.congressTitle}
-																</p>
-																{poster.authors && (
-																	<p className="text-gray-500 dark:text-gray-500 text-xs italic">
-																		{poster.authors}
+
+															{/* Document content */}
+															<div className="p-5 flex-grow flex flex-col">
+																<div className="mb-3 flex-grow">
+																	<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+																		{poster.title}
+																	</h3>
+																	<p className="text-gray-600 dark:text-gray-400 text-sm">
+																		{poster.congressTitle}
 																	</p>
-																)}
+																</div>
+
+																{/* Categories and tags */}
+																<div className="mt-2">
+																	{poster.category && (
+																		<span className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded mr-2 mb-2">
+																			{poster.category}
+																		</span>
+																	)}
+																	{poster.authors && (
+																		<p className="text-gray-500 dark:text-gray-500 text-xs italic mt-2">
+																			{poster.authors}
+																		</p>
+																	)}
+																</div>
 															</div>
-															<div className="px-5 pb-5 pt-0">
+
+															{/* Action footer */}
+															<div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
 																<div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
-																	{t('archives.viewPoster')}
+																	{t('archives.viewDocument')}
 																	<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 																</div>
 															</div>
