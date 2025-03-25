@@ -14,7 +14,7 @@ export default function HeroSection() {
 			{/* Parallax Background */}
 			<motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
 				<Image
-					src="/images/hero-background.jpg"
+					src="/images/hero-background.svg"
 					alt="Contact us background"
 					fill
 					className="object-cover object-center"

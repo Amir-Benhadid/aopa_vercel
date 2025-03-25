@@ -2,6 +2,7 @@
 
 import { FeedbackDialog } from '@/components/auth/FeedbackDialog';
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { TextField } from '@/components/ui/TextField';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
@@ -458,13 +459,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
 	return (
-		<Suspense
-			fallback={
-				<div className="min-h-screen flex items-center justify-center">
-					Loading...
-				</div>
-			}
-		>
+		<Suspense fallback={<LoadingSpinner fullScreen message="Loading..." />}>
 			<ResetPasswordContent />
 		</Suspense>
 	);

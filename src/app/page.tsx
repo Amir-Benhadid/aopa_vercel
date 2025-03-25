@@ -19,13 +19,7 @@ import {
 import { getCongressEPosters, getCongressFolderPath } from '@/lib/utils';
 import { Activity, Congress, Report } from '@/types/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-	ArrowRight,
-	Calendar,
-	ChevronLeft,
-	ChevronRight,
-	Clock,
-} from 'lucide-react';
+import { ArrowRight, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -372,17 +366,6 @@ export default function Home() {
 															year: 'numeric',
 														}
 													)}
-												</span>
-											</div>
-											<div className="flex items-center">
-												<Clock className="w-5 h-5 text-blue-600 mr-3" />
-												<span className="text-gray-700 dark:text-gray-300">
-													{Math.ceil(
-														(new Date(pastCongress.start_date).getTime() -
-															new Date().getTime()) /
-															(1000 * 60 * 60 * 24)
-													)}{' '}
-													{t('congress.daysSince')}
 												</span>
 											</div>
 										</div>

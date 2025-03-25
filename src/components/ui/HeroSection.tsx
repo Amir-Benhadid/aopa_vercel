@@ -10,7 +10,7 @@ export function HeroSection() {
 		<section className="relative h-screen overflow-hidden">
 			<div className="absolute inset-0">
 				<Image
-					src="/hero-background.jpg"
+					src="/hero-background.svg"
 					alt={t('home.hero.backgroundAlt')}
 					layout="fill"
 					objectFit="cover"

@@ -35,10 +35,10 @@ export function HeroSection({
 			{/* Parallax Background Image */}
 			<motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
 				<Image
-					src="/images/hero-background.jpg"
+					src="/images/hero-background.png"
 					alt={t('home.hero.backgroundAlt')}
 					fill
-					className="object-cover object-center"
+					className="object-fill"
 					priority
 				/>
 				<div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80 mix-blend-multiply" />
