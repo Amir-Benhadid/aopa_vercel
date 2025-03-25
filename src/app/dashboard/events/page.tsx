@@ -18,7 +18,15 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Define types for our content
-type Activity = Database['public']['Tables']['activities']['Row'];
+type Activity = Database['public']['Tables']['activities']['Row'] & {
+	location?: string | null;
+};
+
+// Define type for tags
+type Tag = {
+	label: string;
+	color: 'blue' | 'green' | 'purple' | 'red' | 'yellow' | 'gray';
+};
 
 // Filter options
 type FilterTab = 'all' | 'upcoming' | 'ongoing' | 'past';
@@ -132,11 +140,11 @@ export default function EventsPage() {
 	};
 
 	// Create tag objects for activities
-	const getActivityTags = (activity: Activity) => {
-		const tags = [
+	const getActivityTags = (activity: Activity): Tag[] => {
+		const tags: Tag[] = [
 			{
 				label: activity.type,
-				color: 'green' as const,
+				color: 'green',
 			},
 		];
 
@@ -144,7 +152,7 @@ export default function EventsPage() {
 		if (activity.price && activity.price > 0) {
 			tags.push({
 				label: `$${activity.price}`,
-				color: 'purple' as const,
+				color: 'purple',
 			});
 		}
 
@@ -152,7 +160,7 @@ export default function EventsPage() {
 		if (activity.location) {
 			tags.push({
 				label: activity.location,
-				color: 'blue' as const,
+				color: 'blue',
 			});
 		}
 

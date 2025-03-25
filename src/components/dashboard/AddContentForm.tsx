@@ -7,6 +7,12 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ImageUploader from './ImageUploader';
 
+// Define Tag type
+type Tag = {
+	label: string;
+	color: 'blue' | 'green' | 'purple' | 'red' | 'yellow' | 'gray';
+};
+
 interface AddContentFormProps {
 	tableName: 'congresses' | 'activities';
 	onSuccess: () => void;
@@ -191,19 +197,19 @@ export default function AddContentForm({
 
 	// Get preview data for the event/congress
 	const getPreviewData = () => {
-		const baseTags = [];
+		const baseTags: Tag[] = [];
 
 		// Add type tag
 		baseTags.push({
 			label: type,
-			color: 'green' as const,
+			color: 'green',
 		});
 
 		// Add price tag for activities
 		if (tableName === 'activities' && parseFloat(price) > 0) {
 			baseTags.push({
 				label: `$${price}`,
-				color: 'purple' as const,
+				color: 'purple',
 			});
 		}
 
@@ -211,7 +217,7 @@ export default function AddContentForm({
 		if (location) {
 			baseTags.push({
 				label: location,
-				color: 'blue' as const,
+				color: 'blue',
 			});
 		}
 
@@ -534,9 +540,10 @@ export default function AddContentForm({
 								</label>
 								<ImageUploader
 									currentImageUrl={imageUrl}
-									onImageSelected={setImageUrl}
-									bucket="banners"
-									maxWidth={1200}
+									onImageUploaded={(url) => setImageUrl(url)}
+									tableName={tableName}
+									itemId="new-item"
+									aspectRatio="banner"
 								/>
 							</div>
 						)}
