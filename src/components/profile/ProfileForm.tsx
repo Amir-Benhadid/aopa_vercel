@@ -117,6 +117,14 @@ export function ProfileForm({
 		try {
 			if (!user) throw new Error('No user');
 
+			console.log('Starting profile update with data:', values);
+			console.log(
+				'isModal:',
+				isModal,
+				'onComplete callback present:',
+				!!onComplete
+			);
+
 			// First, check if account exists
 			const { data: existingAccount, error: accountCheckError } = await supabase
 				.from('accounts')
@@ -144,6 +152,7 @@ export function ProfileForm({
 
 			// Insert or update account
 			if (!existingAccount) {
+				console.log('Creating new account record');
 				const { data: newAccount, error: insertError } = await supabase
 					.from('accounts')
 					.insert([accountData])
@@ -153,6 +162,7 @@ export function ProfileForm({
 				if (insertError) throw insertError;
 				accountId = newAccount.id;
 			} else {
+				console.log('Updating existing account record');
 				const { error: updateError } = await supabase
 					.from('accounts')
 					.update(accountData)
@@ -182,12 +192,14 @@ export function ProfileForm({
 
 			// Insert or update professional info
 			if (!existingProfInfo) {
+				console.log('Creating new professional info record');
 				const { error: insertProfError } = await supabase
 					.from('professional_infos')
 					.insert([professionalData]);
 
 				if (insertProfError) throw insertProfError;
 			} else {
+				console.log('Updating existing professional info record');
 				const { error: updateProfError } = await supabase
 					.from('professional_infos')
 					.update(professionalData)
@@ -196,8 +208,9 @@ export function ProfileForm({
 				if (updateProfError) throw updateProfError;
 			}
 
-			// Update the user's display name in Auth
-			const { error: updateError } = await supabase.auth.updateUser({
+			// First update user metadata with only the profile attributes that go in metadata
+			console.log('Updating user metadata in Auth');
+			const { error: updateMetadataError } = await supabase.auth.updateUser({
 				data: {
 					name: values.name,
 					surname: values.surname,
@@ -205,16 +218,38 @@ export function ProfileForm({
 				},
 			});
 
-			if (updateError) throw updateError;
+			if (updateMetadataError) {
+				console.error('Failed to update user metadata:', updateMetadataError);
+				throw updateMetadataError;
+			}
 
+			// Then, refresh the session to ensure changes are propagated
+			console.log('Refreshing session after metadata update');
+			const { error: refreshError } = await supabase.auth.refreshSession();
+
+			if (refreshError) {
+				console.error(
+					'Failed to refresh session after profile update:',
+					refreshError
+				);
+				// Continue anyway since the database updates were successful
+			}
+
+			console.log('Profile updated successfully');
 			toast.success(t('profile.success.profileUpdated'));
 
-			if (onComplete) {
-				onComplete();
-			} else if (!isModal) {
-				router.push('/');
-			}
+			// Wait a moment before handling completion
+			setTimeout(() => {
+				if (onComplete) {
+					console.log('Executing onComplete callback');
+					onComplete();
+				} else if (!isModal) {
+					console.log('Redirecting to home page');
+					router.push('/');
+				}
+			}, 500);
 		} catch (error: any) {
+			console.error('Profile update error:', error);
 			toast.error(error.message || t('profile.errors.updateFailed'));
 		} finally {
 			setSubmitting(false);

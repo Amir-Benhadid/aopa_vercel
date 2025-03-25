@@ -50,14 +50,18 @@ export function ProfileSetupModal({
 					console.error('Error checking profile:', error);
 					// If error is 'not found', we need to show the modal
 					if (error.code === 'PGRST116') {
+						console.log('Profile not found, showing setup modal');
 						setIsOpen(true);
 					}
 				} else if (!data.name || !data.surname) {
 					// If profile exists but required fields are empty
+					console.log('Profile incomplete, showing setup modal');
 					setIsOpen(true);
+				} else {
+					console.log('Complete profile found, not showing modal');
 				}
 			} catch (error) {
-				console.error('Error:', error);
+				console.error('Error checking profile:', error);
 			} finally {
 				setLoading(false);
 			}
@@ -67,13 +71,24 @@ export function ProfileSetupModal({
 	}, [user, forceOpen]);
 
 	const closeModal = () => {
+		console.log('Closing profile setup modal');
 		setIsOpen(false);
-		onComplete?.();
+		if (onComplete) {
+			console.log('Executing onComplete callback from modal');
+			onComplete();
+		}
 	};
 
 	const handleLater = () => {
 		// Store a flag in localStorage to not show the modal again in this session
 		localStorage.setItem('profile_setup_skipped', 'true');
+		closeModal();
+	};
+
+	const handleProfileComplete = () => {
+		console.log('Profile setup completed successfully');
+		// Remove the skip flag if it exists since the profile is now set up
+		localStorage.removeItem('profile_setup_skipped');
 		closeModal();
 	};
 
@@ -130,7 +145,7 @@ export function ProfileSetupModal({
 
 									<ProfileForm
 										initialData={null}
-										onComplete={closeModal}
+										onComplete={handleProfileComplete}
 										isModal={true}
 									/>
 								</div>

@@ -43,6 +43,7 @@ interface TextFieldProps {
 	fullWidth?: boolean;
 	startAdornment?: React.ReactNode;
 	endAdornment?: React.ReactNode;
+	disabled?: boolean;
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(

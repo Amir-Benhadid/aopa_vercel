@@ -1,12 +1,19 @@
 'use client';
 
 import { supabase } from '@/lib/supabase';
-import { User as SupabaseUser } from '@supabase/supabase-js';
+import {
+	AuthChangeEvent,
+	Session,
+	User as SupabaseUser,
+} from '@supabase/supabase-js';
 import {
 	createContext,
 	ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
+	useRef,
 	useState,
 } from 'react';
 
@@ -18,21 +25,40 @@ interface User {
 	surname?: string;
 }
 
+// Define Auth State for better type safety and predictability
+type AuthState =
+	| { status: 'loading' }
+	| { status: 'authenticated'; user: User }
+	| { status: 'unauthenticated' };
+
 // Define the AuthContext type
 interface AuthContextType {
-	user: User | null;
+	authState: AuthState;
 	isLoading: boolean;
 	isAuthenticated: boolean;
-	login: (email: string, password: string) => Promise<any>;
+	user: User | null;
+	login: (email: string, password: string) => Promise<AuthResult>;
 	logout: () => Promise<void>;
 	register: (
 		email: string,
 		password: string,
 		name: string,
 		surname: string
-	) => Promise<any>;
-	resetPassword: (email: string) => Promise<{ error: any | null }>;
-	updatePassword: (password: string) => Promise<{ error: any | null }>;
+	) => Promise<AuthResult>;
+	resetPassword: (email: string) => Promise<AuthResult>;
+	updatePassword: (password: string) => Promise<AuthResult>;
+	refreshSession: () => Promise<void>;
+}
+
+// Extend the return type to include better error handling
+interface AuthResult {
+	success: boolean;
+	data?: any;
+	error?: {
+		message: string;
+		code: string;
+		description?: string;
+	};
 }
 
 // Create the AuthContext
@@ -59,33 +85,116 @@ const formatUser = (supabaseUser: SupabaseUser | null): User | null => {
 	};
 };
 
+// Helper for error codes
+const getErrorCode = (error: any): string => {
+	if (error.name === 'AuthApiError') {
+		return `auth/${error.message.toLowerCase().replace(/\s+/g, '-')}`;
+	}
+
+	// For common error messages, make them more consistent
+	if (error.message?.includes('Invalid login credentials')) {
+		return 'auth/invalid-login-credentials';
+	}
+	if (error.message?.includes('Email not confirmed')) {
+		return 'auth/email-not-confirmed';
+	}
+	if (error.message?.includes('User not found')) {
+		return 'auth/user-not-found';
+	}
+
+	return 'auth/unknown-error';
+};
+
 // Create the AuthProvider component
 interface AuthProviderProps {
 	children: ReactNode;
 }
 
+const DEBUG = process.env.NODE_ENV === 'development';
+function debug(...args: any[]) {
+	if (DEBUG) console.log('[AUTH-PROVIDER]', ...args);
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [hasInitialized, setHasInitialized] = useState(false);
+	// Use useRef to track initialization state
+	const isInitialized = useRef(false);
+	const authStateChangeCount = useRef(0);
 
-	// Check if the user is authenticated on mount and set up auth state listener
+	// State to track auth status with a more structured approach
+	const [authState, setAuthState] = useState<AuthState>({ status: 'loading' });
+
+	// Computed properties for compatibility with existing code
+	const isLoading = authState.status === 'loading';
+	const isAuthenticated = authState.status === 'authenticated';
+	const user = authState.status === 'authenticated' ? authState.user : null;
+
+	// Refresh session helper that won't trigger unnecessary re-renders
+	const refreshSession = useCallback(async (): Promise<void> => {
+		try {
+			debug('Refreshing session silently');
+			const { error } = await supabase.auth.refreshSession();
+			if (error) {
+				debug('Session refresh error:', error);
+			} else {
+				debug('Session refreshed silently');
+			}
+		} catch (error) {
+			debug('Session refresh failed:', error);
+		}
+	}, []);
+
+	// Handle auth state changes that come from Supabase
+	const handleAuthStateChange = useCallback(
+		async (event: AuthChangeEvent, session: Session | null) => {
+			authStateChangeCount.current += 1;
+			const currentCount = authStateChangeCount.current;
+
+			debug(
+				`Auth state change [${currentCount}]:`,
+				event,
+				session?.user?.email
+			);
+
+			// Only process the latest auth state change
+			if (event === 'SIGNED_IN' && session?.user) {
+				debug(`SIGNED_IN [${currentCount}]`);
+				const formattedUser = formatUser(session.user);
+				if (formattedUser) {
+					setAuthState({
+						status: 'authenticated',
+						user: formattedUser,
+					});
+				}
+			} else if (event === 'SIGNED_OUT') {
+				debug(`SIGNED_OUT [${currentCount}]`);
+				setAuthState({ status: 'unauthenticated' });
+			} else if (event === 'TOKEN_REFRESHED' && session?.user) {
+				debug(`TOKEN_REFRESHED [${currentCount}]`);
+				const formattedUser = formatUser(session.user);
+				if (formattedUser) {
+					setAuthState({
+						status: 'authenticated',
+						user: formattedUser,
+					});
+				}
+			}
+		},
+		[]
+	);
+
+	// Initialize auth state only once
 	useEffect(() => {
-		// Get initial session
+		if (isInitialized.current) return;
+
+		debug('Starting auth initialization');
+		isInitialized.current = true;
+
+		// Get current session without triggering state updates
 		const initializeAuth = async () => {
-			if (hasInitialized) return;
-
-			setIsLoading(true);
 			try {
-				console.log('AuthProvider: Initializing auth state');
-
-				// Force Supabase to synchronize with local storage and cookies
+				debug('Initializing auth state');
+				// Initialize supabase auth
 				await supabase.auth.initialize();
-
-				console.log('AuthProvider: Checking local storage for session');
-				// Manually check local storage for session
-				const storedSession = localStorage.getItem('sb-auth-token');
-				console.log('AuthProvider: Found stored session:', !!storedSession);
 
 				// Get current session
 				const {
@@ -94,195 +203,345 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				} = await supabase.auth.getSession();
 
 				if (error) {
-					console.error('AuthProvider: Error getting session:', error);
+					debug('Error getting session:', error);
+					setAuthState({ status: 'unauthenticated' });
+					return;
 				}
 
-				console.log('AuthProvider: Session found:', !!session);
 				if (session?.user) {
-					console.log('AuthProvider: User email:', session.user.email);
-					// Force refresh auth tokens to ensure cookies are set properly
-					const { error: refreshError } = await supabase.auth.refreshSession();
-					if (refreshError) {
-						console.error(
-							'AuthProvider: Error refreshing session:',
-							refreshError
-						);
-					} else {
-						console.log('AuthProvider: Session refreshed successfully');
-					}
-				}
-
-				setUser(formatUser(session?.user || null));
-
-				// Set up auth state change listener
-				const {
-					data: { subscription },
-				} = supabase.auth.onAuthStateChange((event, session) => {
-					console.log('Auth state changed:', event, session?.user?.email);
-					setUser(formatUser(session?.user || null));
-
-					// For sign_in events, force a session refresh
-					if (event === 'SIGNED_IN') {
-						console.log('SIGNED_IN event detected, refreshing session');
-						supabase.auth.refreshSession().then(({ error }) => {
-							if (error) {
-								console.error('Error refreshing session after sign in:', error);
-							} else {
-								console.log('Session refreshed after sign in');
-							}
+					debug('Session found for user:', session.user.email);
+					const formattedUser = formatUser(session.user);
+					if (formattedUser) {
+						setAuthState({
+							status: 'authenticated',
+							user: formattedUser,
 						});
+					} else {
+						setAuthState({ status: 'unauthenticated' });
 					}
-				});
-
-				setHasInitialized(true);
-				return () => {
-					subscription.unsubscribe();
-				};
+				} else {
+					debug('No session found');
+					setAuthState({ status: 'unauthenticated' });
+				}
 			} catch (error) {
-				console.error('Authentication initialization error:', error);
-			} finally {
-				setIsLoading(false);
+				debug('Auth initialization error:', error);
+				setAuthState({ status: 'unauthenticated' });
 			}
 		};
 
 		initializeAuth();
-	}, [hasInitialized]);
 
-	// Login function
-	const login = async (email: string, password: string) => {
-		setIsLoading(true);
+		// Set up auth state change listener without recreating it
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange(handleAuthStateChange);
+
+		// Cleanup
+		return () => {
+			debug('Cleaning up auth subscription');
+			subscription.unsubscribe();
+		};
+	}, [handleAuthStateChange]);
+
+	// Login function with optimistic updates
+	const login = useCallback(
+		async (email: string, password: string): Promise<AuthResult> => {
+			try {
+				debug('Login attempt for:', email);
+
+				const { data, error } = await supabase.auth.signInWithPassword({
+					email,
+					password,
+				});
+
+				if (error) {
+					debug('Login error:', error);
+					return {
+						success: false,
+						error: {
+							message: error.message,
+							code: getErrorCode(error),
+							description: error.message,
+						},
+					};
+				}
+
+				debug('Login successful, session:', !!data.session);
+
+				// Optimistically update the auth state for a smoother UX
+				if (data.user) {
+					const formattedUser = formatUser(data.user);
+					if (formattedUser) {
+						setAuthState({
+							status: 'authenticated',
+							user: formattedUser,
+						});
+					}
+				}
+
+				return { success: true, data };
+			} catch (error: any) {
+				debug('Unexpected login error:', error);
+				return {
+					success: false,
+					error: {
+						message: error.message || 'Unknown error occurred during login',
+						code: 'auth/unexpected-error',
+						description: error.toString(),
+					},
+				};
+			}
+		},
+		[]
+	);
+
+	// Logout function with optimistic updates
+	const logout = useCallback(async (): Promise<void> => {
+		debug('Logout attempt');
+
 		try {
-			console.log('AuthProvider: Attempting login for:', email);
-			const { data, error } = await supabase.auth.signInWithPassword({
-				email,
-				password,
-			});
+			// Optimistically update state for smoother UX
+			setAuthState({ status: 'unauthenticated' });
 
-			if (error) throw error;
-
-			console.log('AuthProvider: Login successful, session:', !!data.session);
-
-			// Force refresh the tokens to ensure cookies are properly set
-			const { error: refreshError } = await supabase.auth.refreshSession();
-			if (refreshError) {
-				console.error(
-					'AuthProvider: Error refreshing session after login:',
-					refreshError
-				);
-			} else {
-				console.log('AuthProvider: Session refreshed after login');
+			const { error } = await supabase.auth.signOut();
+			if (error) {
+				debug('Logout error:', error);
+				throw error;
 			}
 
-			setUser(formatUser(data.user));
-			return data;
+			debug('Logout successful');
 		} catch (error) {
-			console.error('Login error:', error);
+			debug('Logout error:', error);
 			throw error;
-		} finally {
-			setIsLoading(false);
 		}
-	};
+	}, []);
 
-	// Logout function
-	const logout = async () => {
-		setIsLoading(true);
-		try {
-			const { error } = await supabase.auth.signOut();
-			if (error) throw error;
+	// Register function with optimistic updates
+	const register = useCallback(
+		async (
+			email: string,
+			password: string,
+			name: string,
+			surname: string
+		): Promise<AuthResult> => {
+			debug('Register attempt for:', email);
 
-			setUser(null);
-		} catch (error) {
-			console.error('Logout error:', error);
-			throw error;
-		} finally {
-			setIsLoading(false);
-		}
-	};
+			try {
+				// Create the full URL for email verification redirect
+				const redirectUrl = new URL(
+					'/auth/callback',
+					window.location.origin
+				).toString();
 
-	// Register function
-	const register = async (
-		email: string,
-		password: string,
-		name: string,
-		surname: string
-	) => {
-		setIsLoading(true);
-		try {
-			const { data, error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: {
-					data: {
-						name,
-						surname,
+				debug('Registration with redirect URL:', redirectUrl);
+
+				const { data, error } = await supabase.auth.signUp({
+					email,
+					password,
+					options: {
+						data: {
+							name,
+							surname,
+						},
+						emailRedirectTo: redirectUrl,
 					},
-					emailRedirectTo: `${window.location.origin}/auth/callback`,
-				},
-			});
+				});
 
-			if (error) throw error;
+				debug('Registration response:', {
+					success: !error,
+					user: data?.user?.id,
+					session: !!data?.session,
+					identitiesLength: data?.user?.identities?.length,
+				});
 
-			// Note: User might not be immediately available after signup
-			// if email confirmation is required
-			setUser(formatUser(data.user));
-			return data;
-		} catch (error) {
-			console.error('Registration error:', error);
-			throw error;
-		} finally {
-			setIsLoading(false);
-		}
-	};
+				if (error) {
+					debug('Registration error:', error);
+					return {
+						success: false,
+						error: {
+							message: error.message,
+							code: getErrorCode(error),
+							description: error.message,
+						},
+					};
+				}
 
-	// Reset password function (sends reset email)
-	const resetPassword = async (email: string) => {
-		setIsLoading(true);
-		try {
-			// Ensure we have the full URL including the origin
-			const redirectUrl = `${window.location.origin}/auth/reset-password`;
-			console.log('Sending reset password with redirect URL:', redirectUrl);
+				// Check if email confirmation is required or if the email is already in use
+				if (data?.user?.identities?.length === 0) {
+					debug('Email already in use: identities length is 0');
+					return {
+						success: false,
+						error: {
+							message: 'Email already in use',
+							code: 'auth/email-already-in-use',
+							description:
+								'An account with this email already exists. Please use a different email or try to sign in.',
+						},
+					};
+				}
 
-			const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-				redirectTo: redirectUrl,
-			});
+				// Check if email confirmation is needed
+				if (!data.session) {
+					debug('Email confirmation needed');
+					return {
+						success: true,
+						data: {
+							...data,
+							emailVerificationNeeded: true,
+						},
+					};
+				}
 
-			console.log('Reset password response:', { data, error });
-			return { error };
-		} catch (error) {
-			console.error('Reset password error:', error);
-			return { error };
-		} finally {
-			setIsLoading(false);
-		}
-	};
+				debug('Registration successful with immediate session');
 
-	// Update password function (after reset)
-	const updatePassword = async (password: string) => {
-		setIsLoading(true);
-		try {
-			const { error } = await supabase.auth.updateUser({ password });
-			return { error };
-		} catch (error) {
-			console.error('Update password error:', error);
-			return { error };
-		} finally {
-			setIsLoading(false);
-		}
-	};
+				// Optimistic update for smoother UX
+				if (data.user) {
+					const formattedUser = formatUser(data.user);
+					if (formattedUser) {
+						setAuthState({
+							status: 'authenticated',
+							user: formattedUser,
+						});
+					}
+				}
 
-	// Create the auth value object
-	const authValue: AuthContextType = {
-		user,
-		isLoading,
-		isAuthenticated: !!user,
-		login,
-		logout,
-		register,
-		resetPassword,
-		updatePassword,
-	};
+				return {
+					success: true,
+					data,
+				};
+			} catch (error: any) {
+				debug('Unexpected registration error:', error);
+				return {
+					success: false,
+					error: {
+						message:
+							error.message || 'Unknown error occurred during registration',
+						code: 'auth/unexpected-error',
+						description: error.toString(),
+					},
+				};
+			}
+		},
+		[]
+	);
+
+	// Reset password function
+	const resetPassword = useCallback(
+		async (email: string): Promise<AuthResult> => {
+			debug('Reset password attempt for:', email);
+
+			try {
+				// Create the full URL for password reset redirect
+				const redirectUrl = new URL(
+					'/auth/reset-password',
+					window.location.origin
+				).toString();
+
+				debug('Reset password with redirect URL:', redirectUrl);
+
+				const { error } = await supabase.auth.resetPasswordForEmail(email, {
+					redirectTo: redirectUrl,
+				});
+
+				if (error) {
+					debug('Reset password error:', error);
+					return {
+						success: false,
+						error: {
+							message: error.message,
+							code: getErrorCode(error),
+							description: error.message,
+						},
+					};
+				}
+
+				debug('Reset password email sent successfully');
+				return { success: true };
+			} catch (error: any) {
+				debug('Unexpected reset password error:', error);
+				return {
+					success: false,
+					error: {
+						message:
+							error.message || 'Unknown error occurred during password reset',
+						code: 'auth/unexpected-error',
+						description: error.toString(),
+					},
+				};
+			}
+		},
+		[]
+	);
+
+	// Update password function
+	const updatePassword = useCallback(
+		async (password: string): Promise<AuthResult> => {
+			debug('Update password attempt');
+
+			try {
+				const { error } = await supabase.auth.updateUser({
+					password,
+				});
+
+				if (error) {
+					debug('Update password error:', error);
+					return {
+						success: false,
+						error: {
+							message: error.message,
+							code: getErrorCode(error),
+							description: error.message,
+						},
+					};
+				}
+
+				debug('Password updated successfully');
+				return { success: true };
+			} catch (error: any) {
+				debug('Unexpected update password error:', error);
+				return {
+					success: false,
+					error: {
+						message:
+							error.message || 'Unknown error occurred during password update',
+						code: 'auth/unexpected-error',
+						description: error.toString(),
+					},
+				};
+			}
+		},
+		[]
+	);
+
+	// Create memoized context value to prevent unnecessary rerenders
+	const contextValue = useMemo(
+		() => ({
+			authState,
+			isLoading,
+			isAuthenticated,
+			user,
+			login,
+			logout,
+			register,
+			resetPassword,
+			updatePassword,
+			refreshSession,
+		}),
+		[
+			authState,
+			isLoading,
+			isAuthenticated,
+			user,
+			login,
+			logout,
+			register,
+			resetPassword,
+			updatePassword,
+			refreshSession,
+		]
+	);
 
 	return (
-		<AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>
+		<AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 	);
 }

@@ -15,6 +15,10 @@ const inter = Inter({
 export const metadata = {
 	title: 'AOPA',
 	description: 'Advancing eye care through research, education, and innovation',
+	keywords: 'eye care, ophthalmology, research, education, innovation',
+	icons: {
+		icon: '/logo/logo-sm.svg',
+	},
 };
 
 export default function RootLayout({

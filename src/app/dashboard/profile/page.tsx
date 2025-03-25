@@ -44,15 +44,20 @@ export default function ProfilePage() {
 		// Fetch additional user data from Supabase
 		const fetchUserData = async () => {
 			try {
+				console.log('Fetching user data for user ID:', user.id);
 				const { data, error } = await supabase
 					.from('accounts')
 					.select('*')
-					.eq('id', user.id)
+					.eq('user_id', user.id)
 					.single();
 
-				if (error && error.code !== 'PGRST116') throw error;
+				if (error) {
+					console.error('Error fetching user data:', error);
+					if (error.code !== 'PGRST116') throw error;
+				}
 
 				if (data) {
+					console.log('Found account data:', data);
 					setFormData((prev) => ({
 						...prev,
 						bio: data.bio || '',
@@ -63,6 +68,8 @@ export default function ProfilePage() {
 					}));
 
 					setAvatarUrl(data.avatar_url || null);
+				} else {
+					console.log('No account data found for user');
 				}
 			} catch (error) {
 				console.error('Error fetching user data:', error);
@@ -113,7 +120,7 @@ export default function ProfilePage() {
 			const { error: updateError } = await supabase
 				.from('accounts')
 				.update({ avatar_url: publicUrlData.publicUrl })
-				.eq('id', user.id);
+				.eq('user_id', user.id);
 
 			if (updateError) throw updateError;
 
@@ -136,20 +143,25 @@ export default function ProfilePage() {
 
 		try {
 			// Update user metadata in Supabase Auth
+			console.log('Updating user metadata in Auth');
 			const { error: authError } = await supabase.auth.updateUser({
 				data: {
 					name: formData.name,
 					surname: formData.surname,
+					avatar_url: avatarUrl,
 				},
 			});
 
-			if (authError) throw authError;
+			if (authError) {
+				console.error('Failed to update user metadata:', authError);
+				throw authError;
+			}
 
 			// Check if user exists in accounts table
 			const { data: existingAccount, error: checkError } = await supabase
 				.from('accounts')
 				.select('id')
-				.eq('id', user.id)
+				.eq('user_id', user.id)
 				.single();
 
 			if (checkError && checkError.code !== 'PGRST116') {
@@ -158,7 +170,7 @@ export default function ProfilePage() {
 
 			// Update or insert account data
 			const accountData = {
-				id: user.id,
+				user_id: user.id,
 				name: formData.name,
 				surname: formData.surname,
 				bio: formData.bio,
@@ -167,6 +179,7 @@ export default function ProfilePage() {
 				phone: formData.phone,
 				website: formData.website,
 				avatar_url: avatarUrl,
+				updated_at: new Date(),
 			};
 
 			if (existingAccount) {
@@ -174,7 +187,7 @@ export default function ProfilePage() {
 				const { error: updateError } = await supabase
 					.from('accounts')
 					.update(accountData)
-					.eq('id', user.id);
+					.eq('user_id', user.id);
 
 				if (updateError) throw updateError;
 			} else {
@@ -184,6 +197,18 @@ export default function ProfilePage() {
 					.insert(accountData);
 
 				if (insertError) throw insertError;
+			}
+
+			// Refresh the session to ensure changes are propagated
+			console.log('Refreshing session after profile update');
+			const { error: refreshError } = await supabase.auth.refreshSession();
+
+			if (refreshError) {
+				console.error(
+					'Failed to refresh session after profile update:',
+					refreshError
+				);
+				// Continue anyway since the database updates were successful
 			}
 
 			toast.success('Profile updated successfully');

@@ -1,5 +1,6 @@
 'use client';
 
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import {
 	Bell,
@@ -9,6 +10,8 @@ import {
 	FileImage,
 	FileText,
 	LayoutDashboard,
+	Loader2,
+	MessageSquare,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
@@ -56,6 +59,12 @@ const dashboardNavItems = [
 		path: '/dashboard/media',
 		id: 'media',
 	},
+	{
+		icon: MessageSquare,
+		text: 'dashboard.navigation.contacts',
+		path: '/dashboard/contacts',
+		id: 'contacts',
+	},
 ];
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -63,6 +72,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 	const { user, isAuthenticated, isLoading } = useAuth();
 	const router = useRouter();
 	const pathname = usePathname();
+	const [newMessageCount, setNewMessageCount] = useState(0);
 
 	// Determine active tab based on current path
 	const getActiveTabFromPath = (path: string) => {
@@ -80,13 +90,55 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 		setActiveTab(getActiveTabFromPath(pathname || '/dashboard'));
 	}, [pathname]);
 
+	// Fetch new message count
+	useEffect(() => {
+		if (!isAuthenticated) return;
+
+		const fetchNewMessageCount = async () => {
+			try {
+				const { count, error } = await supabase
+					.from('contacts')
+					.select('*', { count: 'exact', head: true })
+					.eq('status', 'new');
+
+				if (error) {
+					throw error;
+				}
+
+				setNewMessageCount(count || 0);
+			} catch (error) {
+				console.error('Error fetching new message count:', error);
+			}
+		};
+
+		fetchNewMessageCount();
+
+		// Subscribe to changes in the contacts table
+		const contactsSubscription = supabase
+			.channel('contacts-changes')
+			.on(
+				'postgres_changes',
+				{
+					event: '*',
+					schema: 'public',
+					table: 'contacts',
+				},
+				fetchNewMessageCount
+			)
+			.subscribe();
+
+		return () => {
+			contactsSubscription.unsubscribe();
+		};
+	}, [isAuthenticated]);
+
 	// If loading, show loading spinner
 	if (isLoading) {
 		return (
 			<div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
 				<div className="text-center">
-					<div className="inline-block animate-spin rounded-full border-4 border-gray-300 border-t-blue-600 h-12 w-12 mb-4"></div>
-					<p className="text-gray-600 dark:text-gray-300">
+					<Loader2 className="h-16 w-16 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+					<p className="text-gray-700 dark:text-gray-300 font-medium">
 						{t('dashboard.loading', 'Loading dashboard...')}
 					</p>
 				</div>
@@ -132,6 +184,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 								(t('dashboard.sponsors.title') || 'Sponsors')}
 							{activeTab === 'media' &&
 								(t('dashboard.media.title') || 'Media Library')}
+							{activeTab === 'contacts' &&
+								(t('dashboard.contacts.title') || 'Contact Messages')}
 							{activeTab === 'profile' &&
 								(t('dashboard.profile.title') || 'Profile')}
 							{activeTab === 'settings' &&
@@ -139,9 +193,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 						</h1>
 
 						<div className="flex items-center space-x-4">
-							<button className="relative rounded-full p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700">
+							<button
+								className="relative rounded-full p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+								onClick={() => router.push('/dashboard/contacts')}
+							>
 								<Bell size={20} />
-								<span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+								{newMessageCount > 0 && (
+									<span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center text-xs text-white font-bold">
+										{newMessageCount > 9 ? '9+' : newMessageCount}
+									</span>
+								)}
 							</button>
 						</div>
 					</div>
@@ -170,6 +231,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 									}`}
 								/>
 								{t(item.text) || item.text.split('.').pop()}
+								{item.id === 'contacts' && newMessageCount > 0 && (
+									<span className="ml-2 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-xs text-white font-bold">
+										{newMessageCount > 9 ? '9+' : newMessageCount}
+									</span>
+								)}
 							</button>
 						))}
 					</nav>

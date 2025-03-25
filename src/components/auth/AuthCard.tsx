@@ -9,7 +9,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/Dialog';
 import { AlertCircle, CheckCircle, Loader2, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type FeedbackType = 'success' | 'error' | 'loading';
@@ -29,10 +29,11 @@ interface AuthCardProps {
 	onFlip: () => void;
 	frontLabelKey: string;
 	backLabelKey: string;
+	className?: string;
 }
 
-// Create a context to provide dialog functionality to child components
-export const AuthCardContext = React.createContext<{
+// Update the context type to include closeDialog function
+const AuthCardContext = createContext<{
 	showDialog: (
 		type: FeedbackType,
 		title: string,
@@ -40,8 +41,10 @@ export const AuthCardContext = React.createContext<{
 		actionLabel?: string,
 		onAction?: () => void
 	) => void;
+	closeDialog: () => void;
 }>({
 	showDialog: () => {},
+	closeDialog: () => {},
 });
 
 export function AuthCard({
@@ -50,6 +53,7 @@ export function AuthCard({
 	onFlip,
 	frontLabelKey,
 	backLabelKey,
+	className,
 }: AuthCardProps) {
 	const { t } = useTranslation();
 	const [dialog, setDialog] = useState<DialogState>({
@@ -85,6 +89,12 @@ export function AuthCard({
 		setDialog((prev) => ({ ...prev, isOpen: false }));
 	};
 
+	// Handle flip with preventDefault
+	const handleFlip = (e: React.MouseEvent) => {
+		e.preventDefault();
+		onFlip();
+	};
+
 	// Export these functions to be used by child components
 	useEffect(() => {
 		// @ts-ignore - Adding functions to window for demonstration
@@ -103,9 +113,62 @@ export function AuthCard({
 		};
 	}, [showDialog]);
 
+	// Add debugging for form submissions at the card level
+	useEffect(() => {
+		console.log('AUTH CARD: Setting up form submission capture');
+
+		const captureFormSubmits = (e: Event) => {
+			const form = e.target as HTMLFormElement;
+			console.log('AUTH CARD: Form submit intercepted', {
+				formId: form.id,
+				formAction: form.action,
+				formMethod: form.method,
+				formTarget: form.target,
+				defaultPrevented: e.defaultPrevented,
+			});
+
+			// For login and signup forms, we let Formik handle the submission
+			// For all other forms, we prevent the default action to avoid page refresh
+			const isLoginForm = form.id?.includes('login-form');
+			const isSignupForm = form.id?.includes('signup-form');
+
+			if (!isLoginForm && !isSignupForm) {
+				console.log(
+					'AUTH CARD: ⚠️ Preventing unknown form submission!',
+					form.id
+				);
+				e.preventDefault();
+				e.stopPropagation();
+				return false;
+			} else {
+				console.log('AUTH CARD: Allowing known form submission', form.id);
+				// For login and signup forms, we still need to prevent the default browser submission
+				// but let Formik handle the values and submission logic
+				e.preventDefault();
+				return true;
+			}
+		};
+
+		// Add listener to capture all form submissions
+		document.querySelectorAll('form').forEach((form) => {
+			console.log('AUTH CARD: Adding submit listener to form', form.id);
+			form.addEventListener('submit', captureFormSubmits, true);
+		});
+
+		return () => {
+			document.querySelectorAll('form').forEach((form) => {
+				form.removeEventListener('submit', captureFormSubmits, true);
+			});
+		};
+	}, []);
+
 	return (
-		<AuthCardContext.Provider value={{ showDialog }}>
-			<Card className="w-full max-w-md mx-auto p-6 sm:p-8 shadow-xl bg-white dark:bg-gray-800 border-0 overflow-hidden rounded-xl card-glow flex flex-col justify-between relative">
+		<AuthCardContext.Provider value={{ showDialog, closeDialog }}>
+			<Card
+				className={`w-full max-w-md mx-auto p-6 sm:p-8 shadow-xl bg-white dark:bg-gray-800 border-0 overflow-hidden rounded-xl card-glow flex flex-col justify-between relative ${
+					className || ''
+				}`}
+			>
 				{/* Decorative elements */}
 				<div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 z-0"></div>
 				<div className="absolute bottom-0 left-0 w-20 sm:w-24 h-20 sm:h-24 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -ml-10 sm:-ml-12 -mb-10 sm:-mb-12 z-0"></div>
@@ -118,8 +181,10 @@ export function AuthCard({
 							{t(frontLabelKey)}
 						</span>
 						<Button
+							type="button"
 							variant="link"
-							onClick={onFlip}
+							onClick={handleFlip}
+							aria-label={isFlipped ? 'Flip to login' : 'Flip to signup'}
 							className="text-primary-600 dark:text-primary-400 p-0 h-auto font-medium hover:text-primary-700 transition-colors relative group"
 						>
 							{t(backLabelKey)}
@@ -154,6 +219,7 @@ export function AuthCard({
 					<div className="flex justify-end gap-3">
 						{dialog.type !== 'loading' && (
 							<Button
+								type="button"
 								variant="outline"
 								size="sm"
 								onClick={closeDialog}
@@ -164,7 +230,7 @@ export function AuthCard({
 							</Button>
 						)}
 						{dialog.actionLabel && dialog.onAction && (
-							<Button size="sm" onClick={dialog.onAction}>
+							<Button type="button" size="sm" onClick={dialog.onAction}>
 								{dialog.actionLabel}
 							</Button>
 						)}

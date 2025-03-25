@@ -1,7 +1,7 @@
 'use client';
 
+import { Footer } from '@/components/layout/Footer';
 import { ProfileSetupModal } from '@/components/profile/ProfileSetupModal';
-import { Footer } from '@/components/ui/Footer';
 import { Header } from '@/components/ui/Header';
 import { Navigation } from '@/components/ui/Navigation';
 import { useAuth } from '@/providers/AuthProvider';
@@ -69,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
 					<div className="w-full px-4 sm:px-6 lg:px-8">{children}</div>
 				</main>
 			</div>
-			<Footer className="relative z-10" />
+			<Footer />
 			{user && <ProfileSetupModal />}
 		</div>
 	);

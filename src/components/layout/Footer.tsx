@@ -1,281 +1,580 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
-import { motion } from 'framer-motion';
+import {
+	AnimatePresence,
+	motion,
+	useScroll,
+	useTransform,
+} from 'framer-motion';
+import {
+	ArrowUpRight,
+	Clock,
+	Github,
+	Mail,
+	MapPin,
+	Twitter,
+} from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export function Footer() {
 	const { t } = useTranslation();
 	const currentYear = new Date().getFullYear();
+	const [email, setEmail] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [subscribeStatus, setSubscribeStatus] = useState<
+		'idle' | 'success' | 'error'
+	>('idle');
+	const footerRef = useRef(null);
+	const [inView, setInView] = useState(false);
 
-	const footerSections = [
+	// Scroll position tracking
+	useEffect(() => {
+		const handleScroll = () => {
+			if (footerRef.current) {
+				const rect = (footerRef.current as HTMLElement).getBoundingClientRect();
+				const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+				setInView(isVisible);
+			}
+		};
+
+		window.addEventListener('scroll', handleScroll);
+		handleScroll(); // Check initially
+
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
+
+	// Parallax effect
+	const { scrollYProgress } = useScroll({
+		target: footerRef,
+		offset: ['start end', 'end end'],
+	});
+
+	const backgroundY = useTransform(scrollYProgress, [0, 1], [0, 30]);
+	const backgroundOpacity = useTransform(
+		scrollYProgress,
+		[0, 0.5, 1],
+		[0.6, 0.7, 0.8]
+	);
+	const patternScale = useTransform(scrollYProgress, [0, 1], [1.05, 1]);
+	const patternOpacity = useTransform(
+		scrollYProgress,
+		[0, 0.5, 1],
+		[0, 0.04, 0.08]
+	);
+	const patternRotate = useTransform(scrollYProgress, [0, 1], [0, 3]);
+
+	// Animation variants
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.1,
+				delayChildren: 0.1,
+			},
+		},
+		exit: {
+			opacity: 0,
+			transition: {
+				staggerChildren: 0.05,
+				staggerDirection: -1,
+				when: 'afterChildren',
+			},
+		},
+	};
+
+	const itemVariants = {
+		hidden: { y: 20, opacity: 0 },
+		visible: {
+			y: 0,
+			opacity: 1,
+			transition: { type: 'spring', stiffness: 100, damping: 20 },
+		},
+		exit: {
+			y: -10,
+			opacity: 0,
+			transition: { type: 'spring', stiffness: 100, damping: 20 },
+		},
+	};
+
+	const handleSubscribe = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!email || !email.includes('@')) return;
+
+		setIsSubmitting(true);
+
+		// Simulate API call
+		setTimeout(() => {
+			setIsSubmitting(false);
+			setSubscribeStatus('success');
+			setEmail('');
+
+			// Reset status after 3 seconds
+			setTimeout(() => {
+				setSubscribeStatus('idle');
+			}, 3000);
+		}, 1500);
+	};
+
+	// Only include links to pages that actually exist
+	const mainLinks = [
+		{ href: '/', label: t('navigation.home') },
+		{ href: '/dashboard', label: t('navigation.dashboard') },
+		{ href: '/profile', label: t('navigation.profile') },
+		{ href: '/activities', label: t('navigation.activities') },
+	];
+
+	const resourceLinks = [
+		{ href: '/archives', label: t('navigation.archives') },
+		{ href: '/reports', label: t('navigation.reports') },
+		{ href: '/sponsors', label: t('navigation.sponsors') },
+		{ href: '/abstracts', label: t('navigation.abstracts') },
+	];
+
+	const contactInfo = [
 		{
-			title: 'Association',
-			links: [
-				{ href: '/about', label: t('navigation.about') },
-				{ href: '/team', label: 'Our Team' },
-				{ href: '/history', label: 'History' },
-				{ href: '/contact', label: t('navigation.contact') },
-			],
+			icon: <MapPin className="h-3 w-3" />,
+			text: '123 Medical Center, Healthcare City',
 		},
 		{
-			title: 'Resources',
-			links: [
-				{ href: '/congress', label: t('navigation.congress') },
-				{ href: '/research', label: t('navigation.research') },
-				{ href: '/education', label: t('navigation.education') },
-				{ href: '/publications', label: 'Publications' },
-			],
+			icon: <Mail className="h-3 w-3" />,
+			text: 'contact@ophthalmology-assoc.org',
 		},
-		{
-			title: 'Legal',
-			links: [
-				{ href: '/privacy', label: 'Privacy Policy' },
-				{ href: '/terms', label: 'Terms of Use' },
-				{ href: '/cookies', label: 'Cookie Policy' },
-				{ href: '/accessibility', label: 'Accessibility' },
-			],
-		},
+		{ icon: <Clock className="h-3 w-3" />, text: 'Mon-Fri: 9am-5pm' },
 	];
 
 	const socialLinks = [
 		{
-			name: 'Twitter',
+			icon: <Twitter className="h-4 w-4" />,
 			href: 'https://twitter.com',
-			icon: (
-				<svg
-					className="h-6 w-6"
-					fill="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-				</svg>
-			),
+			label: 'Twitter',
 		},
 		{
-			name: 'LinkedIn',
-			href: 'https://linkedin.com',
-			icon: (
-				<svg
-					className="h-6 w-6"
-					fill="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-				</svg>
-			),
-		},
-		{
-			name: 'Facebook',
-			href: 'https://facebook.com',
-			icon: (
-				<svg
-					className="h-6 w-6"
-					fill="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path
-						fillRule="evenodd"
-						d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-						clipRule="evenodd"
-					/>
-				</svg>
-			),
-		},
-		{
-			name: 'YouTube',
-			href: 'https://youtube.com',
-			icon: (
-				<svg
-					className="h-6 w-6"
-					fill="currentColor"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<path
-						fillRule="evenodd"
-						d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z"
-						clipRule="evenodd"
-					/>
-				</svg>
-			),
+			icon: <Github className="h-4 w-4" />,
+			href: 'https://github.com',
+			label: 'GitHub',
 		},
 	];
 
 	return (
-		<footer className="bg-gray-50 border-t border-gray-200">
-			<div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-				<div className="xl:grid xl:grid-cols-3 xl:gap-8">
-					<div className="space-y-8 xl:col-span-1">
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5 }}
-							className="flex items-center space-x-2"
+		<footer
+			ref={footerRef}
+			className="relative overflow-hidden border-t border-gray-100 dark:border-gray-800 pt-12 pb-8 lg:pl-24"
+		>
+			{/* Parallax background */}
+			<motion.div
+				className="absolute inset-0 z-0"
+				style={{ y: backgroundY, opacity: backgroundOpacity }}
+			>
+				<Image
+					src="/images/hero-background.jpg"
+					alt="Footer background"
+					fill
+					className="object-cover object-center opacity-[0.02] dark:opacity-[0.01]"
+					priority={false}
+				/>
+			</motion.div>
+
+			{/* Background pattern */}
+			<motion.div
+				className="absolute inset-0 z-0 opacity-5 dark:opacity-[0.025]"
+				style={{
+					scale: patternScale,
+					rotate: patternRotate,
+					opacity: patternOpacity,
+				}}
+			>
+				<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+					<defs>
+						<pattern
+							id="footer-grid"
+							width="40"
+							height="40"
+							patternUnits="userSpaceOnUse"
+							patternTransform="rotate(5)"
 						>
-							<svg
-								width="40"
-								height="40"
-								viewBox="0 0 40 40"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-								className="text-primary"
-							>
-								<circle
-									cx="20"
-									cy="20"
-									r="18"
-									stroke="currentColor"
-									strokeWidth="2"
-								/>
-								<circle
-									cx="20"
-									cy="20"
-									r="10"
-									stroke="currentColor"
-									strokeWidth="2"
-								/>
-								<circle cx="20" cy="20" r="4" fill="currentColor" />
-							</svg>
-							<span className="text-xl font-bold">EAO</span>
-						</motion.div>
-						<motion.p
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5, delay: 0.1 }}
-							className="text-base text-gray-500 max-w-xs"
+							<path
+								d="M 0,20 L 40,20 M 20,0 L 20,40"
+								stroke="currentColor"
+								strokeWidth="0.5"
+								className="text-primary-400 dark:text-primary-600"
+							/>
+						</pattern>
+						<pattern
+							id="footer-dots"
+							width="20"
+							height="20"
+							patternUnits="userSpaceOnUse"
+							patternTransform="rotate(10)"
 						>
-							Advancing eye care through research, education, and innovation
-							since 1985.
-						</motion.p>
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ duration: 0.5, delay: 0.2 }}
-							className="flex space-x-6"
-						>
-							{socialLinks.map((item) => (
-								<a
-									key={item.name}
-									href={item.href}
-									className="text-gray-400 hover:text-gray-500"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<span className="sr-only">{item.name}</span>
-									{item.icon}
-								</a>
-							))}
-						</motion.div>
-					</div>
-					<div className="mt-12 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-						<div className="md:grid md:grid-cols-2 md:gap-8">
-							{footerSections.slice(0, 2).map((section, index) => (
-								<motion.div
-									key={section.title}
-									initial={{ opacity: 0, y: 20 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true }}
-									transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-								>
-									<h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
-										{section.title}
-									</h3>
-									<ul className="mt-4 space-y-4">
-										{section.links.map((link) => (
-											<li key={link.label}>
-												<Link
-													href={link.href}
-													className="text-base text-gray-500 hover:text-gray-900"
-												>
-													{link.label}
-												</Link>
-											</li>
-										))}
-									</ul>
-								</motion.div>
-							))}
-						</div>
-						<div className="md:grid md:grid-cols-2 md:gap-8">
-							{footerSections.slice(2).map((section, index) => (
-								<motion.div
-									key={section.title}
-									initial={{ opacity: 0, y: 20 }}
-									whileInView={{ opacity: 1, y: 0 }}
-									viewport={{ once: true }}
-									transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-								>
-									<h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
-										{section.title}
-									</h3>
-									<ul className="mt-4 space-y-4">
-										{section.links.map((link) => (
-											<li key={link.label}>
-												<Link
-													href={link.href}
-													className="text-base text-gray-500 hover:text-gray-900"
-												>
-													{link.label}
-												</Link>
-											</li>
-										))}
-									</ul>
-								</motion.div>
-							))}
-							<motion.div
-								initial={{ opacity: 0, y: 20 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.5, delay: 0.6 }}
-								className="mt-12 md:mt-0"
-							>
-								<h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
-									Subscribe
-								</h3>
-								<p className="mt-4 text-base text-gray-500">
-									Get the latest news and updates.
-								</p>
-								<form className="mt-4 sm:flex sm:max-w-md">
-									<label htmlFor="email-address" className="sr-only">
-										Email address
-									</label>
-									<input
-										type="email"
-										name="email-address"
-										id="email-address"
-										autoComplete="email"
-										required
-										className="w-full min-w-0 appearance-none rounded-md border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 placeholder-gray-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-										placeholder="Enter your email"
-									/>
-									<div className="mt-3 rounded-md sm:ml-3 sm:mt-0">
-										<Button type="submit">Subscribe</Button>
-									</div>
-								</form>
-							</motion.div>
-						</div>
-					</div>
-				</div>
+							<circle
+								cx="2"
+								cy="2"
+								r="1"
+								fill="currentColor"
+								className="text-primary-300 dark:text-primary-700"
+							/>
+						</pattern>
+					</defs>
+					<rect width="100%" height="100%" fill="url(#footer-grid)" />
+					<rect width="100%" height="100%" fill="url(#footer-dots)" />
+				</svg>
+			</motion.div>
+
+			<motion.div
+				className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
+				initial="hidden"
+				animate={inView ? 'visible' : 'hidden'}
+				exit="exit"
+				variants={containerVariants}
+				viewport={{ once: false, margin: '-100px' }}
+			>
+				{/* Top Section */}
 				<motion.div
-					initial={{ opacity: 0, y: 20 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true }}
-					transition={{ duration: 0.5, delay: 0.7 }}
-					className="mt-12 border-t border-gray-200 pt-8"
+					className="flex flex-col items-center text-center mb-12"
+					variants={itemVariants}
 				>
-					<p className="text-base text-gray-400 xl:text-center">
-						&copy; {currentYear} European Association of Ophthalmology. All
-						rights reserved.
+					<motion.div
+						className="w-10 h-10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm bg-opacity-80"
+						whileHover={{ scale: 1.1 }}
+						transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+					>
+						<Image
+							src={`/logo/logo-sm.svg`}
+							alt={t('app.logoAltWithNumber')}
+							fill
+							className="object-contain"
+							priority
+						/>
+					</motion.div>
+					<h2 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+						AOPA
+					</h2>
+					<p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
+						Advancing eye care through research, education, and innovation since
+						1985.
 					</p>
 				</motion.div>
-			</div>
+
+				{/* Middle Section - Grid Layout */}
+				<div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-12 mb-16">
+					{/* Navigation */}
+					<motion.div
+						className="sm:col-span-1 lg:col-span-3"
+						variants={itemVariants}
+					>
+						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
+							Navigation
+						</h3>
+						<ul className="space-y-2">
+							{mainLinks.map((link, index) => (
+								<motion.li
+									key={link.label}
+									whileHover={{ x: 3 }}
+									transition={{ type: 'spring', stiffness: 300 }}
+									variants={{
+										hidden: {
+											x: -10,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+										visible: {
+											x: 0,
+											opacity: 1,
+											transition: {
+												delay: index * 0.1,
+												type: 'spring',
+												stiffness: 100,
+											},
+										},
+										exit: {
+											x: -10,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+									}}
+								>
+									<Link
+										href={link.href}
+										className="text-sm text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors duration-300 flex items-center group"
+									>
+										<span>{link.label}</span>
+										<motion.span
+											initial={{ x: -4, opacity: 0 }}
+											whileHover={{ x: 0, opacity: 1 }}
+											className="inline-block ml-1"
+										>
+											<ArrowUpRight className="h-3 w-3" />
+										</motion.span>
+									</Link>
+								</motion.li>
+							))}
+						</ul>
+					</motion.div>
+
+					{/* Resources */}
+					<motion.div
+						className="sm:col-span-1 lg:col-span-3"
+						variants={itemVariants}
+					>
+						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
+							Resources
+						</h3>
+						<ul className="space-y-2">
+							{resourceLinks.map((link, index) => (
+								<motion.li
+									key={link.label}
+									whileHover={{ x: 3 }}
+									transition={{ type: 'spring', stiffness: 300 }}
+									variants={{
+										hidden: {
+											x: -10,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+										visible: {
+											x: 0,
+											opacity: 1,
+											transition: {
+												delay: index * 0.1 + 0.2,
+												type: 'spring',
+												stiffness: 100,
+											},
+										},
+										exit: {
+											x: -10,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+									}}
+								>
+									<Link
+										href={link.href}
+										className="text-sm text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors duration-300 flex items-center group"
+									>
+										<span>{link.label}</span>
+										<motion.span
+											initial={{ x: -4, opacity: 0 }}
+											whileHover={{ x: 0, opacity: 1 }}
+											className="inline-block ml-1"
+										>
+											<ArrowUpRight className="h-3 w-3" />
+										</motion.span>
+									</Link>
+								</motion.li>
+							))}
+						</ul>
+					</motion.div>
+
+					{/* Contact Info */}
+					<motion.div
+						className="sm:col-span-1 lg:col-span-3"
+						variants={itemVariants}
+					>
+						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
+							Contact
+						</h3>
+						<ul className="space-y-2">
+							{contactInfo.map((item, index) => (
+								<motion.li
+									key={index}
+									className="text-sm text-gray-600 dark:text-gray-400 flex items-center"
+									variants={{
+										hidden: {
+											x: -5,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+										visible: {
+											x: 0,
+											opacity: 1,
+											transition: {
+												delay: index * 0.1 + 0.3,
+												type: 'spring',
+												stiffness: 100,
+											},
+										},
+										exit: {
+											x: -5,
+											opacity: 0,
+											transition: { delay: index * 0.05 },
+										},
+									}}
+								>
+									<span className="text-gray-400 dark:text-gray-500 mr-2">
+										{item.icon}
+									</span>
+									<span>{item.text}</span>
+								</motion.li>
+							))}
+						</ul>
+
+						<motion.div
+							className="mt-4 flex space-x-3"
+							variants={{
+								hidden: { opacity: 0 },
+								visible: { opacity: 1, transition: { delay: 0.5 } },
+								exit: { opacity: 0 },
+							}}
+						>
+							{socialLinks.map((link) => (
+								<motion.a
+									key={link.label}
+									href={link.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors"
+									whileHover={{ y: -3, scale: 1.15 }}
+									transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+									aria-label={link.label}
+								>
+									{link.icon}
+								</motion.a>
+							))}
+						</motion.div>
+					</motion.div>
+
+					{/* Newsletter */}
+					<motion.div
+						className="sm:col-span-2 lg:col-span-3"
+						variants={itemVariants}
+					>
+						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
+							Newsletter
+						</h3>
+						<p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+							Stay informed about the latest advances in ophthalmology.
+						</p>
+						<form onSubmit={handleSubscribe} className="flex gap-2">
+							<motion.div
+								className="relative flex-grow"
+								whileHover={{ scale: 1.02 }}
+								transition={{ type: 'spring', stiffness: 300 }}
+							>
+								<input
+									type="email"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									placeholder="Your email"
+									className="w-full py-2 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-primary-500"
+									disabled={isSubmitting || subscribeStatus === 'success'}
+								/>
+							</motion.div>
+							<motion.div
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								transition={{ type: 'spring', stiffness: 300 }}
+							>
+								<Button
+									type="submit"
+									variant="outline"
+									size="sm"
+									className="border-primary-500 text-primary-600 hover:bg-primary-50 dark:hover:bg-gray-800 text-xs"
+									disabled={isSubmitting || subscribeStatus === 'success'}
+								>
+									{isSubmitting ? (
+										<svg
+											className="animate-spin h-3 w-3"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<circle
+												className="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												strokeWidth="4"
+											></circle>
+											<path
+												className="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+											></path>
+										</svg>
+									) : subscribeStatus === 'success' ? (
+										<span>Subscribed</span>
+									) : (
+										<span>Subscribe</span>
+									)}
+								</Button>
+							</motion.div>
+						</form>
+
+						<AnimatePresence mode="wait">
+							{subscribeStatus === 'success' && (
+								<motion.p
+									initial={{ opacity: 0, y: 5 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -5 }}
+									transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+									className="text-xs text-primary-500 mt-2"
+								>
+									Thank you for subscribing!
+								</motion.p>
+							)}
+						</AnimatePresence>
+					</motion.div>
+				</div>
+
+				{/* Bottom copyright bar */}
+				<motion.div
+					className="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center"
+					variants={{
+						hidden: { opacity: 0, y: 20 },
+						visible: {
+							opacity: 1,
+							y: 0,
+							transition: {
+								delay: 0.5,
+								type: 'spring',
+								stiffness: 100,
+								damping: 20,
+							},
+						},
+						exit: {
+							opacity: 0,
+							y: 10,
+							transition: {
+								type: 'spring',
+								stiffness: 100,
+								damping: 20,
+							},
+						},
+					}}
+				>
+					<p className="text-xs text-gray-400 dark:text-gray-500">
+						&copy; {currentYear} Ophthalmology Association
+					</p>
+
+					<div className="flex items-center mt-4 sm:mt-0 space-x-6">
+						<Link
+							href="/contact"
+							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
+						>
+							Contact
+						</Link>
+						<a
+							href="/privacy"
+							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
+						>
+							Privacy
+						</a>
+						<a
+							href="/terms"
+							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
+						>
+							Terms
+						</a>
+					</div>
+				</motion.div>
+			</motion.div>
 		</footer>
 	);
 }

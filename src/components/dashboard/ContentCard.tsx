@@ -1,22 +1,28 @@
 'use client';
 
+import { supabase } from '@/lib/supabase';
+import { motion } from 'framer-motion';
 import {
 	Award,
 	Beaker,
 	BookOpen,
 	Calendar,
 	Clock,
+	Edit,
+	ExternalLink,
 	Globe,
 	Loader2,
 	MapPin,
 	Microscope,
 	MoreHorizontal,
+	Pencil,
 	Tag,
 	Trash,
 	Users,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import ContentEditor from './ContentEditor';
 
 interface ContentCardProps {
@@ -50,6 +56,7 @@ export default function ContentCard({
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [showMenu, setShowMenu] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isEditing, setIsEditing] = useState(false);
 	const { t } = useTranslation();
 
 	// Format date with time
@@ -68,17 +75,37 @@ export default function ContentCard({
 		if (onUpdate) {
 			onUpdate();
 		}
+		toast.success('Updated successfully');
+		setIsEditing(false);
 	};
 
 	// Handle delete
 	const handleDelete = async () => {
 		try {
 			setIsDeleting(true);
+			setError(null);
+
+			// Soft delete by updating the deleted_at field
+			const { error } = await supabase
+				.from(tableName)
+				.update({ deleted_at: new Date().toISOString() })
+				.eq('id', id);
+
+			if (error) throw error;
+
+			toast.success(
+				`${
+					tableName === 'activities' ? 'Event' : 'Congress'
+				} deleted successfully`
+			);
+
 			if (onDelete) {
 				onDelete();
 			}
-		} catch (error) {
-			setError('Failed to delete content');
+		} catch (error: any) {
+			console.error('Error deleting content:', error);
+			setError(error.message || 'Failed to delete content');
+			toast.error('Failed to delete item');
 		} finally {
 			setIsDeleting(false);
 			setShowMenu(false);
@@ -206,17 +233,125 @@ export default function ContentCard({
 		return locationTag?.label || null;
 	};
 
+	// Get time until event starts
+	const getTimeUntilEvent = () => {
+		const now = new Date();
+		const start = new Date(startDate);
+
+		// If event has passed
+		if (now > start) return null;
+
+		const diffTime = Math.abs(start.getTime() - now.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+		if (diffDays > 30) {
+			const diffMonths = Math.floor(diffDays / 30);
+			return `${diffMonths} month${diffMonths > 1 ? 's' : ''}`;
+		}
+
+		return diffDays > 1
+			? `${diffDays} days`
+			: diffDays === 1
+			? 'Tomorrow'
+			: 'Today';
+	};
+
+	// Get event status (upcoming, ongoing, past)
+	const getEventStatus = () => {
+		const now = new Date();
+		const start = new Date(startDate);
+		const end = new Date(endDate);
+
+		if (now < start) return 'upcoming';
+		if (now >= start && now <= end) return 'ongoing';
+		return 'past';
+	};
+
+	const eventStatus = getEventStatus();
+	const timeUntil = getTimeUntilEvent();
+
 	return (
-		<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 transform transition-all duration-300 ease-out hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 hover:-translate-y-1 group">
-			{/* Colorful header with icon instead of image */}
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			whileHover={{ y: -5 }}
+			transition={{ duration: 0.3 }}
+			className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 group"
+		>
+			{/* Colorful header with icon */}
 			<div
-				className={`bg-gradient-to-r ${getContentGradient()} p-5 flex items-center justify-between transition-all duration-300`}
+				className={`bg-gradient-to-r ${getContentGradient()} p-5 flex items-center justify-between transition-all duration-300 relative`}
 			>
 				<div className="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg transform transition-transform duration-300 group-hover:scale-110">
 					{getContentIcon()}
 				</div>
+
+				{/* Menu button at top right */}
+				<div className="absolute top-2 right-2">
+					<button
+						onClick={(e) => {
+							e.stopPropagation();
+							setShowMenu(!showMenu);
+						}}
+						className="p-1.5 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+					>
+						<MoreHorizontal className="h-4 w-4 text-white" />
+					</button>
+
+					{showMenu && (
+						<div className="absolute right-0 mt-1 w-36 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-20">
+							<div className="py-1" role="menu">
+								<button
+									className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+									onClick={() => {
+										setIsEditing(true);
+										setShowMenu(false);
+									}}
+								>
+									<Pencil className="h-4 w-4 mr-2 text-blue-500" />
+									{t('common.edit', 'Edit')}
+								</button>
+								<button
+									className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+									onClick={handleDelete}
+									disabled={isDeleting}
+								>
+									{isDeleting ? (
+										<Loader2 className="h-4 w-4 mr-2 animate-spin text-red-500" />
+									) : (
+										<Trash className="h-4 w-4 mr-2 text-red-500" />
+									)}
+									{t('common.delete', 'Delete')}
+								</button>
+							</div>
+						</div>
+					)}
+				</div>
+
+				{/* Status indicator */}
+				{eventStatus && (
+					<div
+						className={`absolute bottom-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
+							eventStatus === 'upcoming'
+								? 'bg-blue-400/20 text-white'
+								: eventStatus === 'ongoing'
+								? 'bg-green-400/20 text-white'
+								: 'bg-gray-400/20 text-white'
+						}`}
+					>
+						{eventStatus === 'upcoming'
+							? timeUntil
+								? `In ${timeUntil}`
+								: 'Upcoming'
+							: eventStatus === 'ongoing'
+							? 'Ongoing'
+							: 'Past'}
+					</div>
+				)}
+
+				{/* Tags */}
 				{tags.length > 0 && (
-					<div className="flex gap-2">
+					<div className="flex gap-2 mt-1">
 						{tags.slice(0, 2).map((tag, index) => (
 							<div
 								key={index}
@@ -229,7 +364,14 @@ export default function ContentCard({
 				)}
 			</div>
 
-			<div className="p-5">
+			<div className="p-5 relative">
+				{/* Edit mode indicator */}
+				{isEditing && (
+					<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full z-10">
+						Editing Mode
+					</div>
+				)}
+
 				<div className="mb-3">
 					<ContentEditor
 						initialValue={title}
@@ -237,7 +379,11 @@ export default function ContentCard({
 						tableName={tableName}
 						itemId={id}
 						field="title"
-						className="font-semibold text-lg transition-colors duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+						className={`font-semibold text-lg ${
+							isEditing
+								? 'bg-blue-50 dark:bg-blue-900/10 rounded-md border border-blue-200 dark:border-blue-800'
+								: ''
+						}`}
 						placeholder="Enter title..."
 					/>
 
@@ -268,7 +414,11 @@ export default function ContentCard({
 					itemId={id}
 					field="description"
 					type="textarea"
-					className="mb-4 text-sm text-gray-600 dark:text-gray-300"
+					className={`mb-4 text-sm text-gray-600 dark:text-gray-300 ${
+						isEditing
+							? 'bg-blue-50 dark:bg-blue-900/10 rounded-md border border-blue-200 dark:border-blue-800'
+							: ''
+					}`}
 					placeholder="Enter description..."
 				/>
 
@@ -297,32 +447,23 @@ export default function ContentCard({
 						</span>
 					</div>
 
-					<div className="relative">
-						<button
-							onClick={() => setShowMenu(!showMenu)}
-							className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-						>
-							<MoreHorizontal className="h-5 w-5" />
-						</button>
-
-						{showMenu && (
-							<div className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10">
-								<div className="py-1" role="menu" aria-orientation="vertical">
-									<button
-										className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-										onClick={handleDelete}
-										disabled={isDeleting}
-									>
-										{isDeleting ? (
-											<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-										) : (
-											<Trash className="h-4 w-4 mr-2 text-red-500" />
-										)}
-										{t('common.delete', 'Delete')}
-									</button>
-								</div>
-							</div>
+					{/* Quick action buttons */}
+					<div className="flex gap-2">
+						{!isEditing && (
+							<button
+								onClick={() => setIsEditing(true)}
+								className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+								title="Edit"
+							>
+								<Edit className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+							</button>
 						)}
+						<button
+							className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+							title="View details"
+						>
+							<ExternalLink className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+						</button>
 					</div>
 				</div>
 
@@ -331,7 +472,25 @@ export default function ContentCard({
 						{error}
 					</div>
 				)}
+
+				{/* Edit mode actions */}
+				{isEditing && (
+					<div className="mt-3 flex justify-end gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+						<button
+							onClick={() => setIsEditing(false)}
+							className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+						>
+							Cancel
+						</button>
+						<button
+							onClick={() => setIsEditing(false)}
+							className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+						>
+							Done Editing
+						</button>
+					</div>
+				)}
 			</div>
-		</div>
+		</motion.div>
 	);
 }

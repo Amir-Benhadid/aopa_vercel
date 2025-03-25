@@ -16,6 +16,7 @@ import {
 	Home,
 	LayoutDashboard,
 	LogOut,
+	Mail,
 	User,
 	X,
 } from 'lucide-react';
@@ -173,6 +174,11 @@ export function Navigation({
 							},
 					  ]
 					: []),
+				{
+					href: '/contact',
+					label: t('navigation.contact') || 'Contact Us',
+					icon: <Mail className="w-5 h-5" />,
+				},
 			],
 		},
 	];

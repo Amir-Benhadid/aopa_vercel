@@ -12,13 +12,14 @@ import {
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/providers/AuthProvider';
 import { Form, Formik } from 'formik';
-import { Eye, EyeOff, Lock, Mail, User, X } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, User, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 import './auth.css';
 
+// Form validation schemas
 const loginSchema = Yup.object().shape({
 	email: Yup.string().email('Invalid email').required('Required'),
 	password: Yup.string().required('Required'),
@@ -30,6 +31,10 @@ const signupSchema = Yup.object().shape({
 	surname: Yup.string().required('Required'),
 	password: Yup.string()
 		.min(8, 'Password must be at least 8 characters')
+		.matches(
+			/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+			'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+		)
 		.required('Required'),
 	acceptTerms: Yup.boolean().oneOf(
 		[true],
@@ -37,90 +42,170 @@ const signupSchema = Yup.object().shape({
 	),
 });
 
+// Form interfaces
+interface LoginFormValues {
+	email: string;
+	password: string;
+}
+
+interface SignupFormValues {
+	email: string;
+	name: string;
+	surname: string;
+	password: string;
+	acceptTerms: boolean;
+}
+
+// Form state persistence
+const getStoredFormValues = (key: string) => {
+	if (typeof window === 'undefined') return null;
+	const stored = localStorage.getItem(`auth_form_${key}`);
+	return stored ? JSON.parse(stored) : null;
+};
+
+const setStoredFormValues = (key: string, values: any) => {
+	if (typeof window === 'undefined') return;
+	localStorage.setItem(`auth_form_${key}`, JSON.stringify(values));
+};
+
+const clearStoredFormValues = (key: string) => {
+	if (typeof window === 'undefined') return;
+	localStorage.removeItem(`auth_form_${key}`);
+};
+
 const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
-	const { login } = useAuth();
+	const { login, authState } = useAuth();
 	const router = useRouter();
-	const [showPassword, setShowPassword] = useState(false);
-	const { showDialog } = useAuthCard();
+	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
+	const [showPassword, setShowPassword] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [savedValues, setSavedValues] = useState<LoginFormValues>(
+		() => getStoredFormValues('login') || { email: '', password: '' }
+	);
+
+	// Effect to handle auth state changes
+	useEffect(() => {
+		if (authState.status === 'authenticated') {
+			// Clear stored form values on successful login
+			clearStoredFormValues('login');
+
+			// Close any open dialog
+			closeDialog();
+
+			// Redirect to dashboard
+			router.push('/dashboard');
+		}
+	}, [authState, router, closeDialog]);
+
+	const handleSubmit = async (
+		values: LoginFormValues,
+		{ setFieldError }: any
+	) => {
+		if (isSubmitting) return;
+
+		setIsSubmitting(true);
+		setSavedValues(values);
+		setStoredFormValues('login', values);
+		showDialog('loading', t('auth.signingIn'), t('auth.signingInMessage'));
+
+		try {
+			const result = await login(values.email, values.password);
+
+			if (!result.success) {
+				switch (result.error?.code) {
+					case 'auth/invalid-login-credentials':
+					case 'auth/invalid-credentials':
+					case 'auth/wrong-password':
+						setFieldError('password', t('auth.wrongPassword'));
+						showDialog(
+							'error',
+							t('auth.signInFailed'),
+							t('auth.wrongPasswordMessage')
+						);
+						break;
+
+					case 'auth/user-not-found':
+						setFieldError('email', t('auth.userNotFound'));
+						showDialog(
+							'error',
+							t('auth.signInFailed'),
+							t('auth.userNotFoundMessage')
+						);
+						break;
+
+					case 'auth/too-many-requests':
+						showDialog(
+							'error',
+							t('auth.signInFailed'),
+							t('auth.tooManyRequestsMessage')
+						);
+						break;
+
+					case 'auth/email-not-confirmed':
+						showDialog(
+							'error',
+							t('auth.verificationNeeded'),
+							t('auth.emailNotVerifiedMessage')
+						);
+						break;
+
+					default:
+						showDialog(
+							'error',
+							t('auth.signInFailed'),
+							result.error?.description ||
+								result.error?.message ||
+								t('auth.signInFailedMessage')
+						);
+				}
+			}
+			// Successful login is handled by the authState effect
+		} catch (error: any) {
+			showDialog(
+				'error',
+				t('auth.signInFailed'),
+				error.message || t('auth.signInFailedMessage')
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
-		<div className="space-y-8">
-			<div className="space-y-2 text-center">
-				<div className="flex justify-center mb-4">
-					<div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-						<User className="text-primary-600 h-8 w-8" />
-					</div>
-				</div>
-				<h2 className="text-3xl font-bold text-center bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-					{t('auth.loginTitle')}
+		<div className="space-y-6">
+			<div className="text-center">
+				<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+					{t('auth.welcome')}
 				</h2>
-				<p className="text-center text-card-foreground/60">
+				<p className="text-gray-500 dark:text-gray-400">
 					{t('auth.loginSubtitle')}
 				</p>
 			</div>
 
 			<Formik
-				initialValues={{
-					email: '',
-					password: '',
-				}}
+				initialValues={savedValues}
 				validationSchema={loginSchema}
-				onSubmit={async (values, { setSubmitting, setFieldError }) => {
-					try {
-						// Show loading dialog
-						showDialog(
-							'loading',
-							t('auth.signingIn'),
-							t('auth.signingInMessage')
-						);
-
-						const result = await login(values.email, values.password);
-
-						if (result.success) {
-							// Show success dialog
-							showDialog(
-								'success',
-								t('auth.signInSuccess'),
-								t('auth.signInSuccessMessage'),
-								t('auth.goToDashboard'),
-								() => router.push('/')
-							);
-						} else {
-							// Handle specific error types
-							if (result.error?.code === 'auth/wrong-password') {
-								setFieldError('password', t('auth.wrongPassword'));
-								throw new Error(t('auth.wrongPasswordMessage'));
-							} else if (result.error?.code === 'auth/user-not-found') {
-								setFieldError('email', t('auth.userNotFound'));
-								throw new Error(t('auth.userNotFoundMessage'));
-							} else if (result.error?.code === 'auth/too-many-requests') {
-								throw new Error(t('auth.tooManyRequestsMessage'));
-							} else {
-								throw result.error;
-							}
-						}
-					} catch (error: any) {
-						// Show error dialog
-						showDialog(
-							'error',
-							t('auth.signInFailed'),
-							error.message || t('auth.signInFailedMessage')
-						);
-					} finally {
-						setSubmitting(false);
-					}
-				}}
+				onSubmit={handleSubmit}
+				validateOnBlur={false}
+				enableReinitialize={false}
 			>
 				{({
-					isSubmitting,
 					handleChange,
 					values,
 					errors,
 					touched,
-					setFieldError,
+					handleSubmit: formikSubmit,
 				}) => (
-					<Form className="space-y-6">
+					<Form
+						id="login-form"
+						className="space-y-5"
+						onSubmit={(e) => {
+							e.preventDefault();
+							formikSubmit(e);
+							return false;
+						}}
+					>
 						<div className="space-y-4">
 							<div className="group">
 								<TextField
@@ -136,6 +221,7 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 										<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
 									}
 									className="rounded-lg transition-all duration-300 hover:shadow-md auth-input-field"
+									disabled={isSubmitting}
 								/>
 							</div>
 
@@ -157,6 +243,7 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 											type="button"
 											onClick={() => setShowPassword(!showPassword)}
 											className="text-foreground/40 hover:text-primary-500 transition-colors"
+											disabled={isSubmitting}
 										>
 											{showPassword ? (
 												<EyeOff className="h-5 w-5" />
@@ -166,6 +253,7 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 										</button>
 									}
 									className="rounded-lg transition-all duration-300 hover:shadow-md auth-input-field"
+									disabled={isSubmitting}
 								/>
 							</div>
 
@@ -173,26 +261,29 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 								<Button
 									type="button"
 									variant="link"
-									onClick={(e) => {
-										e.preventDefault();
-										onForgotPassword();
-									}}
+									onClick={onForgotPassword}
 									className="text-sm text-primary-500 hover:text-primary-600 p-0"
+									disabled={isSubmitting}
 								>
 									{t('auth.forgotPassword')}
 								</Button>
 							</div>
 						</div>
 
-						<div>
-							<Button
-								type="submit"
-								disabled={isSubmitting}
-								className="w-full h-12 bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg auth-button"
-							>
-								{isSubmitting ? t('common.loading') : t('auth.signIn')}
-							</Button>
-						</div>
+						<Button
+							type="submit"
+							disabled={isSubmitting}
+							className="w-full h-12 bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg auth-button disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{isSubmitting ? (
+								<div className="flex items-center justify-center">
+									<Loader2 className="h-5 w-5 animate-spin mr-2" />
+									{t('common.loading')}
+								</div>
+							) : (
+								t('auth.signIn')
+							)}
+						</Button>
 					</Form>
 				)}
 			</Formik>
@@ -200,97 +291,125 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 	);
 };
 
-const SignupForm = () => {
-	const { register } = useAuth();
-	const router = useRouter();
-	const [showPassword, setShowPassword] = useState(false);
-	const { showDialog } = useAuthCard();
+const SignupForm = ({
+	setIsFlipped,
+}: {
+	setIsFlipped: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+	const { register, authState } = useAuth();
+	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
+	const [showPassword, setShowPassword] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [savedValues, setSavedValues] = useState<SignupFormValues>(
+		() =>
+			getStoredFormValues('signup') || {
+				email: '',
+				name: '',
+				surname: '',
+				password: '',
+				acceptTerms: false,
+			}
+	);
+
+	// Effect to handle auth state changes
+	useEffect(() => {
+		if (authState.status === 'authenticated') {
+			// Clear stored form values on successful signup
+			clearStoredFormValues('signup');
+
+			// Close any open dialog
+			closeDialog();
+		}
+	}, [authState, closeDialog]);
+
+	const handleSubmit = async (values: SignupFormValues, { resetForm }: any) => {
+		if (isSubmitting) return;
+
+		setIsSubmitting(true);
+		setSavedValues(values);
+		setStoredFormValues('signup', values);
+		showDialog('loading', t('auth.signingUp'), t('auth.signingUpMessage'));
+
+		try {
+			const result = await register(
+				values.email,
+				values.password,
+				values.name,
+				values.surname
+			);
+
+			if (result.success) {
+				// Clear stored form values on successful registration
+				clearStoredFormValues('signup');
+
+				// Check if email verification is needed
+				if (result.data?.emailVerificationNeeded) {
+					showDialog(
+						'success',
+						t('auth.signUpSuccess'),
+						t('auth.verificationEmailSent'),
+						t('auth.close'),
+						() => {
+							resetForm();
+							setIsFlipped(false); // Flip back to login form
+						}
+					);
+				}
+				// If no email verification needed, the authState effect will handle the redirect
+			} else {
+				showDialog(
+					'error',
+					t('auth.signUpFailed'),
+					result.error?.message || t('auth.signUpFailedMessage')
+				);
+			}
+		} catch (error: any) {
+			showDialog(
+				'error',
+				t('auth.signUpFailed'),
+				error.message || t('auth.signUpFailedMessage')
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	return (
-		<div className="space-y-8">
-			<div className="space-y-2 text-center">
-				<div className="flex justify-center mb-4">
-					<div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-						<User className="text-primary-600 h-8 w-8" />
-					</div>
-				</div>
-				<h2 className="text-3xl font-bold text-center bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-					{t('auth.registerTitle')}
+		<div className="space-y-6">
+			<div className="text-center">
+				<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+					{t('auth.createAccount')}
 				</h2>
-				<p className="text-center text-card-foreground/60">
+				<p className="text-gray-500 dark:text-gray-400">
 					{t('auth.registerSubtitle')}
 				</p>
 			</div>
 
 			<Formik
-				initialValues={{
-					email: '',
-					name: '',
-					surname: '',
-					password: '',
-					acceptTerms: false,
-				}}
+				initialValues={savedValues}
 				validationSchema={signupSchema}
-				onSubmit={async (values, { setSubmitting, setFieldError }) => {
-					try {
-						// Show loading dialog
-						showDialog(
-							'loading',
-							t('auth.creatingAccount'),
-							t('auth.creatingAccountMessage')
-						);
-
-						const result = await register(
-							values.email,
-							values.password,
-							values.name,
-							values.surname
-						);
-
-						if (result.success) {
-							// Show success dialog
-							showDialog(
-								'success',
-								t('auth.accountCreated'),
-								t('auth.accountCreatedMessage'),
-								t('auth.goToDashboard'),
-								() => router.push('/')
-							);
-						} else {
-							// Handle specific error types
-							if (result.error?.code === 'auth/email-already-in-use') {
-								setFieldError('email', t('auth.emailInUse'));
-								throw new Error(t('auth.emailInUseMessage'));
-							} else if (result.error?.code === 'auth/weak-password') {
-								setFieldError('password', t('auth.weakPassword'));
-								throw new Error(t('auth.weakPasswordMessage'));
-							} else {
-								throw result.error;
-							}
-						}
-					} catch (error: any) {
-						// Show error dialog
-						showDialog(
-							'error',
-							t('auth.signUpFailed'),
-							error.message || t('auth.signUpFailedMessage')
-						);
-					} finally {
-						setSubmitting(false);
-					}
-				}}
+				onSubmit={handleSubmit}
+				validateOnBlur={false}
+				enableReinitialize={false}
 			>
 				{({
-					isSubmitting,
 					handleChange,
 					values,
 					errors,
 					touched,
 					setFieldValue,
-					setFieldError,
+					handleSubmit: formikSubmit,
 				}) => (
-					<Form className="space-y-6">
+					<Form
+						id="signup-form"
+						className="space-y-5"
+						onSubmit={(e) => {
+							e.preventDefault();
+							formikSubmit(e);
+							return false;
+						}}
+					>
 						<div className="space-y-4">
 							<div className="group">
 								<TextField
@@ -306,6 +425,7 @@ const SignupForm = () => {
 										<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
 									}
 									className="rounded-lg transition-all duration-300 hover:shadow-md"
+									disabled={isSubmitting}
 								/>
 							</div>
 
@@ -320,7 +440,11 @@ const SignupForm = () => {
 										error={!!(errors.name && touched.name)}
 										helperText={touched.name ? errors.name : ''}
 										fullWidth
+										startAdornment={
+											<User className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
+										}
 										className="rounded-lg transition-all duration-300 hover:shadow-md"
+										disabled={isSubmitting}
 									/>
 								</div>
 
@@ -334,7 +458,11 @@ const SignupForm = () => {
 										error={!!(errors.surname && touched.surname)}
 										helperText={touched.surname ? errors.surname : ''}
 										fullWidth
+										startAdornment={
+											<User className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
+										}
 										className="rounded-lg transition-all duration-300 hover:shadow-md"
+										disabled={isSubmitting}
 									/>
 								</div>
 							</div>
@@ -357,6 +485,7 @@ const SignupForm = () => {
 											type="button"
 											onClick={() => setShowPassword(!showPassword)}
 											className="text-foreground/40 hover:text-primary-500 transition-colors"
+											disabled={isSubmitting}
 										>
 											{showPassword ? (
 												<EyeOff className="h-5 w-5" />
@@ -366,6 +495,7 @@ const SignupForm = () => {
 										</button>
 									}
 									className="rounded-lg transition-all duration-300 hover:shadow-md"
+									disabled={isSubmitting}
 								/>
 							</div>
 
@@ -380,6 +510,7 @@ const SignupForm = () => {
 											onCheckedChange={(checked) => {
 												setFieldValue('acceptTerms', checked === true);
 											}}
+											disabled={isSubmitting}
 										/>
 									</div>
 									<div className="ml-2 text-sm">
@@ -399,15 +530,20 @@ const SignupForm = () => {
 							</div>
 						</div>
 
-						<div>
-							<Button
-								type="submit"
-								disabled={isSubmitting}
-								className="w-full h-12 bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg auth-button"
-							>
-								{isSubmitting ? t('common.loading') : t('auth.createAccount')}
-							</Button>
-						</div>
+						<Button
+							type="submit"
+							disabled={isSubmitting}
+							className="w-full h-12 bg-gradient-to-r from-primary-600 to-primary-400 hover:from-primary-700 hover:to-primary-500 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg auth-button disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{isSubmitting ? (
+								<div className="flex items-center justify-center">
+									<Loader2 className="h-5 w-5 animate-spin mr-2" />
+									{t('common.loading')}
+								</div>
+							) : (
+								t('auth.createAccount')
+							)}
+						</Button>
 					</Form>
 				)}
 			</Formik>
@@ -416,23 +552,42 @@ const SignupForm = () => {
 };
 
 export default function AuthPage() {
-	const searchParams = useSearchParams();
+	// State
 	const [isFlipped, setIsFlipped] = useState(false);
-	const [showPassword, setShowPassword] = useState(false);
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 	const [showForgotPassword, setShowForgotPassword] = useState(false);
-	const [captchaVerified, setCaptchaVerified] = useState(true); // Set to true for now to bypass captcha
-	const { user, login, register, resetPassword, isLoading } = useAuth();
+	const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+	// Hooks
+	const { authState, resetPassword } = useAuth();
 	const router = useRouter();
-	const { showDialog } = useAuthCard();
+	const searchParams = useSearchParams();
+	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
 
-	// Handle forgot password
+	// Check for URL parameters on mount
+	useEffect(() => {
+		const verified = searchParams.get('verified');
+		const error = searchParams.get('error');
+
+		if (verified === 'true') {
+			showDialog(
+				'success',
+				t('auth.verificationSuccess'),
+				t('auth.verificationSuccessMessage')
+			);
+		}
+
+		if (error) {
+			showDialog('error', t('auth.error'), decodeURIComponent(error));
+		}
+	}, [searchParams, showDialog, t]);
+
+	// Handlers
 	const handleForgotPassword = () => {
 		setShowForgotPassword(true);
 	};
 
-	// Handle reset password
 	const handleResetPassword = async () => {
 		if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
 			showDialog(
@@ -443,99 +598,132 @@ export default function AuthPage() {
 			return;
 		}
 
-		try {
-			showDialog(
-				'loading',
-				t('auth.sendingResetLink'),
-				t('auth.sendingResetLinkMessage')
-			);
+		if (isResettingPassword) return;
+		setIsResettingPassword(true);
 
-			// Call the resetPassword function from AuthProvider
+		showDialog(
+			'loading',
+			t('auth.sendingResetLink'),
+			t('auth.sendingResetLinkMessage')
+		);
+
+		try {
 			const result = await resetPassword(forgotPasswordEmail);
 
-			// Check if result is successful (no error)
-			if (!result.error) {
+			if (result.success) {
 				showDialog(
 					'success',
 					t('auth.resetLinkSent'),
 					t('auth.resetLinkSentMessage')
 				);
 				setShowForgotPassword(false);
+				setForgotPasswordEmail('');
 			} else {
-				throw result.error;
+				console.error('Reset password failed:', result.error);
+				showDialog(
+					'error',
+					t('auth.resetLinkFailed'),
+					result.error?.description ||
+						result.error?.message ||
+						t('auth.resetLinkFailedMessage')
+				);
 			}
 		} catch (error: any) {
+			console.error('Reset password error:', error);
 			showDialog(
 				'error',
 				t('auth.resetLinkFailed'),
 				error.message || t('auth.resetLinkFailedMessage')
 			);
+		} finally {
+			setIsResettingPassword(false);
 		}
 	};
 
-	// Redirect if user is already authenticated
+	// Effect to handle authentication state
 	useEffect(() => {
-		if (!isLoading && user) {
-			router.push('/');
+		if (authState.status === 'authenticated') {
+			router.push('/dashboard');
 		}
-	}, [user, router, isLoading]);
+	}, [authState, router]);
 
-	// If still loading or user is authenticated, show nothing
-	if (isLoading || user) {
-		return null;
+	// If still loading, show a centered loading spinner
+	if (authState.status === 'loading') {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+				<div className="flex flex-col items-center">
+					<Loader2 className="h-12 w-12 text-primary-500 animate-spin mb-4" />
+					<p className="text-gray-600 dark:text-gray-300 text-lg font-medium">
+						{t('common.loading')}
+					</p>
+				</div>
+			</div>
+		);
 	}
 
-	// Add the actual rendering of the auth cards
 	return (
-		<div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
 			{/* Forgot Password Dialog */}
 			<Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-				<DialogContent className="sm:max-w-md">
+				<DialogContent className="sm:max-w-md rounded-xl">
 					<DialogHeader>
-						<DialogTitle>{t('auth.forgotPassword')}</DialogTitle>
+						<DialogTitle className="text-center">
+							{t('auth.forgotPassword')}
+						</DialogTitle>
 					</DialogHeader>
-					<div className="py-4">
-						<p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-							{t('auth.enterEmailForReset')}
-						</p>
-						<TextField
-							name="forgotPasswordEmail"
-							type="email"
-							label={t('auth.email')}
-							value={forgotPasswordEmail}
-							onChange={(e) => setForgotPasswordEmail(e.target.value)}
-							fullWidth
-							startAdornment={
-								<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
-							}
-							className="rounded-lg transition-all duration-300 hover:shadow-md"
-						/>
-					</div>
-					<div className="flex justify-end gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={(e) => {
-								e.preventDefault();
-								setShowForgotPassword(false);
-							}}
-							className="flex items-center gap-1"
-						>
-							<X className="h-4 w-4" />
-							{t('common.cancel')}
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							onClick={(e) => {
-								e.preventDefault();
-								handleResetPassword();
-							}}
-						>
-							{t('auth.sendResetLink')}
-						</Button>
-					</div>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							handleResetPassword();
+						}}
+					>
+						<div className="py-4">
+							<p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+								{t('auth.enterEmailForReset')}
+							</p>
+							<TextField
+								name="forgotPasswordEmail"
+								type="email"
+								label={t('auth.email')}
+								value={forgotPasswordEmail}
+								onChange={(e) => setForgotPasswordEmail(e.target.value)}
+								fullWidth
+								startAdornment={
+									<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
+								}
+								className="rounded-lg transition-all duration-300 hover:shadow-md"
+								disabled={isResettingPassword}
+							/>
+						</div>
+						<div className="flex justify-end gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setShowForgotPassword(false)}
+								className="flex items-center gap-1"
+								disabled={isResettingPassword}
+							>
+								<X className="h-4 w-4" />
+								{t('common.cancel')}
+							</Button>
+							<Button
+								type="submit"
+								size="sm"
+								className="bg-primary-500 hover:bg-primary-600"
+								disabled={isResettingPassword}
+							>
+								{isResettingPassword ? (
+									<div className="flex items-center">
+										<Loader2 className="h-4 w-4 animate-spin mr-2" />
+										{t('common.loading')}
+									</div>
+								) : (
+									t('auth.sendResetLink')
+								)}
+							</Button>
+						</div>
+					</form>
 				</DialogContent>
 			</Dialog>
 
@@ -558,7 +746,7 @@ export default function AuthPage() {
 							frontLabelKey="auth.haveAccount"
 							backLabelKey="auth.signIn"
 						>
-							<SignupForm />
+							<SignupForm setIsFlipped={setIsFlipped} />
 						</AuthCard>
 					</div>
 				</div>

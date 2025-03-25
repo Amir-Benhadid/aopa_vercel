@@ -1,0 +1,486 @@
+'use client';
+
+import { FeedbackDialog } from '@/components/auth/FeedbackDialog';
+import { supabase } from '@/lib/supabase';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import {
+	AnimatePresence,
+	motion,
+	useScroll,
+	useTransform,
+} from 'framer-motion';
+import {
+	AtSign,
+	Check,
+	Loader2,
+	Mail,
+	MapPin,
+	Phone,
+	SendIcon,
+	User,
+} from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import * as Yup from 'yup';
+
+// Contact form validation schema
+const ContactSchema = Yup.object().shape({
+	name: Yup.string()
+		.min(2, 'Name is too short')
+		.max(100, 'Name is too long')
+		.required('Required'),
+	email: Yup.string().email('Invalid email address').required('Required'),
+	subject: Yup.string()
+		.min(2, 'Subject is too short')
+		.max(100, 'Subject is too long')
+		.required('Required'),
+	message: Yup.string()
+		.min(10, 'Message is too short')
+		.max(1000, 'Message is too long')
+		.required('Required'),
+});
+
+// Initial values for the form
+const initialValues = {
+	name: '',
+	email: '',
+	subject: '',
+	message: '',
+};
+
+export default function ContactPage() {
+	const { t } = useTranslation();
+	const [formSuccess, setFormSuccess] = useState(false);
+	const { scrollY } = useScroll();
+	const [feedbackDialog, setFeedbackDialog] = useState<{
+		isOpen: boolean;
+		title: string;
+		message: string;
+		type: 'success' | 'error' | 'loading';
+	}>({
+		isOpen: false,
+		title: '',
+		message: '',
+		type: 'loading',
+	});
+
+	// Parallax effect values
+	const backgroundY = useTransform(scrollY, [0, 500], [0, 150]);
+	const contentOpacity = useTransform(scrollY, [0, 300], [1, 0.5]);
+	const contentY = useTransform(scrollY, [0, 300], [0, 50]);
+
+	// Close dialog handler
+	const handleCloseDialog = () => {
+		setFeedbackDialog((prev) => ({ ...prev, isOpen: false }));
+	};
+
+	// Handle form submission
+	const handleSubmit = async (
+		values: typeof initialValues,
+		{ resetForm, setSubmitting }: any
+	) => {
+		// Show loading dialog
+		setFeedbackDialog({
+			isOpen: true,
+			title: t('contact.form.sending') || 'Sending message...',
+			message:
+				t('contact.form.sendingMessage') ||
+				'Please wait while we send your message.',
+			type: 'loading',
+		});
+
+		try {
+			// Save message to Supabase contacts table
+			const { error } = await supabase.from('contact').insert({
+				name: values.name,
+				email: values.email,
+				subject: values.subject,
+				message: values.message,
+				status: 'new',
+				created_at: new Date().toISOString(),
+			});
+
+			if (error) {
+				throw error;
+			}
+
+			// Show success dialog
+			setFeedbackDialog({
+				isOpen: true,
+				title: t('contact.form.successTitle') || 'Message Sent!',
+				message:
+					t('contact.form.successMessage') ||
+					'Thank you for your message. We will contact you soon!',
+				type: 'success',
+			});
+
+			setFormSuccess(true);
+			toast.success('Your message has been sent. We will contact you soon!');
+			resetForm();
+
+			// Reset success message after a delay
+			setTimeout(() => {
+				setFormSuccess(false);
+			}, 5000);
+		} catch (error: any) {
+			console.error('Error sending message:', error);
+
+			// Show error dialog
+			setFeedbackDialog({
+				isOpen: true,
+				title: t('contact.form.errorTitle') || 'Message Failed',
+				message:
+					error.message ||
+					t('contact.form.errorMessage') ||
+					'Failed to send message. Please try again later.',
+				type: 'error',
+			});
+
+			toast.error('Failed to send message. Please try again later.');
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	return (
+		<div>
+			{/* Feedback Dialog */}
+			<FeedbackDialog
+				isOpen={feedbackDialog.isOpen}
+				onClose={handleCloseDialog}
+				title={feedbackDialog.title}
+				message={feedbackDialog.message}
+				type={feedbackDialog.type}
+			/>
+
+			{/* Hero Section */}
+			<section className="relative h-[60vh] min-h-[400px] flex items-center overflow-hidden w-full">
+				{/* Parallax Background */}
+				<motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
+					<Image
+						src="/images/hero-background.jpg"
+						alt="Contact us background"
+						fill
+						className="object-cover object-center"
+						priority
+					/>
+					<div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80 mix-blend-multiply" />
+				</motion.div>
+
+				{/* Background Elements */}
+				<div className="absolute inset-0 z-0">
+					<motion.div
+						className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl"
+						animate={{
+							scale: [1, 1.2, 1],
+							opacity: [0.3, 0.5, 0.3],
+						}}
+						transition={{
+							duration: 8,
+							repeat: Infinity,
+							repeatType: 'reverse',
+						}}
+					/>
+					<motion.div
+						className="absolute bottom-1/3 left-1/4 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl"
+						animate={{
+							scale: [1, 1.1, 1],
+							opacity: [0.2, 0.4, 0.2],
+						}}
+						transition={{
+							duration: 10,
+							repeat: Infinity,
+							repeatType: 'reverse',
+							delay: 1,
+						}}
+					/>
+				</div>
+
+				{/* Hero Content */}
+				<div className="w-full px-8 sm:px-12 lg:px-16 relative z-10">
+					<motion.div
+						className="max-w-3xl mx-auto text-center"
+						style={{
+							opacity: contentOpacity,
+							y: contentY,
+						}}
+					>
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5 }}
+							className="inline-block px-4 py-1.5 mb-4 sm:mb-6 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+						>
+							<span className="text-sm sm:text-base font-medium text-white">
+								{t('contact.tagline') || 'Get in Touch'}
+							</span>
+						</motion.div>
+
+						<motion.h1
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.1 }}
+							className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6"
+						>
+							{t('contact.title') || 'Contact Us'}
+						</motion.h1>
+
+						<motion.p
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.2 }}
+							className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto"
+						>
+							{t('contact.subtitle') ||
+								"Have questions or want to get in touch? We'd love to hear from you."}
+						</motion.p>
+					</motion.div>
+				</div>
+			</section>
+
+			{/* Content Section */}
+			<section className="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+				<div className="max-w-5xl mx-auto">
+					<div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+						{/* Contact Form */}
+						<motion.div
+							className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-8 border border-gray-100 dark:border-gray-700"
+							initial={{ opacity: 0, y: 30 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5 }}
+						>
+							{/* Success overlay */}
+							<AnimatePresence>
+								{formSuccess && (
+									<motion.div
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										className="absolute inset-0 bg-white dark:bg-gray-800 flex flex-col items-center justify-center z-10 rounded-2xl"
+									>
+										<div className="rounded-full bg-green-100 dark:bg-green-900/30 p-5 mb-5">
+											<Check className="h-10 w-10 text-green-600 dark:text-green-400" />
+										</div>
+										<h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+											{t('contact.form.successTitle') || 'Message Sent!'}
+										</h3>
+										<p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
+											{t('contact.form.successMessage') ||
+												'Thank you for your message. We will get back to you soon.'}
+										</p>
+									</motion.div>
+								)}
+							</AnimatePresence>
+
+							<div className="mb-6">
+								<h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+									{t('contact.form.title') || 'Send us a Message'}
+								</h2>
+								<div className="w-20 h-1 bg-blue-500 mt-2"></div>
+							</div>
+
+							<Formik
+								initialValues={initialValues}
+								validationSchema={ContactSchema}
+								onSubmit={handleSubmit}
+							>
+								{({ isSubmitting, errors, touched }) => (
+									<Form className="space-y-5">
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+											<div>
+												<label
+													htmlFor="name"
+													className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+												>
+													{t('contact.form.name') || 'Full Name'}
+												</label>
+												<div className="relative">
+													<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+														<User className="h-5 w-5 text-gray-400" />
+													</div>
+													<Field
+														type="text"
+														name="name"
+														id="name"
+														className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+															errors.name && touched.name
+																? 'border-red-500 dark:border-red-500'
+																: 'border-gray-300 dark:border-gray-600'
+														}`}
+														placeholder="John Doe"
+													/>
+													<ErrorMessage
+														name="name"
+														component="div"
+														className="mt-1 text-xs text-red-600 dark:text-red-400"
+													/>
+												</div>
+											</div>
+
+											<div>
+												<label
+													htmlFor="email"
+													className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+												>
+													{t('contact.form.email') || 'Email Address'}
+												</label>
+												<div className="relative">
+													<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+														<AtSign className="h-5 w-5 text-gray-400" />
+													</div>
+													<Field
+														type="email"
+														name="email"
+														id="email"
+														className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+															errors.email && touched.email
+																? 'border-red-500 dark:border-red-500'
+																: 'border-gray-300 dark:border-gray-600'
+														}`}
+														placeholder="john.doe@example.com"
+													/>
+													<ErrorMessage
+														name="email"
+														component="div"
+														className="mt-1 text-xs text-red-600 dark:text-red-400"
+													/>
+												</div>
+											</div>
+										</div>
+
+										<div>
+											<label
+												htmlFor="subject"
+												className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+											>
+												{t('contact.form.subject') || 'Subject'}
+											</label>
+											<div className="relative">
+												<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+													<Mail className="h-5 w-5 text-gray-400" />
+												</div>
+												<Field
+													type="text"
+													name="subject"
+													id="subject"
+													className={`w-full pl-10 pr-4 py-2.5 border rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+														errors.subject && touched.subject
+															? 'border-red-500 dark:border-red-500'
+															: 'border-gray-300 dark:border-gray-600'
+													}`}
+													placeholder="Inquiry about upcoming events"
+												/>
+												<ErrorMessage
+													name="subject"
+													component="div"
+													className="mt-1 text-xs text-red-600 dark:text-red-400"
+												/>
+											</div>
+										</div>
+
+										<div>
+											<label
+												htmlFor="message"
+												className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+											>
+												{t('contact.form.message') || 'Message'}
+											</label>
+											<Field
+												as="textarea"
+												name="message"
+												id="message"
+												rows={5}
+												className={`w-full px-4 py-2.5 border rounded-lg bg-white/50 dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+													errors.message && touched.message
+														? 'border-red-500 dark:border-red-500'
+														: 'border-gray-300 dark:border-gray-600'
+												}`}
+												placeholder="Your message here..."
+											/>
+											<ErrorMessage
+												name="message"
+												component="div"
+												className="mt-1 text-xs text-red-600 dark:text-red-400"
+											/>
+										</div>
+
+										<div>
+											<button
+												type="submit"
+												disabled={isSubmitting}
+												className="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+											>
+												{isSubmitting ? (
+													<>
+														<Loader2 className="animate-spin mr-2 h-5 w-5" />
+														{t('contact.form.sending') || 'Sending...'}
+													</>
+												) : (
+													<>
+														<SendIcon className="mr-2 h-5 w-5" />
+														{t('contact.form.submit') || 'Send Message'}
+													</>
+												)}
+											</button>
+										</div>
+									</Form>
+								)}
+							</Formik>
+						</motion.div>
+
+						{/* Contact Information */}
+						<motion.div
+							className="space-y-6"
+							initial={{ opacity: 0, y: 30 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.2 }}
+						>
+							<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+									{t('contact.info.email.title') || 'Email'}
+								</h3>
+								<div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
+									<Mail className="h-5 w-5 text-blue-500 mr-2" />
+									<span>contact@ophthalmology-association.org</span>
+								</div>
+								<div className="flex items-center text-gray-600 dark:text-gray-400">
+									<Mail className="h-5 w-5 text-blue-500 mr-2" />
+									<span>support@ophthalmology-association.org</span>
+								</div>
+							</div>
+
+							<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+									{t('contact.info.phone.title') || 'Phone'}
+								</h3>
+								<div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
+									<Phone className="h-5 w-5 text-green-500 mr-2" />
+									<span>+1 (123) 456-7890</span>
+								</div>
+								<div className="flex items-center text-gray-600 dark:text-gray-400">
+									<Phone className="h-5 w-5 text-green-500 mr-2" />
+									<span>+1 (123) 456-7891</span>
+								</div>
+							</div>
+
+							<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+									{t('contact.info.address.title') || 'Address'}
+								</h3>
+								<div className="flex items-start text-gray-600 dark:text-gray-400">
+									<MapPin className="h-5 w-5 text-purple-500 mr-2 mt-0.5" />
+									<div>
+										<p>123 Medical Center Blvd</p>
+										<p>Suite 456, Health City, HC 12345</p>
+									</div>
+								</div>
+							</div>
+						</motion.div>
+					</div>
+				</div>
+			</section>
+		</div>
+	);
+}

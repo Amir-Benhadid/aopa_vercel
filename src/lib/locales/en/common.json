@@ -91,7 +91,11 @@
 		"firstName": "First Name",
 		"lastName": "Last Name",
 		"createAccount": "Create Account",
-		"termsOfService": "I agree to the Terms of Service and Privacy Policy"
+		"termsOfService": "I agree to the Terms of Service and Privacy Policy",
+		"verificationNeeded": "Verification Required",
+		"verificationNeededMessage": "We've sent a verification email to your address. Please check your inbox and follow the link to verify your account before signing in.",
+		"emailNotVerifiedMessage": "Your email address has not been verified. Please check your inbox for the verification link or request a new one.",
+		"backToLogin": "Back to Login"
 	},
 	"abstracts": {
 		"title": "Abstracts",

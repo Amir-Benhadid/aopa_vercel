@@ -134,6 +134,38 @@ export interface Database {
 					created_at?: string;
 				};
 			};
+			contacts: {
+				Row: {
+					id: string;
+					name: string;
+					email: string;
+					subject: string;
+					message: string;
+					status: 'new' | 'read' | 'replied';
+					created_at: string;
+					updated_at: string | null;
+				};
+				Insert: {
+					id?: string;
+					name: string;
+					email: string;
+					subject: string;
+					message: string;
+					status?: 'new' | 'read' | 'replied';
+					created_at?: string;
+					updated_at?: string | null;
+				};
+				Update: {
+					id?: string;
+					name?: string;
+					email?: string;
+					subject?: string;
+					message?: string;
+					status?: 'new' | 'read' | 'replied';
+					created_at?: string;
+					updated_at?: string | null;
+				};
+			};
 		};
 		Views: {
 			[_ in never]: never;
