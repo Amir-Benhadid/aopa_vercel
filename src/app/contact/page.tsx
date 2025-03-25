@@ -3,23 +3,8 @@
 import { FeedbackDialog } from '@/components/auth/FeedbackDialog';
 import { supabase } from '@/lib/supabase';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
-import {
-	AnimatePresence,
-	motion,
-	useScroll,
-	useTransform,
-} from 'framer-motion';
-import {
-	AtSign,
-	Check,
-	Loader2,
-	Mail,
-	MapPin,
-	Phone,
-	SendIcon,
-	User,
-} from 'lucide-react';
-import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AtSign, Check, Loader2, Mail, SendIcon, User } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -53,7 +38,6 @@ const initialValues = {
 export default function ContactPage() {
 	const { t } = useTranslation();
 	const [formSuccess, setFormSuccess] = useState(false);
-	const { scrollY } = useScroll();
 	const [feedbackDialog, setFeedbackDialog] = useState<{
 		isOpen: boolean;
 		title: string;
@@ -65,11 +49,6 @@ export default function ContactPage() {
 		message: '',
 		type: 'loading',
 	});
-
-	// Parallax effect values
-	const backgroundY = useTransform(scrollY, [0, 500], [0, 150]);
-	const contentOpacity = useTransform(scrollY, [0, 300], [1, 0.5]);
-	const contentY = useTransform(scrollY, [0, 300], [0, 50]);
 
 	// Close dialog handler
 	const handleCloseDialog = () => {
@@ -84,10 +63,8 @@ export default function ContactPage() {
 		// Show loading dialog
 		setFeedbackDialog({
 			isOpen: true,
-			title: t('contact.form.sending') || 'Sending message...',
-			message:
-				t('contact.form.sendingMessage') ||
-				'Please wait while we send your message.',
+			title: t('contact.form.sending'),
+			message: t('contact.form.sendingMessage'),
 			type: 'loading',
 		});
 
@@ -109,15 +86,13 @@ export default function ContactPage() {
 			// Show success dialog
 			setFeedbackDialog({
 				isOpen: true,
-				title: t('contact.form.successTitle') || 'Message Sent!',
-				message:
-					t('contact.form.successMessage') ||
-					'Thank you for your message. We will contact you soon!',
+				title: t('contact.form.successTitle'),
+				message: t('contact.form.successMessage'),
 				type: 'success',
 			});
 
 			setFormSuccess(true);
-			toast.success('Your message has been sent. We will contact you soon!');
+			toast.success(t('contact.toast.success'));
 			resetForm();
 
 			// Reset success message after a delay
@@ -130,15 +105,13 @@ export default function ContactPage() {
 			// Show error dialog
 			setFeedbackDialog({
 				isOpen: true,
-				title: t('contact.form.errorTitle') || 'Message Failed',
-				message:
-					error.message ||
-					t('contact.form.errorMessage') ||
-					'Failed to send message. Please try again later.',
+				title: t('contact.form.errorTitle'),
+				message: t('contact.form.errorMessage'),
+
 				type: 'error',
 			});
 
-			toast.error('Failed to send message. Please try again later.');
+			toast.error(t('contact.toast.error'));
 		} finally {
 			setSubmitting(false);
 		}
@@ -154,91 +127,6 @@ export default function ContactPage() {
 				message={feedbackDialog.message}
 				type={feedbackDialog.type}
 			/>
-
-			{/* Hero Section */}
-			<section className="relative h-[60vh] min-h-[400px] flex items-center overflow-hidden w-full">
-				{/* Parallax Background */}
-				<motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
-					<Image
-						src="/images/hero-background.jpg"
-						alt="Contact us background"
-						fill
-						className="object-cover object-center"
-						priority
-					/>
-					<div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-indigo-900/80 mix-blend-multiply" />
-				</motion.div>
-
-				{/* Background Elements */}
-				<div className="absolute inset-0 z-0">
-					<motion.div
-						className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-blue-600/20 blur-3xl"
-						animate={{
-							scale: [1, 1.2, 1],
-							opacity: [0.3, 0.5, 0.3],
-						}}
-						transition={{
-							duration: 8,
-							repeat: Infinity,
-							repeatType: 'reverse',
-						}}
-					/>
-					<motion.div
-						className="absolute bottom-1/3 left-1/4 w-96 h-96 rounded-full bg-indigo-500/20 blur-3xl"
-						animate={{
-							scale: [1, 1.1, 1],
-							opacity: [0.2, 0.4, 0.2],
-						}}
-						transition={{
-							duration: 10,
-							repeat: Infinity,
-							repeatType: 'reverse',
-							delay: 1,
-						}}
-					/>
-				</div>
-
-				{/* Hero Content */}
-				<div className="w-full px-8 sm:px-12 lg:px-16 relative z-10">
-					<motion.div
-						className="max-w-3xl mx-auto text-center"
-						style={{
-							opacity: contentOpacity,
-							y: contentY,
-						}}
-					>
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5 }}
-							className="inline-block px-4 py-1.5 mb-4 sm:mb-6 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
-						>
-							<span className="text-sm sm:text-base font-medium text-white">
-								{t('contact.tagline') || 'Get in Touch'}
-							</span>
-						</motion.div>
-
-						<motion.h1
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.1 }}
-							className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6"
-						>
-							{t('contact.title') || 'Contact Us'}
-						</motion.h1>
-
-						<motion.p
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.2 }}
-							className="text-lg sm:text-xl text-white/90 max-w-2xl mx-auto"
-						>
-							{t('contact.subtitle') ||
-								"Have questions or want to get in touch? We'd love to hear from you."}
-						</motion.p>
-					</motion.div>
-				</div>
-			</section>
 
 			{/* Content Section */}
 			<section className="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
@@ -309,7 +197,7 @@ export default function ContactPage() {
 																? 'border-red-500 dark:border-red-500'
 																: 'border-gray-300 dark:border-gray-600'
 														}`}
-														placeholder="John Doe"
+														placeholder={t('contact.form.name')}
 													/>
 													<ErrorMessage
 														name="name"
@@ -339,7 +227,7 @@ export default function ContactPage() {
 																? 'border-red-500 dark:border-red-500'
 																: 'border-gray-300 dark:border-gray-600'
 														}`}
-														placeholder="john.doe@example.com"
+														placeholder={t('contact.form.email')}
 													/>
 													<ErrorMessage
 														name="email"
@@ -370,7 +258,7 @@ export default function ContactPage() {
 															? 'border-red-500 dark:border-red-500'
 															: 'border-gray-300 dark:border-gray-600'
 													}`}
-													placeholder="Inquiry about upcoming events"
+													placeholder={t('contact.form.subject')}
 												/>
 												<ErrorMessage
 													name="subject"
@@ -397,7 +285,7 @@ export default function ContactPage() {
 														? 'border-red-500 dark:border-red-500'
 														: 'border-gray-300 dark:border-gray-600'
 												}`}
-												placeholder="Your message here..."
+												placeholder={t('contact.form.message')}
 											/>
 											<ErrorMessage
 												name="message"
@@ -443,38 +331,7 @@ export default function ContactPage() {
 								</h3>
 								<div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
 									<Mail className="h-5 w-5 text-blue-500 mr-2" />
-									<span>contact@ophthalmology-association.org</span>
-								</div>
-								<div className="flex items-center text-gray-600 dark:text-gray-400">
-									<Mail className="h-5 w-5 text-blue-500 mr-2" />
-									<span>support@ophthalmology-association.org</span>
-								</div>
-							</div>
-
-							<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									{t('contact.info.phone.title') || 'Phone'}
-								</h3>
-								<div className="flex items-center text-gray-600 dark:text-gray-400 mb-3">
-									<Phone className="h-5 w-5 text-green-500 mr-2" />
-									<span>+1 (123) 456-7890</span>
-								</div>
-								<div className="flex items-center text-gray-600 dark:text-gray-400">
-									<Phone className="h-5 w-5 text-green-500 mr-2" />
-									<span>+1 (123) 456-7891</span>
-								</div>
-							</div>
-
-							<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-								<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-									{t('contact.info.address.title') || 'Address'}
-								</h3>
-								<div className="flex items-start text-gray-600 dark:text-gray-400">
-									<MapPin className="h-5 w-5 text-purple-500 mr-2 mt-0.5" />
-									<div>
-										<p>123 Medical Center Blvd</p>
-										<p>Suite 456, Health City, HC 12345</p>
-									</div>
+									<span>contact@aopa.dz</span>
 								</div>
 							</div>
 						</motion.div>

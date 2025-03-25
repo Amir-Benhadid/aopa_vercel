@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import FlipbookPDFViewer from '@/components/ui/pdfViewer';
 import { getPreviousCongress } from '@/lib/api';
 import { getCongressFolderPath } from '@/lib/utils';
@@ -224,11 +225,11 @@ export default function PreviousEventPage() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-				<p className="text-2xl text-gray-700 dark:text-gray-300">
-					{t('common.loading')}
-				</p>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 

@@ -7,16 +7,10 @@ import {
 	useScroll,
 	useTransform,
 } from 'framer-motion';
-import {
-	ArrowUpRight,
-	Clock,
-	Github,
-	Mail,
-	MapPin,
-	Twitter,
-} from 'lucide-react';
+import { ArrowUpRight, Facebook, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -30,6 +24,7 @@ export function Footer() {
 	>('idle');
 	const footerRef = useRef(null);
 	const [inView, setInView] = useState(false);
+	const router = useRouter();
 
 	// Scroll position tracking
 	useEffect(() => {
@@ -138,26 +133,16 @@ export function Footer() {
 
 	const contactInfo = [
 		{
-			icon: <MapPin className="h-3 w-3" />,
-			text: '123 Medical Center, Healthcare City',
-		},
-		{
 			icon: <Mail className="h-3 w-3" />,
-			text: 'contact@ophthalmology-assoc.org',
+			text: 'contact@aopa.dz',
 		},
-		{ icon: <Clock className="h-3 w-3" />, text: 'Mon-Fri: 9am-5pm' },
 	];
 
 	const socialLinks = [
 		{
-			icon: <Twitter className="h-4 w-4" />,
-			href: 'https://twitter.com',
-			label: 'Twitter',
-		},
-		{
-			icon: <Github className="h-4 w-4" />,
-			href: 'https://github.com',
-			label: 'GitHub',
+			icon: <Facebook className="h-4 w-4" />,
+			href: 'https://www.facebook.com/people/Association-des-Ophtalmologistes-Priv%C3%A9s-Alg%C3%A9riens-AOPA/61571157902241/',
+			label: 'Facebook',
 		},
 	];
 
@@ -240,24 +225,21 @@ export function Footer() {
 					variants={itemVariants}
 				>
 					<motion.div
-						className="w-10 h-10 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm bg-opacity-80"
+						className="w-28 h-28 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm bg-opacity-80 hover:cursor-pointer"
 						whileHover={{ scale: 1.1 }}
 						transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+						onClick={() => router.push('/')}
 					>
 						<Image
 							src={`/logo/logo-sm.svg`}
 							alt={t('app.logoAltWithNumber')}
-							fill
 							className="object-contain"
 							priority
+							fill
 						/>
 					</motion.div>
-					<h2 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-						AOPA
-					</h2>
 					<p className="text-sm text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
-						Advancing eye care through research, education, and innovation since
-						1985.
+						{t('app.footerDescription')}
 					</p>
 				</motion.div>
 
@@ -269,7 +251,7 @@ export function Footer() {
 						variants={itemVariants}
 					>
 						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
-							Navigation
+							{t('navigation.title')}
 						</h3>
 						<ul className="space-y-2">
 							{mainLinks.map((link, index) => (
@@ -323,7 +305,7 @@ export function Footer() {
 						variants={itemVariants}
 					>
 						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
-							Resources
+							{t('navigation.sections.resources')}
 						</h3>
 						<ul className="space-y-2">
 							{resourceLinks.map((link, index) => (
@@ -377,7 +359,7 @@ export function Footer() {
 						variants={itemVariants}
 					>
 						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
-							Contact
+							{t('navigation.sections.contact')}
 						</h3>
 						<ul className="space-y-2">
 							{contactInfo.map((item, index) => (
@@ -445,10 +427,10 @@ export function Footer() {
 						variants={itemVariants}
 					>
 						<h3 className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">
-							Newsletter
+							{t('navigation.sections.newsletter')}
 						</h3>
 						<p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-							Stay informed about the latest advances in ophthalmology.
+							{t('home.newsletter.description')}
 						</p>
 						<form onSubmit={handleSubscribe} className="flex gap-2">
 							<motion.div
@@ -460,7 +442,7 @@ export function Footer() {
 									type="email"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
-									placeholder="Your email"
+									placeholder={t('home.newsletter.emailPlaceholder')}
 									className="w-full py-2 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-primary-500"
 									disabled={isSubmitting || subscribeStatus === 'success'}
 								/>
@@ -499,9 +481,9 @@ export function Footer() {
 											></path>
 										</svg>
 									) : subscribeStatus === 'success' ? (
-										<span>Subscribed</span>
+										<span>{t('home.newsletter.subscribed')}</span>
 									) : (
-										<span>Subscribe</span>
+										<span>{t('home.newsletter.subscribe')}</span>
 									)}
 								</Button>
 							</motion.div>
@@ -516,7 +498,7 @@ export function Footer() {
 									transition={{ type: 'spring', stiffness: 500, damping: 15 }}
 									className="text-xs text-primary-500 mt-2"
 								>
-									Thank you for subscribing!
+									{t('home.newsletter.success')}
 								</motion.p>
 							)}
 						</AnimatePresence>
@@ -550,7 +532,7 @@ export function Footer() {
 					}}
 				>
 					<p className="text-xs text-gray-400 dark:text-gray-500">
-						&copy; {currentYear} Ophthalmology Association
+						&copy; {currentYear} AOPA
 					</p>
 
 					<div className="flex items-center mt-4 sm:mt-0 space-x-6">
@@ -558,19 +540,19 @@ export function Footer() {
 							href="/contact"
 							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
 						>
-							Contact
+							{t('navigation.sections.contact')}
 						</Link>
 						<a
 							href="/privacy"
 							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
 						>
-							Privacy
+							{t('navigation.sections.privacy')}
 						</a>
 						<a
 							href="/terms"
 							className="text-xs text-gray-400 hover:text-primary-500 dark:text-gray-500 dark:hover:text-primary-400 transition-colors duration-300 flex items-center"
 						>
-							Terms
+							{t('navigation.sections.terms')}
 						</a>
 					</div>
 				</motion.div>

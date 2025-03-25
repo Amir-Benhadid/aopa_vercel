@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import FlipbookPDFViewer from '@/components/ui/pdfViewer';
 import { getCongressById } from '@/lib/api';
 import { getCongressFolderPath } from '@/lib/utils';
@@ -11,7 +12,6 @@ import {
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
-	Clock,
 	FileText,
 	Globe,
 	Image as ImageIcon,
@@ -414,14 +414,11 @@ export default function CongressDetailPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen pt-20">
-				<div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-				<div className="animate-pulse flex space-x-4">
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -506,102 +503,98 @@ export default function CongressDetailPage() {
 					className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8"
 				>
 					{/* Hero Banner */}
-					<div className="relative h-64 md:h-80 bg-gradient-to-r from-blue-600/90 to-indigo-700/90 overflow-hidden">
-						{/* Hero Image Slideshow */}
-						{heroImages.length > 0 ? (
-							<AnimatePresence initial={false} mode="wait">
-								<motion.div
-									key={currentHeroImage}
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{
-										duration: 1.2,
-										ease: [0.25, 0.1, 0.25, 1.0],
-										opacity: { duration: 0.8 },
-									}}
-									className="absolute inset-0 z-0"
+					<div className="relative bg-white dark:bg-gray-800">
+						<div className="max-w-7xl mx-auto px-6 pt-8 pb-6">
+							<div className="flex items-center space-x-2 mb-3">
+								<Button
+									variant="ghost"
+									size="sm"
+									className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 -ml-3"
+									onClick={() => router.back()}
 								>
-									<Image
-										src={heroImages[currentHeroImage]}
-										alt={congress.title}
-										fill
-										className="object-cover"
-										sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-										priority={currentHeroImage === 0}
-									/>
-									<div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-indigo-900/70 mix-blend-multiply" />
-								</motion.div>
-							</AnimatePresence>
-						) : (
-							// Fallback pattern if no images
-							<div className="absolute inset-0 opacity-20 mix-blend-overlay">
-								<svg
-									className="w-full h-full"
-									viewBox="0 0 100 100"
-									preserveAspectRatio="none"
-								>
-									<defs>
-										<pattern
-											id="grid"
-											width="10"
-											height="10"
-											patternUnits="userSpaceOnUse"
-										>
-											<path
-												d="M 10 0 L 0 0 0 10"
-												fill="none"
-												stroke="white"
-												strokeWidth="0.5"
-											/>
-										</pattern>
-									</defs>
-									<rect width="100" height="100" fill="url(#grid)" />
-								</svg>
+									<ArrowLeft className="w-4 h-4 mr-1" />
+									{t('common.back')}
+								</Button>
+								<span className="text-gray-300 dark:text-gray-600">/</span>
+								<span className="text-sm text-gray-500 dark:text-gray-400">
+									{t('archives.pastEvents')}
+								</span>
 							</div>
-						)}
-
-						{/* Status Badge */}
-						<div className="absolute top-6 right-6 z-10">
-							{isUpcoming && (
-								<div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-500 text-white shadow-lg">
-									<Clock className="w-4 h-4 mr-2" />
-									{daysUntil === 0
-										? t('congress.today')
-										: daysUntil === 1
-										? t('congress.tomorrow')
-										: t('congress.daysUntil', { days: daysUntil })}
+							<div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+								<div className="flex-1 mb-6 md:mb-0">
+									<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 mb-4">
+										{new Date(congress.start_date).getFullYear()}
+									</div>
+									<h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+										{congress.title}
+									</h1>
+									<div className="flex items-center mb-4 text-gray-600 dark:text-gray-300">
+										<Calendar className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" />
+										<span>{formattedDateRange}</span>
+									</div>
+									{congress.location && (
+										<div className="flex items-center mb-6 text-gray-600 dark:text-gray-300">
+											<MapPin className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" />
+											<span>
+												{typeof congress.location === 'object'
+													? congress.location.name
+													: congress.location}
+											</span>
+										</div>
+									)}
 								</div>
-							)}
-							{isPast && (
-								<div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gray-500 text-white shadow-lg">
-									<Clock className="w-4 h-4 mr-2" />
-									{t('congress.past')}
-								</div>
-							)}
-						</div>
-
-						{/* Title Content */}
-						<div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent z-10">
-							<h1 className="text-3xl md:text-5xl font-bold text-white mb-2 drop-shadow-sm">
-								{congress.title}
-							</h1>
-							<div className="flex flex-wrap items-center gap-4 text-white/90">
-								<div className="flex items-center">
-									<Calendar className="w-5 h-5 mr-2" />
-									<span>{formattedDateRange}</span>
-								</div>
-								<div className="flex items-center">
-									<MapPin className="w-5 h-5 mr-2" />
-									<span>
-										{typeof congress.location === 'string'
-											? congress.location
-											: congress.location?.name || ''}
-									</span>
-								</div>
-								<div className="flex items-center">
-									<Globe className="w-5 h-5 mr-2" />
-									<span>{t(`congressTypes.${congress.congress_type}`)}</span>
+								<div className="md:w-1/3 lg:w-2/5">
+									<div className="relative rounded-lg overflow-hidden shadow-lg h-56 md:h-72 bg-gray-100 dark:bg-gray-700">
+										{heroImages.length > 0 ? (
+											<AnimatePresence initial={false} mode="wait">
+												<motion.div
+													key={currentHeroImage}
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													transition={{
+														duration: 1.2,
+														ease: [0.25, 0.1, 0.25, 1.0],
+														opacity: { duration: 0.8 },
+													}}
+													className="absolute inset-0 z-0"
+												>
+													<Image
+														src={heroImages[currentHeroImage]}
+														alt={congress.title}
+														fill
+														className="object-cover"
+														sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+														priority={currentHeroImage === 0}
+													/>
+												</motion.div>
+											</AnimatePresence>
+										) : (
+											<div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800">
+												<Calendar className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+											</div>
+										)}
+										{heroImages.length > 1 && (
+											<div className="absolute bottom-3 right-3 flex space-x-1">
+												<Button
+													size="icon"
+													variant="secondary"
+													className="w-8 h-8 bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70 rounded-full"
+													onClick={previousImage}
+												>
+													<ChevronLeft className="w-4 h-4" />
+												</Button>
+												<Button
+													size="icon"
+													variant="secondary"
+													className="w-8 h-8 bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70 rounded-full"
+													onClick={nextImage}
+												>
+													<ChevronRight className="w-4 h-4" />
+												</Button>
+											</div>
+										)}
+									</div>
 								</div>
 							</div>
 						</div>
@@ -990,8 +983,8 @@ export default function CongressDetailPage() {
 								(congress.program_file || hasAffiche || hasProgramme) && (
 									<div>
 										<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-											<div className="bg-indigo-100 dark:bg-indigo-800/30 p-2 rounded-lg mr-3">
-												<FileText className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+											<div className="bg-primary-100 dark:bg-primary-800/30 p-2 rounded-lg mr-3">
+												<FileText className="w-6 h-6 text-primary-600 dark:text-primary-400" />
 											</div>
 											{t('congress.programDetails')}
 										</h2>

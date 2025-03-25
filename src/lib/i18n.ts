@@ -21,7 +21,8 @@ if (isBrowser) {
 		.use(initReactI18next)
 		.init({
 			resources,
-			fallbackLng: 'en',
+			lng: 'fr',
+			fallbackLng: 'fr',
 			debug: false,
 			interpolation: {
 				escapeValue: false,
@@ -38,7 +39,7 @@ if (isBrowser) {
 	// Minimal configuration for server-side rendering
 	i18n.use(initReactI18next).init({
 		resources,
-		fallbackLng: 'en',
+		fallbackLng: 'fr',
 		supportedLngs: ['en', 'es', 'fr'],
 		defaultNS: 'common',
 		interpolation: {

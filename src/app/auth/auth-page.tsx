@@ -74,12 +74,14 @@ const clearStoredFormValues = (key: string) => {
 };
 
 const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
-	const { login, authState } = useAuth();
+	const { login, authState, resendVerificationEmail } = useAuth();
 	const router = useRouter();
 	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
 	const [showPassword, setShowPassword] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isResendingVerification, setIsResendingVerification] = useState(false);
+	const [failedAttempts, setFailedAttempts] = useState(0);
 	const [savedValues, setSavedValues] = useState<LoginFormValues>(
 		() => getStoredFormValues('login') || { email: '', password: '' }
 	);
@@ -87,8 +89,9 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 	// Effect to handle auth state changes
 	useEffect(() => {
 		if (authState.status === 'authenticated') {
-			// Clear stored form values on successful login
+			// Clear stored form values and failed attempts on successful login
 			clearStoredFormValues('login');
+			setFailedAttempts(0);
 
 			// Close any open dialog
 			closeDialog();
@@ -97,6 +100,45 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 			router.push('/dashboard');
 		}
 	}, [authState, router, closeDialog]);
+
+	const handleResendVerification = async (email: string) => {
+		if (isResendingVerification) return;
+		setIsResendingVerification(true);
+
+		showDialog(
+			'loading',
+			t('auth.resendingVerificationEmail'),
+			t('auth.resendingVerificationEmailMessage')
+		);
+
+		try {
+			const result = await resendVerificationEmail(email);
+
+			if (result.success) {
+				showDialog(
+					'success',
+					t('auth.verificationEmailResent'),
+					t('auth.verificationEmailResentMessage')
+				);
+			} else {
+				showDialog(
+					'error',
+					t('auth.verificationEmailResendFailed'),
+					result.error?.description ||
+						result.error?.message ||
+						t('auth.verificationEmailResendFailedMessage')
+				);
+			}
+		} catch (error: any) {
+			showDialog(
+				'error',
+				t('auth.verificationEmailResendFailed'),
+				error.message || t('auth.verificationEmailResendFailedMessage')
+			);
+		} finally {
+			setIsResendingVerification(false);
+		}
+	};
 
 	const handleSubmit = async (
 		values: LoginFormValues,
@@ -113,6 +155,15 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 			const result = await login(values.email, values.password);
 
 			if (!result.success) {
+				// Increment failed attempts counter for password-related errors
+				if (
+					result.error?.code === 'auth/invalid-login-credentials' ||
+					result.error?.code === 'auth/invalid-credentials' ||
+					result.error?.code === 'auth/wrong-password'
+				) {
+					setFailedAttempts((prev) => prev + 1);
+				}
+
 				switch (result.error?.code) {
 					case 'auth/invalid-login-credentials':
 					case 'auth/invalid-credentials':
@@ -121,7 +172,9 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						showDialog(
 							'error',
 							t('auth.signInFailed'),
-							t('auth.wrongPasswordMessage')
+							t('auth.wrongPasswordMessage'),
+							failedAttempts >= 2 ? t('auth.resetPassword') : undefined,
+							failedAttempts >= 2 ? onForgotPassword : undefined
 						);
 						break;
 
@@ -138,7 +191,9 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						showDialog(
 							'error',
 							t('auth.signInFailed'),
-							t('auth.tooManyRequestsMessage')
+							t('auth.tooManyRequestsMessage'),
+							t('auth.resetPassword'),
+							onForgotPassword
 						);
 						break;
 
@@ -146,7 +201,9 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						showDialog(
 							'error',
 							t('auth.verificationNeeded'),
-							t('auth.emailNotVerifiedMessage')
+							t('auth.emailNotVerifiedMessage'),
+							t('auth.resendVerificationEmail'),
+							() => handleResendVerification(values.email)
 						);
 						break;
 
@@ -160,7 +217,6 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						);
 				}
 			}
-			// Successful login is handled by the authState effect
 		} catch (error: any) {
 			showDialog(
 				'error',
@@ -296,11 +352,12 @@ const SignupForm = ({
 }: {
 	setIsFlipped: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-	const { register, authState } = useAuth();
+	const { register, authState, resendVerificationEmail } = useAuth();
 	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
 	const [showPassword, setShowPassword] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isResendingVerification, setIsResendingVerification] = useState(false);
 	const [savedValues, setSavedValues] = useState<SignupFormValues>(
 		() =>
 			getStoredFormValues('signup') || {
@@ -322,6 +379,45 @@ const SignupForm = ({
 			closeDialog();
 		}
 	}, [authState, closeDialog]);
+
+	const handleResendVerification = async (email: string) => {
+		if (isResendingVerification) return;
+		setIsResendingVerification(true);
+
+		showDialog(
+			'loading',
+			t('auth.resendingVerificationEmail'),
+			t('auth.resendingVerificationEmailMessage')
+		);
+
+		try {
+			const result = await resendVerificationEmail(email);
+
+			if (result.success) {
+				showDialog(
+					'success',
+					t('auth.verificationEmailResent'),
+					t('auth.verificationEmailResentMessage')
+				);
+			} else {
+				showDialog(
+					'error',
+					t('auth.verificationEmailResendFailed'),
+					result.error?.description ||
+						result.error?.message ||
+						t('auth.verificationEmailResendFailedMessage')
+				);
+			}
+		} catch (error: any) {
+			showDialog(
+				'error',
+				t('auth.verificationEmailResendFailed'),
+				error.message || t('auth.verificationEmailResendFailedMessage')
+			);
+		} finally {
+			setIsResendingVerification(false);
+		}
+	};
 
 	const handleSubmit = async (values: SignupFormValues, { resetForm }: any) => {
 		if (isSubmitting) return;
@@ -349,12 +445,11 @@ const SignupForm = ({
 						'success',
 						t('auth.signUpSuccess'),
 						t('auth.verificationEmailSent'),
-						t('auth.close'),
-						() => {
-							resetForm();
-							setIsFlipped(false); // Flip back to login form
-						}
+						t('auth.resendVerificationEmail'),
+						() => handleResendVerification(values.email)
 					);
+					resetForm();
+					setIsFlipped(false); // Flip back to login form
 				}
 				// If no email verification needed, the authState effect will handle the redirect
 			} else {
@@ -567,6 +662,12 @@ export default function AuthPage() {
 
 	// Check for URL parameters on mount
 	useEffect(() => {
+		const mode = searchParams.get('mode');
+		if (mode === 'signup') {
+			setIsFlipped(true);
+		} else {
+			setIsFlipped(false);
+		}
 		const verified = searchParams.get('verified');
 		const error = searchParams.get('error');
 
@@ -662,7 +763,7 @@ export default function AuthPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+		<div className="min-h-screen flex items-center justify-center ">
 			{/* Forgot Password Dialog */}
 			<Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
 				<DialogContent className="sm:max-w-md rounded-xl">

@@ -2,13 +2,13 @@
 
 import { AnnualReports } from '@/components/home/AnnualReports';
 import { FeaturedActivities } from '@/components/home/FeaturedActivities';
-import { HeroSection } from '@/components/home/HeroSection';
 import { NewsletterSection } from '@/components/home/NewsletterSection';
 import { NoActivitiesPlaceholder } from '@/components/home/NoActivitiesPlaceholder';
 import { PartnersCarousel } from '@/components/home/PartnersCarousel';
 import { PreviousEvents } from '@/components/home/PreviousEvents';
 import { QuickActions } from '@/components/home/QuickActions';
 import { TeamAssociationSection } from '@/components/home/TeamAssociationSection';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import {
 	getAnnualReports,
 	getFeaturedActivities,
@@ -290,14 +290,11 @@ export default function Home() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen">
-				<div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-				<div className="animate-pulse flex space-x-4">
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('congress.loading', 'Loading event details...')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -320,29 +317,6 @@ export default function Home() {
 
 	return (
 		<>
-			{/* Hero Section - Full width with engaging content */}
-			{upcomingCongress && (
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.8 }}
-					className="w-full"
-				>
-					<HeroSection
-						congressTitle={upcomingCongress.title}
-						congressDate={upcomingCongress.start_date}
-						congressLocation={
-							upcomingCongress.location &&
-							typeof upcomingCongress.location === 'object'
-								? upcomingCongress.location.name || 'Location TBA'
-								: upcomingCongress.location || 'Location TBA'
-						}
-						registrationProgress={75}
-						congressRegistrationOpen={upcomingCongress.registration}
-					/>
-				</motion.div>
-			)}
-
 			<div className="flex flex-col relative">
 				{/* Primary Action Section - High priority CTAs */}
 				<motion.div
@@ -421,11 +395,6 @@ export default function Home() {
 												<button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
 													{t('home.upcomingCongress.learnMore')}
 													<ArrowRight className="w-4 h-4 ml-2" />
-												</button>
-											</Link>
-											<Link href="/previous-event" passHref>
-												<button className="px-6 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center">
-													{t('navigation.previousEvent')}
 												</button>
 											</Link>
 										</div>

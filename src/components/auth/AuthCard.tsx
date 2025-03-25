@@ -8,7 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/Dialog';
-import { AlertCircle, CheckCircle, Loader2, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -165,17 +165,17 @@ export function AuthCard({
 	return (
 		<AuthCardContext.Provider value={{ showDialog, closeDialog }}>
 			<Card
-				className={`w-full max-w-md mx-auto p-6 sm:p-8 shadow-xl bg-white dark:bg-gray-800 border-0 overflow-hidden rounded-xl card-glow flex flex-col justify-between relative ${
+				className={`w-[95%] max-w-md mx-auto p-4 sm:p-6 md:p-8 shadow-xl bg-white dark:bg-gray-800 border-0 overflow-hidden rounded-lg sm:rounded-xl card-glow flex flex-col justify-between relative ${
 					className || ''
 				}`}
 			>
 				{/* Decorative elements */}
-				<div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 z-0"></div>
-				<div className="absolute bottom-0 left-0 w-20 sm:w-24 h-20 sm:h-24 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -ml-10 sm:-ml-12 -mb-10 sm:-mb-12 z-0"></div>
+				<div className="absolute top-0 right-0 w-20 sm:w-24 md:w-32 h-20 sm:h-24 md:h-32 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -mr-10 sm:-mr-12 md:-mr-16 -mt-10 sm:-mt-12 md:-mt-16 z-0"></div>
+				<div className="absolute bottom-0 left-0 w-16 sm:w-20 md:w-24 h-16 sm:h-20 md:h-24 bg-primary-100/50 dark:bg-primary-900/20 rounded-full -ml-8 sm:-ml-10 md:-ml-12 -mb-8 sm:-mb-10 md:-mb-12 z-0"></div>
 
 				<div className="flex-1 relative z-10">{children}</div>
 
-				<div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 relative z-10">
+				<div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700 relative z-10">
 					<div className="flex items-center justify-center space-x-2 flex-wrap">
 						<span className="text-sm text-gray-500 dark:text-gray-400">
 							{t(frontLabelKey)}
@@ -200,37 +200,42 @@ export function AuthCard({
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
 							{dialog.type === 'success' && (
-								<CheckCircle className="h-5 w-5 text-green-500" />
+								<CheckCircle className="w-5 h-5 text-green-500" />
 							)}
 							{dialog.type === 'error' && (
-								<AlertCircle className="h-5 w-5 text-red-500" />
+								<AlertCircle className="w-5 h-5 text-red-500" />
 							)}
 							{dialog.type === 'loading' && (
-								<Loader2 className="h-5 w-5 text-primary-500 animate-spin" />
+								<Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
 							)}
 							<span>{dialog.title}</span>
 						</DialogTitle>
 					</DialogHeader>
+
 					<div className="py-4">
 						<p className="text-sm text-gray-600 dark:text-gray-300">
 							{dialog.message}
 						</p>
 					</div>
-					<div className="flex justify-end gap-3">
-						{dialog.type !== 'loading' && (
+
+					<div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={closeDialog}
+							className="w-full sm:w-auto"
+						>
+							{t('common.close')}
+						</Button>
+						{dialog.actionLabel && dialog.onAction && (
 							<Button
 								type="button"
-								variant="outline"
-								size="sm"
-								onClick={closeDialog}
-								className="flex items-center gap-1"
+								onClick={() => {
+									dialog.onAction?.();
+									closeDialog();
+								}}
+								className="w-full sm:w-auto"
 							>
-								<X className="h-4 w-4" />
-								{t('common.close')}
-							</Button>
-						)}
-						{dialog.actionLabel && dialog.onAction && (
-							<Button type="button" size="sm" onClick={dialog.onAction}>
 								{dialog.actionLabel}
 							</Button>
 						)}

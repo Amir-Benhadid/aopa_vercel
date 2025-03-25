@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPastCongresses } from '@/lib/api';
 import { getCongressFolderPath } from '@/lib/utils';
 import { Congress as DBCongress } from '@/types/database';
@@ -376,11 +377,11 @@ function ArchivesContent() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-				<p className="text-2xl text-gray-700 dark:text-gray-300">
-					{t('common.loading')}
-				</p>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -396,21 +397,26 @@ function ArchivesContent() {
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Header */}
-			<div className="bg-gradient-to-r from-indigo-600 to-purple-700 py-16 relative overflow-hidden">
-				<div className="absolute inset-0 bg-pattern opacity-10"></div>
+			<div className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-grid-primary-700/[0.1] [mask-image:linear-gradient(0deg,transparent,black)]"></div>
+				</div>
 				<div className="container mx-auto px-4 relative z-10">
-					<div className="flex items-center mb-6">
-						<Archive className="w-12 h-12 text-white mr-4 bg-white/10 p-2 rounded-lg shadow-lg" />
-						<h1 className="text-5xl md:text-6xl font-bold text-white">
+					<div className="max-w-3xl">
+						<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 mb-6">
+							<Archive className="w-4 h-4 mr-2" />
+							{t('archives.explore')}
+						</div>
+						<h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
 							{t('archives.title')}
 						</h1>
+						<p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+							{t('archives.description') ||
+								'Explore our past events, e-posters, and webinars.'}
+						</p>
 					</div>
-					<p className="text-xl text-indigo-100 max-w-3xl">
-						{t('archives.description') ||
-							'Explore our past events, e-posters, and webinars.'}
-					</p>
 				</div>
-				<div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent"></div>
+				<div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
 			</div>
 
 			{/* Featured event */}
@@ -449,7 +455,7 @@ function ArchivesContent() {
 								</AnimatePresence>
 								<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
 									<div className="p-6">
-										<span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+										<span className="bg-primary-600 text-white px-3 py-1 rounded-full text-sm font-medium">
 											{t('archives.featuredEvent')}
 										</span>
 									</div>
@@ -488,7 +494,7 @@ function ArchivesContent() {
 					</div>
 					<input
 						type="text"
-						className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white shadow-sm"
+						className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:text-white shadow-sm"
 						placeholder={t('archives.searchArchives')}
 						value={searchTerm}
 						onChange={(e) => setSearchTerm(e.target.value)}
@@ -501,7 +507,7 @@ function ArchivesContent() {
 						onClick={() => setSelectedTab('events')}
 						className={`px-6 py-3 text-base font-medium rounded-t-lg transition-colors ${
 							selectedTab === 'events'
-								? 'bg-indigo-600 text-white'
+								? 'bg-primary-600 text-white'
 								: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
 						}`}
 					>
@@ -511,7 +517,7 @@ function ArchivesContent() {
 						onClick={() => setSelectedTab('eposters')}
 						className={`px-6 py-3 text-base font-medium rounded-t-lg transition-colors ${
 							selectedTab === 'eposters'
-								? 'bg-indigo-600 text-white'
+								? 'bg-primary-600 text-white'
 								: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
 						}`}
 					>
@@ -521,7 +527,7 @@ function ArchivesContent() {
 						onClick={() => setSelectedTab('webinars')}
 						className={`px-6 py-3 text-base font-medium rounded-t-lg transition-colors ${
 							selectedTab === 'webinars'
-								? 'bg-indigo-600 text-white'
+								? 'bg-primary-600 text-white'
 								: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
 						}`}
 					>
@@ -587,7 +593,7 @@ function ArchivesContent() {
 																		className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
 																	/>
 																) : (
-																	<div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+																	<div className="w-full h-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
 																		<Calendar className="w-12 h-12 text-white/70" />
 																	</div>
 																)}
@@ -604,11 +610,11 @@ function ArchivesContent() {
 														</div>
 													</div>
 													<div className="p-5 flex-grow">
-														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
 															{event.title}
 														</h3>
 														<p className="text-gray-600 dark:text-gray-300 text-sm mb-2 flex items-center">
-															<MapPin className="w-4 h-4 mr-1 text-indigo-500" />
+															<MapPin className="w-4 h-4 mr-1 text-primary-500" />
 															{typeof event.location === 'string'
 																? event.location
 																: event.location?.name || t('common.unknown')}
@@ -620,7 +626,7 @@ function ArchivesContent() {
 														)}
 													</div>
 													<div className="px-5 pb-5 pt-0">
-														<span className="text-indigo-600 dark:text-indigo-400 text-sm font-medium flex items-center">
+														<span className="text-primary-600 dark:text-primary-400 text-sm font-medium flex items-center">
 															{t('archives.viewDetails')}
 															<ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 														</span>
@@ -672,7 +678,7 @@ function ArchivesContent() {
 												className="block h-full"
 											>
 												<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
-													<div className="h-40 bg-gradient-to-br from-blue-500 to-indigo-600 relative">
+													<div className="h-40 bg-gradient-to-br from-blue-500 to-primary-600 relative">
 														<div className="absolute inset-0 flex items-center justify-center">
 															<FileText className="w-16 h-16 text-white/70" />
 														</div>
@@ -681,11 +687,11 @@ function ArchivesContent() {
 														</div>
 														<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
 															<div className="flex items-center">
-																<span className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
+																<span className="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 text-xs px-2 py-1 rounded">
 																	{eposter.year}
 																</span>
 																{eposter.category && (
-																	<span className="ml-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded text-xs">
+																	<span className="ml-2 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-1 rounded">
 																		{eposter.category}
 																	</span>
 																)}
@@ -761,7 +767,7 @@ function ArchivesContent() {
 												className="block h-full"
 											>
 												<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
-													<div className="h-40 bg-gradient-to-br from-purple-500 to-indigo-600 relative">
+													<div className="h-40 bg-gradient-to-br from-blue-500 to-primary-600 relative">
 														{webinar.thumbnailUrl ? (
 															<img
 																src={webinar.thumbnailUrl}
@@ -796,7 +802,7 @@ function ArchivesContent() {
 																)}
 															</span>
 														</div>
-														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
 															{webinar.title}
 														</h3>
 														<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
@@ -809,7 +815,7 @@ function ArchivesContent() {
 														)}
 													</div>
 													<div className="px-5 pb-5 pt-0">
-														<div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+														<div className="flex items-center text-primary-600 dark:text-primary-400 text-sm font-medium">
 															{t('archives.watchWebinar')}
 															<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 														</div>

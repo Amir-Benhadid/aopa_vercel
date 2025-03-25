@@ -1,6 +1,6 @@
 'use client';
 
-import { Loading } from '@/components/ui/Loading';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useTranslation } from 'react-i18next';
 
 interface PageLoadingProps {
@@ -10,34 +10,39 @@ interface PageLoadingProps {
 	message?: string;
 
 	/**
-	 * Optional variant for the loading indicator
-	 * @default "spinner"
-	 */
-	variant?: 'spinner' | 'dots' | 'pulse' | 'skeleton';
-
-	/**
 	 * Whether to make the loading component fullscreen
 	 * @default false
 	 */
 	fullscreen?: boolean;
+
+	/**
+	 * Background style for the loading spinner
+	 * @default "white"
+	 */
+	background?: 'gradient' | 'transparent' | 'white';
+
+	/**
+	 * Size of the loading spinner
+	 * @default "default"
+	 */
+	size?: 'small' | 'default' | 'large';
 }
 
 export function PageLoading({
 	message,
-	variant = 'spinner',
 	fullscreen = false,
+	background = 'white',
+	size = 'default',
 }: PageLoadingProps) {
 	const { t } = useTranslation();
 	const loadingText = message || t('common.loading') || 'Loading...';
 
 	return (
-		<div className="h-full w-full flex items-center justify-center py-12">
-			<Loading
-				size={fullscreen ? 'fullscreen' : 'lg'}
-				variant={variant}
-				text={loadingText}
-				transparent={!fullscreen}
-			/>
-		</div>
+		<LoadingSpinner
+			message={loadingText}
+			background={background}
+			size={size}
+			fullScreen={fullscreen}
+		/>
 	);
 }

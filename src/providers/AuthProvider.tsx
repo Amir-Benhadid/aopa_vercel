@@ -48,6 +48,7 @@ interface AuthContextType {
 	resetPassword: (email: string) => Promise<AuthResult>;
 	updatePassword: (password: string) => Promise<AuthResult>;
 	refreshSession: () => Promise<void>;
+	resendVerificationEmail: (email: string) => Promise<AuthResult>;
 }
 
 // Extend the return type to include better error handling
@@ -513,6 +514,59 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		[]
 	);
 
+	// Resend verification email function
+	const resendVerificationEmail = useCallback(
+		async (email: string): Promise<AuthResult> => {
+			debug('Resend verification email attempt for:', email);
+
+			try {
+				// Create the full URL for email verification redirect
+				const redirectUrl = new URL(
+					'/auth/callback',
+					window.location.origin
+				).toString();
+
+				debug('Resending verification email with redirect URL:', redirectUrl);
+
+				const { error } = await supabase.auth.resend({
+					type: 'signup',
+					email,
+					options: {
+						emailRedirectTo: redirectUrl,
+					},
+				});
+
+				if (error) {
+					debug('Resend verification email error:', error);
+					return {
+						success: false,
+						error: {
+							message: error.message,
+							code: getErrorCode(error),
+							description: error.message,
+						},
+					};
+				}
+
+				debug('Verification email resent successfully');
+				return { success: true };
+			} catch (error: any) {
+				debug('Unexpected resend verification email error:', error);
+				return {
+					success: false,
+					error: {
+						message:
+							error.message ||
+							'Unknown error occurred while resending verification email',
+						code: 'auth/unexpected-error',
+						description: error.toString(),
+					},
+				};
+			}
+		},
+		[]
+	);
+
 	// Create memoized context value to prevent unnecessary rerenders
 	const contextValue = useMemo(
 		() => ({
@@ -526,6 +580,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			resetPassword,
 			updatePassword,
 			refreshSession,
+			resendVerificationEmail,
 		}),
 		[
 			authState,
@@ -538,6 +593,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			resetPassword,
 			updatePassword,
 			refreshSession,
+			resendVerificationEmail,
 		]
 	);
 

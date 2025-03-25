@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getAnnualReports } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Download, FileText } from 'lucide-react';
@@ -47,14 +48,11 @@ export default function ReportViewerPage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen">
-				<div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-				<div className="animate-pulse flex space-x-4">
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 

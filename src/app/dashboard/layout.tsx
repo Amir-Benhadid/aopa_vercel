@@ -1,5 +1,6 @@
 'use client';
 
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import {
@@ -10,7 +11,6 @@ import {
 	FileImage,
 	FileText,
 	LayoutDashboard,
-	Loader2,
 	MessageSquare,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -135,14 +135,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 	// If loading, show loading spinner
 	if (isLoading) {
 		return (
-			<div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-				<div className="text-center">
-					<Loader2 className="h-16 w-16 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-					<p className="text-gray-700 dark:text-gray-300 font-medium">
-						{t('dashboard.loading', 'Loading dashboard...')}
-					</p>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('dashboard.loading', 'Loading dashboard...')}
+				background="white"
+				size="large"
+				fullScreen={true}
+			/>
 		);
 	}
 

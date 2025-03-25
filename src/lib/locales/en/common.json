@@ -3,7 +3,8 @@
 		"name": "Ophthalmology Association",
 		"tagline": "Advancing Eye Care Together",
 		"logoAlt": "Ophthalmology Association Logo",
-		"logoAltWithNumber": "Ophthalmology Association Logo {{number}}"
+		"logoAltWithNumber": "Ophthalmology Association Logo {{number}}",
+		"footerDescription": "Liberal Algerian Ophthalmologists Association."
 	},
 	"navigation": {
 		"home": "Home",
@@ -30,7 +31,11 @@
 			"main": "Main",
 			"resources": "Resources",
 			"account": "Account",
-			"admin": "Admin"
+			"admin": "Admin",
+			"contact": "Contact",
+			"newsletter": "Newsletter",
+			"privacy": "Privacy",
+			"terms": "Terms"
 		},
 		"openMenu": "Open menu",
 		"closeMenu": "Close menu",
@@ -41,6 +46,9 @@
 		"previousEvent": "Previous Event"
 	},
 	"auth": {
+		"title": "Authentication",
+		"subtitle": "Sign in to your account",
+		"welcome": "Welcome!",
 		"email": "Email",
 		"password": "Password",
 		"confirmPassword": "Confirm Password",
@@ -49,7 +57,7 @@
 		"loginTitle": "Welcome Back",
 		"loginSubtitle": "Sign in to your account",
 		"registerTitle": "Create an Account",
-		"registerSubtitle": "Join the Ophthalmology Association",
+		"registerSubtitle": "Join the AOPA",
 		"signOutSuccess": "Successfully signed out",
 		"signOutError": "Failed to sign out",
 		"signIn": "Sign in",
@@ -95,6 +103,13 @@
 		"verificationNeeded": "Verification Required",
 		"verificationNeededMessage": "We've sent a verification email to your address. Please check your inbox and follow the link to verify your account before signing in.",
 		"emailNotVerifiedMessage": "Your email address has not been verified. Please check your inbox for the verification link or request a new one.",
+		"resendVerificationEmail": "Resend Verification Email",
+		"resendingVerificationEmail": "Resending Verification Email",
+		"resendingVerificationEmailMessage": "Please wait while we send you a new verification email...",
+		"verificationEmailResent": "Verification Email Sent",
+		"verificationEmailResentMessage": "A new verification email has been sent. Please check your inbox.",
+		"verificationEmailResendFailed": "Failed to Send Verification Email",
+		"verificationEmailResendFailedMessage": "Failed to send verification email. Please try again later.",
 		"backToLogin": "Back to Login"
 	},
 	"abstracts": {
@@ -578,6 +593,7 @@
 			"description": "Subscribe to our newsletter for the latest updates, research findings, and event announcements.",
 			"emailPlaceholder": "Enter your email",
 			"subscribe": "Subscribe",
+			"subscribed": "You are subscribed!",
 			"success": "Thank you for subscribing! You'll receive our next newsletter soon.",
 			"error": "There was an error subscribing. Please try again.",
 			"privacy": "Your data is secure",
@@ -710,6 +726,30 @@
 		},
 		"title": "Dashboard"
 	},
+	"contact": {
+		"title": "Contact",
+		"subtitle": "Contact us",
+		"description": "Contact description",
+		"tagline": "We're here to help you with any questions or concerns you may have.",
+		"form": {
+			"title": "Contact Us",
+			"name": "Name",
+			"email": "Email",
+			"subject": "Subject",
+			"message": "Message",
+			"send": "Send",
+			"success": "Message sent successfully",
+			"submit": "Submit",
+			"successTitle": "Message sent successfully",
+			"successMessage": "Thank you for your message. We will contact you soon!"
+		},
+		"info": {
+			"email": {
+				"title": "Email",
+				"description": "Email description"
+			}
+		}
+	},
 	"footer": {
 		"aboutUs": "About Us",
 		"aboutDescription": "We are dedicated to advancing the science and practice of ophthalmology.",
@@ -810,6 +850,99 @@
 			"vicePresident": "Vice President",
 			"secretary": "Secretary",
 			"treasurer": "Treasurer"
+		}
+	},
+	"terms": {
+		"title": "Terms of Use",
+		"sections": {
+			"acceptance": {
+				"title": "Acceptance of Terms",
+				"content": "By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement."
+			},
+			"use": {
+				"title": "Use License",
+				"content": "Permission is granted to temporarily download one copy of the materials (information or software) on AOPA's website for personal, non-commercial transitory viewing only."
+			},
+			"disclaimer": {
+				"title": "Disclaimer",
+				"content": "The materials on AOPA's website are provided on an 'as is' basis. AOPA makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights."
+			},
+			"limitations": {
+				"title": "Limitations",
+				"content": "In no event shall AOPA or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on AOPA's website."
+			},
+			"revisions": {
+				"title": "Revisions and Errata",
+				"content": "The materials appearing on AOPA's website could include technical, typographical, or photographic errors. AOPA does not warrant that any of the materials on its website are accurate, complete or current."
+			},
+			"modifications": {
+				"title": "Modifications",
+				"content": "AOPA may revise these terms of use for its website at any time without notice. By using this website you are agreeing to be bound by the then current version of these terms of service."
+			},
+			"contact": {
+				"title": "Contact Us",
+				"content": "If you have any questions about these Terms, please contact us."
+			}
+		}
+	},
+	"privacy": {
+		"title": "Privacy Policy",
+		"sections": {
+			"introduction": {
+				"title": "Introduction",
+				"content": "Your privacy is important to us. It is AOPA's policy to respect your privacy regarding any information we may collect from you across our website."
+			},
+			"collection": {
+				"title": "Information We Collect",
+				"content": "We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent."
+			},
+			"usage": {
+				"title": "Use of Information",
+				"content": "We use the information we collect in various ways, including to: provide, operate, and maintain our website; improve and personalize your experience; understand and analyze how you use our website; and develop new products, services, features, and functionality."
+			},
+			"cookies": {
+				"title": "Cookies",
+				"content": "We use cookies to understand and save your preferences for future visits and compile aggregate data about site traffic and site interaction."
+			},
+			"thirdParty": {
+				"title": "Third-Party Services",
+				"content": "We may employ third-party companies and individuals due to the following reasons: to facilitate our Service; to provide the Service on our behalf; to perform Service-related services; or to assist us in analyzing how our Service is used."
+			},
+			"security": {
+				"title": "Security",
+				"content": "We value your trust in providing us your personal information, thus we are striving to use commercially acceptable means of protecting it. But remember that no method of transmission over the internet, or method of electronic storage is 100% secure and reliable, and we cannot guarantee its absolute security."
+			},
+			"changes": {
+				"title": "Changes to This Policy",
+				"content": "We may update our Privacy Policy from time to time. Thus, we advise you to review this page periodically for any changes. These changes are effective immediately after they are posted on this page."
+			},
+			"contact": {
+				"title": "Contact Us",
+				"content": "If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us."
+			}
+		}
+	},
+	"sponsors": {
+		"comingSoon": {
+			"title": "Partner Program Coming Soon",
+			"description": "We are working on creating an amazing partnership program. Stay tuned for exciting opportunities to collaborate with us!",
+			"notifyTitle": "Get Notified",
+			"notifyDescription": "Leave your contact information and be the first to know when our partnership program launches.",
+			"contactUs": "Contact Us"
+		},
+		"benefits": {
+			"visibility": {
+				"title": "Enhanced Visibility",
+				"description": "Reach a wider audience in the ophthalmology community"
+			},
+			"network": {
+				"title": "Networking",
+				"description": "Connect with leading professionals in the field"
+			},
+			"growth": {
+				"title": "Growth",
+				"description": "Expand your business through strategic partnerships"
+			}
 		}
 	}
 }

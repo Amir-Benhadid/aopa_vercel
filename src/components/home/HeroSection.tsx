@@ -31,7 +31,7 @@ export function HeroSection({
 	const contentY = useTransform(scrollY, [0, 300], [0, 50]);
 
 	return (
-		<section className="relative h-[100vh] min-h-[600px] sm:min-h-[700px] flex items-center overflow-hidden w-full">
+		<section className="relative top-0 left-0 w-full h-screen min-h-[600px] sm:min-h-[700px] flex items-center overflow-hidden">
 			{/* Parallax Background Image */}
 			<motion.div className="absolute inset-0 z-0" style={{ y: backgroundY }}>
 				<Image
@@ -74,7 +74,7 @@ export function HeroSection({
 			</div>
 
 			{/* Content */}
-			<div className="w-full px-8 sm:px-12 lg:px-16 relative z-10">
+			<div className="w-full px-8 sm:px-12 lg:px-32 relative z-10">
 				<motion.div
 					className="max-w-3xl"
 					style={{

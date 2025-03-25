@@ -45,7 +45,7 @@ const LogoCarousel = React.memo(function LogoCarousel({
 	t: any;
 }) {
 	return (
-		<div className="relative h-12 sm:h-16 w-40 sm:w-64 md:w-80 lg:w-96 overflow-hidden">
+		<div className="relative h-16 sm:h-20 w-48 sm:w-64 md:w-80 lg:w-96 overflow-hidden">
 			<AnimatePresence mode="wait">
 				<motion.div
 					key={logoFiles[currentLogoIndex]}
@@ -63,7 +63,7 @@ const LogoCarousel = React.memo(function LogoCarousel({
 							{ number: currentLogoIndex + 1 }
 						)}
 						fill
-						className="object-contain"
+						className="object-contain object-center"
 						priority
 					/>
 				</motion.div>
@@ -200,24 +200,26 @@ export function Header() {
 							</Link>
 						</div>
 
-						{/* Center - Logo carousel (hidden on small screens) */}
-						<div className="hidden sm:flex flex-1 justify-center">
+						{/* Center - Logo carousel */}
+						<div className="flex flex-1 items-center justify-center">
 							<LogoCarousel currentLogoIndex={currentLogoIndex} t={t} />
 						</div>
 
 						{/* Right side - Theme toggle and user menu */}
 						<div className="flex items-center gap-1 sm:gap-3">
-							<button
-								onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-								className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
-								aria-label={t('common.toggleTheme')}
-							>
-								{theme === 'dark' ? (
-									<SunIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-								) : (
-									<MoonIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-								)}
-							</button>
+							{false && (
+								<button
+									onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+									className="p-1 sm:p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300"
+									aria-label={t('common.toggleTheme')}
+								>
+									{theme === 'dark' ? (
+										<SunIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+									) : (
+										<MoonIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+									)}
+								</button>
+							)}
 
 							<LanguageSwitcher />
 
@@ -320,12 +322,11 @@ export function Header() {
 								<div className="flex items-center space-x-1 sm:space-x-2">
 									<Link href="/auth">
 										<Button
-											variant="ghost"
-											className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3"
+											className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors bg-transparent"
 											translationKey="auth.signIn"
 										/>
 									</Link>
-									<Link href="/auth?mode=signup">
+									<Link href="/auth?mode=signup" className="hidden sm:block">
 										<Button
 											className="text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-3"
 											translationKey="auth.signUp"

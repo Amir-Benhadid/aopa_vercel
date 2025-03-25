@@ -4,6 +4,7 @@ import { AbstractCard } from '@/components/abstracts/AbstractCard';
 import { AbstractCardSkeleton } from '@/components/abstracts/AbstractCardSkeleton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Select } from '@/components/ui/select';
 import { useAbstracts } from '@/hooks/useAbstracts';
 import { useEqualHeight } from '@/hooks/useEqualHeight';
@@ -140,22 +141,12 @@ export function AbstractsPage() {
 	// Show loading state if auth is still loading
 	if (isAuthLoading) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="max-w-7xl mx-auto">
-					<h1 className="text-3xl font-bold mb-8">{t('abstracts.title')}</h1>
-					<div className="flex flex-col space-y-4">
-						<div className="bg-gray-100 dark:bg-gray-800 animate-pulse h-12 rounded-md"></div>
-						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{Array.from({ length: 6 }).map((_, i) => (
-								<div
-									key={i}
-									className="bg-gray-100 dark:bg-gray-800 animate-pulse h-64 rounded-xl"
-								></div>
-							))}
-						</div>
-					</div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('abstracts.loading', 'Loading abstracts...')}
+				background="white"
+				size="default"
+				fullScreen={false}
+			/>
 		);
 	}
 

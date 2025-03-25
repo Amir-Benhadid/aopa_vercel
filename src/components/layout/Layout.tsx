@@ -4,10 +4,16 @@ import { Footer } from '@/components/layout/Footer';
 import { ProfileSetupModal } from '@/components/profile/ProfileSetupModal';
 import { Header } from '@/components/ui/Header';
 import { Navigation } from '@/components/ui/Navigation';
+import { getUpcomingCongress } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
+import { Congress } from '@/types/database';
+import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
-import { ReactNode, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import ContactHero from '../contact/heroSection';
+import { HeroSection } from '../home/HeroSection';
 
 interface LayoutProps {
 	children: ReactNode;
@@ -17,6 +23,18 @@ export function Layout({ children }: LayoutProps) {
 	const { user, logout } = useAuth();
 	const { t } = useTranslation();
 	const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+	const pathname = usePathname();
+	const [upcomingCongress, setUpcomingCongress] = useState<Congress | null>(
+		null
+	);
+
+	useEffect(() => {
+		const fetchUpcomingCongress = async () => {
+			const congress = await getUpcomingCongress();
+			setUpcomingCongress(congress);
+		};
+		fetchUpcomingCongress();
+	}, []);
 
 	const toggleNavigation = () => {
 		setIsNavigationOpen(!isNavigationOpen);
@@ -64,9 +82,37 @@ export function Layout({ children }: LayoutProps) {
 				</div>
 
 				{/* Main content */}
-				<main className="flex-1 pb-12 w-full overflow-x-hidden mt-20 sm:mt-24 lg:ml-[100px] transition-all duration-300">
-					{/* Content wrapper with responsive padding */}
-					<div className="w-full px-4 sm:px-6 lg:px-8">{children}</div>
+				<main className="flex-1 w-full overflow-x-hidden transition-all duration-300">
+					{pathname === '/' && upcomingCongress && (
+						<motion.div
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ duration: 0.8 }}
+							className="w-full"
+						>
+							<HeroSection
+								congressTitle={upcomingCongress.title}
+								congressDate={upcomingCongress.start_date}
+								congressLocation={
+									upcomingCongress.location &&
+									typeof upcomingCongress.location === 'object'
+										? upcomingCongress.location.name || 'Location TBA'
+										: upcomingCongress.location || 'Location TBA'
+								}
+								registrationProgress={75}
+								congressRegistrationOpen={upcomingCongress.registration}
+							/>
+						</motion.div>
+					)}
+					{pathname === '/contact' && <ContactHero />}
+					{/* Children now get all the spacing */}
+					<div
+						className={`${
+							pathname === '/contact' ? '' : 'mt-20 sm:mt-24'
+						}  lg:ml-[80px] pb-12 px-4 sm:px-6 lg:px-8`}
+					>
+						{children}
+					</div>
 				</main>
 			</div>
 			<Footer />

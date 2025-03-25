@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPastCongresses } from '@/lib/api';
 import { getCongressFolderPath } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -275,14 +276,11 @@ export default function EPostersArchivePage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen pt-20">
-				<div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-				<div className="animate-pulse flex space-x-4">
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -298,27 +296,34 @@ export default function EPostersArchivePage() {
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Header */}
-			<div className="bg-gradient-to-r from-blue-600 to-indigo-700 py-16 relative overflow-hidden">
-				<div className="absolute inset-0 bg-pattern opacity-10"></div>
+			<div className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-grid-primary-700/[0.1] [mask-image:linear-gradient(0deg,transparent,black)]"></div>
+				</div>
 				<div className="max-w-7xl mx-auto px-4 relative z-10">
-					<div className="flex items-center mb-4">
-						<Button
-							variant="ghost"
-							className="text-white mr-4 hover:bg-blue-700/50"
-							onClick={() => router.back()}
-						>
-							<ArrowLeft className="w-5 h-5 mr-2" />
-							{t('common.back')}
-						</Button>
-						<h1 className="text-4xl md:text-5xl font-bold text-white">
+					<div className="max-w-3xl">
+						<div className="flex items-center mb-6">
+							<Button
+								variant="ghost"
+								className="text-gray-700 dark:text-gray-300 mr-4 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 -ml-2"
+								onClick={() => router.back()}
+							>
+								<ArrowLeft className="w-5 h-5" />
+							</Button>
+							<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300">
+								<FileText className="w-4 h-4 mr-2" />
+								{t('archives.documents')}
+							</div>
+						</div>
+						<h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
 							{t('archives.ePosters')}
 						</h1>
+						<p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+							{t('archives.ePostersDescription')}
+						</p>
 					</div>
-					<p className="text-xl text-blue-100 max-w-3xl">
-						{t('archives.ePostersDescription')}
-					</p>
 				</div>
-				<div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent"></div>
+				<div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
 			</div>
 
 			{/* Filters and Search */}

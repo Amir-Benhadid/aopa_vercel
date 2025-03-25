@@ -3,7 +3,8 @@
 		"name": "Association d'Ophtalmologie",
 		"tagline": "Améliorer ensemble les soins oculaires",
 		"logoAlt": "Logo de l'Association d'Ophtalmologie",
-		"logoAltWithNumber": "Logo de l'Association d'Ophtalmologie {{number}}"
+		"logoAltWithNumber": "Logo de l'Association d'Ophtalmologie {{number}}",
+		"footerDescription": "Club des ophtalmologistes libéraux algeriens."
 	},
 	"navigation": {
 		"home": "Accueil",
@@ -30,7 +31,11 @@
 			"main": "Principal",
 			"resources": "Ressources",
 			"account": "Compte",
-			"admin": "Administration"
+			"admin": "Administration",
+			"contact": "Contact",
+			"newsletter": "Newsletter",
+			"privacy": "Politique de confidentialité",
+			"terms": "Conditions d'utilisation"
 		},
 		"openMenu": "Ouvrir le menu",
 		"closeMenu": "Fermer le menu",
@@ -44,6 +49,9 @@
 		}
 	},
 	"auth": {
+		"title": "Authentification",
+		"subtitle": "Connectez-vous à votre compte",
+		"welcome": "Bienvenue!",
 		"email": "E-mail",
 		"password": "Mot de passe",
 		"confirmPassword": "Confirmer le mot de passe",
@@ -52,7 +60,7 @@
 		"loginTitle": "Bon retour",
 		"loginSubtitle": "Connectez-vous à votre compte",
 		"registerTitle": "Créer un compte",
-		"registerSubtitle": "Rejoignez l'Association d'Ophtalmologie",
+		"registerSubtitle": "Rejoignez l'AOPA",
 		"signOutSuccess": "Déconnexion réussie",
 		"signOutError": "Échec de la déconnexion",
 		"signIn": "Se connecter",
@@ -94,7 +102,18 @@
 		"firstName": "Prénom",
 		"lastName": "Nom de famille",
 		"createAccount": "Créer un compte",
-		"termsOfService": "J'accepte les Conditions d'utilisation et la Politique de confidentialité"
+		"termsOfService": "J'accepte les Conditions d'utilisation et la Politique de confidentialité",
+		"verificationNeeded": "Vérification requise",
+		"verificationNeededMessage": "Nous avons envoyé un e-mail de vérification à votre adresse. Veuillez vérifier votre boîte de réception et suivre le lien pour vérifier votre compte avant de vous connecter.",
+		"emailNotVerifiedMessage": "Votre adresse e-mail n'a pas été vérifiée. Veuillez vérifier votre boîte de réception pour le lien de vérification ou en demander un nouveau.",
+		"resendVerificationEmail": "Renvoyer l'e-mail de vérification",
+		"resendingVerificationEmail": "Renvoi de l'e-mail de vérification",
+		"resendingVerificationEmailMessage": "Veuillez patienter pendant que nous vous envoyons un nouvel e-mail de vérification...",
+		"verificationEmailResent": "E-mail de vérification envoyé",
+		"verificationEmailResentMessage": "Un nouvel e-mail de vérification a été envoyé. Veuillez vérifier votre boîte de réception.",
+		"verificationEmailResendFailed": "Échec de l'envoi de l'e-mail de vérification",
+		"verificationEmailResendFailedMessage": "Échec de l'envoi de l'e-mail de vérification. Veuillez réessayer plus tard.",
+		"backToLogin": "Retour à la connexion"
 	},
 	"abstracts": {
 		"title": "Résumés",
@@ -566,6 +585,7 @@
 			"title": "Restez informé",
 			"description": "Abonnez-vous à notre newsletter pour recevoir les dernières mises à jour, découvertes de recherche et annonces d'événements.",
 			"emailPlaceholder": "Entrez votre e-mail",
+			"subscribed": "Vous êtes abonné !",
 			"subscribe": "S'abonner",
 			"success": "Merci de vous être abonné ! Vous recevrez bientôt notre prochaine newsletter.",
 			"error": "Une erreur s'est produite lors de l'abonnement. Veuillez réessayer.",
@@ -699,6 +719,30 @@
 		},
 		"title": "Dashboard"
 	},
+	"contact": {
+		"title": "Contact",
+		"subtitle": "Contactez-nous",
+		"description": "Contact description",
+		"tagline": "Nous sommes là pour vous aider avec toutes vos questions ou préoccupations.",
+		"form": {
+			"title": "Contactez-nous",
+			"name": "Nom",
+			"email": "E-mail",
+			"subject": "Sujet",
+			"message": "Message",
+			"send": "Envoyer",
+			"success": "Message envoyé avec succès",
+			"submit": "Envoyer",
+			"successTitle": "Message envoyé avec succès",
+			"successMessage": "Merci pour votre message. Nous reviendrons vers vous bientôt."
+		},
+		"info": {
+			"email": {
+				"title": "Email",
+				"description": "Email description"
+			}
+		}
+	},
 	"footer": {
 		"aboutUs": "À propos de nous",
 		"aboutDescription": "Nous sommes dédiés à l'avancement de la science et de la pratique de l'ophtalmologie.",
@@ -808,6 +852,99 @@
 			"vicePresident": "Vice-Président",
 			"secretary": "Secrétaire",
 			"treasurer": "Trésorier"
+		}
+	},
+	"terms": {
+		"title": "Conditions d'Utilisation",
+		"sections": {
+			"acceptance": {
+				"title": "Acceptation des Conditions",
+				"content": "En accédant et en utilisant ce site web, vous acceptez et consentez à être lié par les termes et dispositions de cet accord."
+			},
+			"use": {
+				"title": "Licence d'Utilisation",
+				"content": "L'autorisation est accordée de télécharger temporairement une copie des documents (informations ou logiciels) du site web de l'AOPA uniquement pour une consultation personnelle et non commerciale."
+			},
+			"disclaimer": {
+				"title": "Avertissement",
+				"content": "Les documents sur le site web de l'AOPA sont fournis 'tels quels'. L'AOPA ne donne aucune garantie, expresse ou implicite, et décline toute autre garantie, y compris, sans limitation, les garanties implicites de qualité marchande, d'adéquation à un usage particulier, ou de non-violation des droits de propriété intellectuelle."
+			},
+			"limitations": {
+				"title": "Limitations",
+				"content": "En aucun cas, l'AOPA ou ses fournisseurs ne seront responsables des dommages (y compris, sans limitation, les dommages pour perte de données ou de profit, ou en raison d'une interruption d'activité) découlant de l'utilisation ou de l'impossibilité d'utiliser les documents sur le site web de l'AOPA."
+			},
+			"revisions": {
+				"title": "Révisions et Erreurs",
+				"content": "Les documents apparaissant sur le site web de l'AOPA peuvent inclure des erreurs techniques, typographiques ou photographiques. L'AOPA ne garantit pas que les documents de son site web sont exacts, complets ou à jour."
+			},
+			"modifications": {
+				"title": "Modifications",
+				"content": "L'AOPA peut réviser ces conditions d'utilisation de son site web à tout moment sans préavis. En utilisant ce site web, vous acceptez d'être lié par la version actuelle de ces conditions d'utilisation."
+			},
+			"contact": {
+				"title": "Nous Contacter",
+				"content": "Si vous avez des questions concernant ces Conditions, veuillez nous contacter."
+			}
+		}
+	},
+	"privacy": {
+		"title": "Politique de Confidentialité",
+		"sections": {
+			"introduction": {
+				"title": "Introduction",
+				"content": "Votre vie privée est importante pour nous. La politique de l'AOPA est de respecter votre vie privée concernant toute information que nous pouvons collecter sur vous à travers notre site web."
+			},
+			"collection": {
+				"title": "Informations Collectées",
+				"content": "Nous ne demandons des informations personnelles que lorsque nous en avons réellement besoin pour vous fournir un service. Nous les collectons de manière loyale et licite, avec votre connaissance et votre consentement."
+			},
+			"usage": {
+				"title": "Utilisation des Informations",
+				"content": "Nous utilisons les informations collectées de différentes manières, notamment pour : fournir, exploiter et maintenir notre site web ; améliorer et personnaliser votre expérience ; comprendre et analyser votre utilisation ; et développer de nouveaux produits, services, fonctionnalités."
+			},
+			"cookies": {
+				"title": "Cookies",
+				"content": "Nous utilisons des cookies pour comprendre et enregistrer vos préférences pour les visites futures et compiler des données agrégées sur le trafic et l'interaction du site."
+			},
+			"thirdParty": {
+				"title": "Services Tiers",
+				"content": "Nous pouvons employer des sociétés et individus tiers pour les raisons suivantes : faciliter notre Service ; fournir le Service en notre nom ; effectuer des services liés au Service ; ou nous aider à analyser l'utilisation de notre Service."
+			},
+			"security": {
+				"title": "Sécurité",
+				"content": "Nous accordons de l'importance à la confiance que vous nous accordez en nous fournissant vos informations personnelles et nous nous efforçons d'utiliser des moyens commercialement acceptables pour les protéger. Mais rappelez-vous qu'aucune méthode de transmission sur Internet ou de stockage électronique n'est sûre à 100% et fiable."
+			},
+			"changes": {
+				"title": "Modifications de cette Politique",
+				"content": "Nous pouvons mettre à jour notre Politique de Confidentialité de temps en temps. Nous vous conseillons donc de consulter cette page périodiquement pour tout changement. Ces modifications sont effectives immédiatement après leur publication sur cette page."
+			},
+			"contact": {
+				"title": "Nous Contacter",
+				"content": "Si vous avez des questions ou des suggestions concernant notre Politique de Confidentialité, n'hésitez pas à nous contacter."
+			}
+		}
+	},
+	"sponsors": {
+		"comingSoon": {
+			"title": "Programme de Partenariat à Venir",
+			"description": "Nous travaillons à la création d'un programme de partenariat exceptionnel. Restez à l'écoute pour des opportunités passionnantes de collaboration !",
+			"notifyTitle": "Soyez Informé",
+			"notifyDescription": "Laissez vos coordonnées et soyez le premier à savoir quand notre programme de partenariat sera lancé.",
+			"contactUs": "Contactez-nous"
+		},
+		"benefits": {
+			"visibility": {
+				"title": "Visibilité Accrue",
+				"description": "Atteignez un public plus large dans la communauté ophtalmologique"
+			},
+			"network": {
+				"title": "Réseautage",
+				"description": "Connectez-vous avec des professionnels de premier plan"
+			},
+			"growth": {
+				"title": "Croissance",
+				"description": "Développez votre activité grâce à des partenariats stratégiques"
+			}
 		}
 	}
 }

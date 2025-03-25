@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getPastCongresses } from '@/lib/api';
 import { getCongressEPosters, getCongressFolderPath } from '@/lib/utils';
 import { Congress } from '@/types/database';
@@ -260,11 +261,11 @@ export default function EventsArchivePage() {
 
 	if (isLoading) {
 		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-				<p className="text-2xl text-gray-700 dark:text-gray-300">
-					{t('common.loading')}
-				</p>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -280,27 +281,34 @@ export default function EventsArchivePage() {
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Header */}
-			<div className="bg-gradient-to-r from-indigo-600 to-purple-700 py-16 relative overflow-hidden">
-				<div className="absolute inset-0 bg-pattern opacity-10"></div>
+			<div className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-grid-primary-700/[0.1] [mask-image:linear-gradient(0deg,transparent,black)]"></div>
+				</div>
 				<div className="max-w-7xl mx-auto px-4 relative z-10">
-					<div className="flex items-center mb-4">
-						<Button
-							variant="ghost"
-							className="text-white mr-4 hover:bg-indigo-700/50"
-							onClick={() => router.back()}
-						>
-							<ArrowLeft className="w-5 h-5 mr-2" />
-							{t('common.back')}
-						</Button>
-						<h1 className="text-4xl md:text-5xl font-bold text-white">
+					<div className="max-w-3xl">
+						<div className="flex items-center mb-6">
+							<Button
+								variant="ghost"
+								className="text-gray-700 dark:text-gray-300 mr-4 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 -ml-2"
+								onClick={() => router.back()}
+							>
+								<ArrowLeft className="w-5 h-5" />
+							</Button>
+							<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300">
+								<Calendar className="w-4 h-4 mr-2" />
+								{t('archives.events')}
+							</div>
+						</div>
+						<h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
 							{t('archives.pastEvents')}
 						</h1>
+						<p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+							{t('archives.pastEventsDescription')}
+						</p>
 					</div>
-					<p className="text-xl text-indigo-100 max-w-3xl">
-						{t('archives.pastEventsDescription')}
-					</p>
 				</div>
-				<div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent"></div>
+				<div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
 			</div>
 
 			{/* Filters and Search */}
@@ -313,7 +321,7 @@ export default function EventsArchivePage() {
 							</div>
 							<input
 								type="text"
-								className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:text-white"
+								className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:text-white"
 								placeholder={t('archives.searchEvents')}
 								value={searchTerm}
 								onChange={(e) => setSearchTerm(e.target.value)}
@@ -325,7 +333,7 @@ export default function EventsArchivePage() {
 								<Filter className="h-5 w-5 text-gray-400" />
 							</div>
 							<select
-								className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none"
+								className="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 appearance-none"
 								value={yearFilter}
 								onChange={(e) => setYearFilter(e.target.value)}
 							>
@@ -404,7 +412,7 @@ export default function EventsArchivePage() {
 																	className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
 																/>
 															) : (
-																<div className="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+																<div className="w-full h-full bg-gradient-to-br from-blue-500 to-primary-600 flex items-center justify-center">
 																	<Calendar className="w-12 h-12 text-white/70" />
 																</div>
 															)}
@@ -418,11 +426,11 @@ export default function EventsArchivePage() {
 															</div>
 														</div>
 														<div className="p-5 flex-grow">
-															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
 																{event.title}
 															</h3>
 															<p className="text-gray-600 dark:text-gray-300 text-sm mb-2 flex items-center">
-																<MapPin className="w-4 h-4 mr-1 text-indigo-500" />
+																<MapPin className="w-4 h-4 mr-1 text-primary-500" />
 																{event.location &&
 																typeof event.location === 'object'
 																	? event.location.name || t('common.unknown')
@@ -435,7 +443,7 @@ export default function EventsArchivePage() {
 															)}
 														</div>
 														<div className="px-5 pb-5 pt-0">
-															<div className="flex items-center text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+															<div className="flex items-center text-primary-600 dark:text-primary-400 text-sm font-medium">
 																{t('archives.viewDetails')}
 																<ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 															</div>

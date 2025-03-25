@@ -4,6 +4,7 @@ import { CongressHero } from '@/components/home/CongressHero';
 import { ProfileSetupModal } from '@/components/profile/ProfileSetupModal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Textarea } from '@/components/ui/Textarea';
 import { getUpcomingCongress, submitAbstract } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
@@ -189,18 +190,15 @@ export default function NewAbstractPage() {
 
 	if (isLoadingCongress) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="max-w-3xl mx-auto">
-					<div className="animate-pulse">
-						<div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
-						<div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-8"></div>
-						<div className="space-y-4">
-							<div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-							<div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-						</div>
-					</div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t(
+					'abstracts.submission.loading',
+					'Loading abstract submission form...'
+				)}
+				background="white"
+				size="default"
+				fullScreen={true}
+			/>
 		);
 	}
 

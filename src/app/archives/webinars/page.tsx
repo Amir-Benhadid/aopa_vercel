@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { Button } from '@/components/ui/Button';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
 	ArrowLeft,
@@ -181,14 +182,11 @@ export default function WebinarsArchivePage() {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen pt-20">
-				<div className="text-2xl font-semibold mb-4">{t('common.loading')}</div>
-				<div className="animate-pulse flex space-x-4">
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-					<div className="rounded-full bg-gray-200 h-12 w-12"></div>
-				</div>
-			</div>
+			<LoadingSpinner
+				message={t('common.loading')}
+				background="transparent"
+				fullScreen={true}
+			/>
 		);
 	}
 
@@ -204,28 +202,35 @@ export default function WebinarsArchivePage() {
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Header */}
-			<div className="bg-gradient-to-r from-purple-600 to-indigo-700 py-16 relative overflow-hidden">
-				<div className="absolute inset-0 bg-pattern opacity-10"></div>
+			<div className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-grid-primary-700/[0.1] [mask-image:linear-gradient(0deg,transparent,black)]"></div>
+				</div>
 				<div className="max-w-7xl mx-auto px-4 relative z-10">
-					<div className="flex items-center mb-4">
-						<Button
-							variant="ghost"
-							className="text-white mr-4 hover:bg-purple-700/50"
-							onClick={() => router.back()}
-						>
-							<ArrowLeft className="w-5 h-5 mr-2" />
-							{t('common.back')}
-						</Button>
-						<h1 className="text-4xl md:text-5xl font-bold text-white">
+					<div className="max-w-3xl">
+						<div className="flex items-center mb-6">
+							<Button
+								variant="ghost"
+								className="text-gray-700 dark:text-gray-300 mr-4 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 -ml-2"
+								onClick={() => router.back()}
+							>
+								<ArrowLeft className="w-5 h-5" />
+							</Button>
+							<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300">
+								<Video className="w-4 h-4 mr-2" />
+								{t('archives.videoContent')}
+							</div>
+						</div>
+						<h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
 							{t('archives.webinars')}
 						</h1>
+						<p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
+							{t('archives.webinarsDescription') ||
+								'Access our library of educational webinars on various ophthalmology topics.'}
+						</p>
 					</div>
-					<p className="text-xl text-purple-100 max-w-3xl">
-						{t('archives.webinarsDescription') ||
-							'Access our library of educational webinars on various ophthalmology topics.'}
-					</p>
 				</div>
-				<div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent"></div>
+				<div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
 			</div>
 
 			{/* Filters and Search */}
@@ -346,7 +351,7 @@ export default function WebinarsArchivePage() {
 																	className="absolute inset-0"
 																>
 																	{webinar.thumbnailUrl ? (
-																		<div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-indigo-600/20">
+																		<div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-primary-600/20">
 																			<img
 																				src={webinar.thumbnailUrl}
 																				alt={webinar.title}
@@ -354,7 +359,7 @@ export default function WebinarsArchivePage() {
 																			/>
 																		</div>
 																	) : (
-																		<div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+																		<div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-primary-600 flex items-center justify-center">
 																			<Video className="w-16 h-16 text-white/70" />
 																		</div>
 																	)}
@@ -375,7 +380,7 @@ export default function WebinarsArchivePage() {
 																<Calendar className="w-4 h-4 mr-1" />
 																<span>{formatDate(webinar.date)}</span>
 															</div>
-															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
 																{webinar.title}
 															</h3>
 															<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
@@ -391,7 +396,7 @@ export default function WebinarsArchivePage() {
 																	{webinar.tags.map((tag, index) => (
 																		<span
 																			key={index}
-																			className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs px-2 py-1 rounded"
+																			className="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 text-xs px-2 py-1 rounded"
 																		>
 																			{tag}
 																		</span>
@@ -400,7 +405,7 @@ export default function WebinarsArchivePage() {
 															)}
 														</div>
 														<div className="px-5 pb-5 pt-0">
-															<div className="flex items-center text-purple-600 dark:text-purple-400 text-sm font-medium">
+															<div className="flex items-center text-primary-600 dark:text-primary-400 text-sm font-medium">
 																{t('archives.watchWebinar')}
 																<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 															</div>

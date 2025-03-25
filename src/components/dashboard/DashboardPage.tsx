@@ -1,5 +1,6 @@
 'use client';
 
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { Abstract } from '@/types/database';
@@ -13,7 +14,6 @@ import {
 	FileImage,
 	FileText,
 	Globe,
-	Loader2,
 	Plus,
 	TrendingUp,
 	User,
@@ -294,9 +294,12 @@ export function DashboardPage() {
 	return (
 		<div className="container mx-auto py-8">
 			{loading ? (
-				<div className="flex justify-center items-center h-64">
-					<Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-				</div>
+				<LoadingSpinner
+					message={t('dashboard.loading', 'Loading dashboard data...')}
+					background="transparent"
+					size="small"
+					fullScreen={false}
+				/>
 			) : (
 				<>
 					{/* Welcome and Summary */}
