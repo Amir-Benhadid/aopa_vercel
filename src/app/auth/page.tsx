@@ -1,13 +1,15 @@
 'use client';
 
 import { PublicRoute } from '@/components/auth/PublicRoute';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import AuthPage from './auth-page';
 
-export default function Page() {
+// Create a client-side only component that uses useSearchParams
+function AuthPageWithParams() {
 	const searchParams = useSearchParams();
 	const { t } = useTranslation();
 
@@ -25,9 +27,15 @@ export default function Page() {
 		}
 	}, [searchParams, t]);
 
+	return <AuthPage />;
+}
+
+export default function Page() {
 	return (
 		<PublicRoute>
-			<AuthPage />
+			<Suspense fallback={<LoadingSpinner fullScreen message="Loading..." />}>
+				<AuthPageWithParams />
+			</Suspense>
 		</PublicRoute>
 	);
 }
