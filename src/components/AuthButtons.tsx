@@ -3,6 +3,7 @@
 import { useAuth } from '@/providers/AuthProvider';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/Button';
 
@@ -10,6 +11,12 @@ export function AuthButtons() {
 	const { user, logout } = useAuth();
 	const router = useRouter();
 	const { t } = useTranslation();
+
+	// Create a typed logout handler for button onClick
+	const handleLogout: MouseEventHandler<HTMLButtonElement> = (e) => {
+		e.preventDefault();
+		logout();
+	};
 
 	if (user) {
 		return (
@@ -20,7 +27,7 @@ export function AuthButtons() {
 			>
 				<Button
 					variant="ghost"
-					onClick={logout}
+					onClick={handleLogout}
 					className="text-card-foreground hover:text-primary-500"
 					translationKey="auth.signOut"
 				/>
