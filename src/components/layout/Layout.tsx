@@ -93,6 +93,7 @@ export function Layout({ children }: LayoutProps) {
 							<HeroSection
 								congressTitle={upcomingCongress.title}
 								congressDate={upcomingCongress.start_date}
+								congressEndDate={upcomingCongress.end_date}
 								congressLocation={
 									upcomingCongress.location &&
 									typeof upcomingCongress.location === 'object'

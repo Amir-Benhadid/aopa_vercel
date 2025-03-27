@@ -18,7 +18,6 @@ import {
 	ChevronDown,
 	LogOut,
 	Menu as MenuIcon,
-	Settings,
 	User,
 } from 'lucide-react';
 import Image from 'next/image';
@@ -273,24 +272,6 @@ export function Header() {
 																	<AlertCircle className="ml-1.5 h-3 sm:h-4 w-3 sm:w-4 text-red-500" />
 																)}
 															</span>
-														</Link>
-													)}
-												</Menu.Item>
-												<Menu.Item>
-													{({ active }) => (
-														<Link
-															href="/settings"
-															className={`${
-																active
-																	? 'bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400'
-																	: 'text-gray-700 dark:text-gray-200'
-															} group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-														>
-															<Settings
-																className="mr-2 h-4 sm:h-5 w-4 sm:w-5"
-																aria-hidden="true"
-															/>
-															{t('navigation.settings')}
 														</Link>
 													)}
 												</Menu.Item>

@@ -38,7 +38,7 @@ interface AuthContextType {
 	isAuthenticated: boolean;
 	user: User | null;
 	login: (email: string, password: string) => Promise<AuthResult>;
-	logout: () => Promise<void>;
+	logout: (redirectPath?: string) => Promise<void>;
 	register: (
 		email: string,
 		password: string,
@@ -144,6 +144,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		}
 	}, []);
 
+	// Setup manual token refresh interval when authenticated
+	useEffect(() => {
+		let refreshInterval: NodeJS.Timeout | null = null;
+
+		// Only set up refresh for authenticated users
+		if (isAuthenticated && user) {
+			debug('Setting up manual token refresh interval');
+
+			// Refresh token every 10 minutes (600000ms)
+			refreshInterval = setInterval(() => {
+				refreshSession();
+			}, 600000);
+		}
+
+		// Cleanup interval on unmount or when auth state changes
+		return () => {
+			if (refreshInterval) {
+				debug('Clearing token refresh interval');
+				clearInterval(refreshInterval);
+			}
+		};
+	}, [isAuthenticated, user, refreshSession]);
+
 	// Handle auth state changes that come from Supabase
 	const handleAuthStateChange = useCallback(
 		async (event: AuthChangeEvent, session: Session | null) => {
@@ -194,10 +217,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		const initializeAuth = async () => {
 			try {
 				debug('Initializing auth state');
-				// Initialize supabase auth
-				await supabase.auth.initialize();
 
-				// Get current session
+				// Get current session - no need to explicitly call initialize() as it's called internally by getSession
 				const {
 					data: { session },
 					error,
@@ -235,7 +256,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		// Set up auth state change listener without recreating it
 		const {
 			data: { subscription },
-		} = supabase.auth.onAuthStateChange(handleAuthStateChange);
+		} = supabase.auth.onAuthStateChange((event, session) => {
+			// Debounce rapid auth state changes to prevent race conditions
+			setTimeout(() => handleAuthStateChange(event, session), 10);
+		});
 
 		// Cleanup
 		return () => {
@@ -297,22 +321,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	);
 
 	// Logout function with optimistic updates
-	const logout = useCallback(async (): Promise<void> => {
+	const logout = useCallback(async (redirectPath?: string): Promise<void> => {
 		debug('Logout attempt');
 
 		try {
 			// Optimistically update state for smoother UX
 			setAuthState({ status: 'unauthenticated' });
 
-			const { error } = await supabase.auth.signOut();
+			// Perform the actual logout
+			const { error } = await supabase.auth.signOut({
+				scope: 'local', // Only sign out from this device, not all devices
+			});
+
 			if (error) {
 				debug('Logout error:', error);
 				throw error;
 			}
 
 			debug('Logout successful');
+
+			// Force clear any potential lingering auth data
+			if (typeof window !== 'undefined') {
+				// Remove auth token from localStorage
+				localStorage.removeItem('sb-auth-token');
+
+				// If a redirect path is provided, redirect after logout
+				if (redirectPath) {
+					window.location.href = redirectPath;
+				}
+			}
 		} catch (error) {
 			debug('Logout error:', error);
+			// Even if there's an error, we want to ensure the UI shows logged out state
+			setAuthState({ status: 'unauthenticated' });
 			throw error;
 		}
 	}, []);

@@ -29,6 +29,16 @@ interface EPoster {
 	authors: string;
 }
 
+// Helper function to safely get location name
+const getLocationName = (location: any): string => {
+	if (!location) return '';
+
+	if (typeof location === 'string') {
+		return location;
+	}
+	return location.name || '';
+};
+
 export default function EventsArchivePage() {
 	const { t } = useTranslation();
 	const router = useRouter();
@@ -431,10 +441,7 @@ export default function EventsArchivePage() {
 															</h3>
 															<p className="text-gray-600 dark:text-gray-300 text-sm mb-2 flex items-center">
 																<MapPin className="w-4 h-4 mr-1 text-primary-500" />
-																{event.location &&
-																typeof event.location === 'object'
-																	? event.location.name || t('common.unknown')
-																	: t('common.unknown')}
+																{getLocationName(event.location)}
 															</p>
 															{event.description && (
 																<p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3">

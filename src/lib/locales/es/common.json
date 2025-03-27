@@ -164,55 +164,61 @@
 		"validation": {
 			"nameRequired": "El nombre es obligatorio",
 			"surnameRequired": "El apellido es obligatorio",
-			"genderRequired": "El género es obligatorio",
 			"statusRequired": "El estado es obligatorio",
-			"professionRequired": "La profesión es obligatoria",
-			"professionalStatusRequired": "El estado profesional es obligatorio"
+			"specialtyRequired": "La especialidad es obligatoria",
+			"addressRequired": "La dirección es obligatoria",
+			"cityRequired": "La ciudad es obligatoria"
 		},
 		"errors": {
 			"selectImage": "Debe seleccionar una imagen para cargar.",
-			"uploadFailed": "Error al cargar el avatar"
+			"uploadFailed": "Error al cargar el avatar",
+			"updateFailed": "Error al actualizar el perfil",
+			"emailUpdateFailed": "Error al actualizar el correo electrónico",
+			"emailUnchanged": "Por favor, introduzca una dirección de correo electrónico diferente",
+			"passwordUpdateFailed": "Error al actualizar la contraseña",
+			"emailExists": "Ya existe un usuario con esta dirección de correo electrónico",
+			"wrongPassword": "La contraseña actual es incorrecta",
+			"invalidResetLink": "Enlace de restablecimiento de contraseña no válido. Por favor, solicite uno nuevo.",
+			"expiredResetLink": "El enlace de restablecimiento de contraseña ha expirado. Por favor, solicite uno nuevo."
 		},
 		"success": {
 			"avatarUploaded": "Avatar cargado con éxito",
-			"profileUpdated": "Perfil actualizado con éxito"
+			"profileUpdated": "Perfil actualizado con éxito",
+			"emailVerificationSent": "Correo de verificación enviado. Por favor, revise su bandeja de entrada",
+			"passwordUpdated": "Contraseña actualizada con éxito"
 		},
 		"form": {
 			"firstName": "Nombre",
 			"lastName": "Apellido",
 			"email": "Correo Electrónico",
 			"phone": "Teléfono",
-			"institution": "Institución",
-			"department": "Departamento",
-			"position": "Posición",
-			"bio": "Biografía",
 			"address": "Dirección",
 			"city": "Ciudad",
-			"country": "País",
+			"specialty": "Especialidad",
+			"selectSpecialty": "Seleccione la especialidad",
+			"status": "Estado",
+			"selectStatus": "Seleccione el estado",
+			"civility": "Tratamiento",
+			"selectCivility": "Seleccione el tratamiento",
 			"save": "Guardar Cambios",
 			"saving": "Guardando...",
 			"profilePicture": "Foto de Perfil",
 			"profilePictureDescription": "Suba una foto de perfil para personalizar su cuenta",
 			"changePhoto": "Cambiar Foto",
 			"uploadPhoto": "Subir Foto",
-			"gender": "Género",
-			"selectGender": "Seleccionar Género",
-			"status": "Estado",
-			"selectStatus": "Seleccionar Estado",
-			"profession": "Profesión",
-			"professionalStatus": "Estado Profesional",
-			"genders": {
-				"male": "Masculino",
-				"female": "Femenino",
-				"other": "Otro"
-			},
+			"updatingEmail": "Actualizando correo...",
+			"changePassword": "Cambiar Contraseña",
+			"updateEmail": "Actualizar Correo",
+			"accountSettings": "Configuración de la cuenta",
+			"emailVerified": "Correo verificado",
+			"emailNotVerified": "Correo no verificado",
 			"statuses": {
-				"practicing": "En Práctica",
+				"liberal": "Liberal",
+				"public": "Público",
 				"resident": "Residente",
-				"fellow": "Fellow",
-				"professor": "Profesor",
-				"retired": "Jubilado",
-				"student": "Estudiante"
+				"orthoptiste": "Ortoptista",
+				"optometrist": "Optometrista",
+				"optician": "Óptico"
 			},
 			"specialties": {
 				"ophthalmology": "Oftalmología",
@@ -223,7 +229,27 @@
 				"oculoplastics": "Oculoplástica",
 				"neuro_ophthalmology": "Neuro-oftalmología",
 				"other": "Otro"
+			},
+			"civilities": {
+				"mr": "Sr.",
+				"mme": "Sra.",
+				"dr": "Dr."
 			}
+		},
+		"emailChange": {
+			"title": "Actualizar dirección de correo electrónico",
+			"description": "Introduzca su nueva dirección de correo electrónico. Se enviará un enlace de verificación para confirmar el cambio.",
+			"newEmail": "Nueva dirección de correo electrónico",
+			"update": "Actualizar correo"
+		},
+		"passwordChange": {
+			"title": "Cambiar contraseña",
+			"oldPassword": "Contraseña actual",
+			"newPassword": "Nueva contraseña",
+			"confirmPassword": "Confirmar nueva contraseña",
+			"update": "Actualizar contraseña",
+			"updating": "Actualizando...",
+			"description": "Por seguridad, introduzca su contraseña actual y una nueva contraseña segura."
 		}
 	},
 	"common": {

@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, User } from 'lucide-react';
+import { ArrowRight, File, User } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 
@@ -75,14 +75,14 @@ export function QuickActions() {
 							variants={iconVariants}
 							className="bg-white/20 backdrop-blur-sm p-3 rounded-xl mr-4"
 						>
-							<Calendar className="h-6 w-6 text-white" />
+							<File className="h-6 w-6 text-white" />
 						</motion.div>
 						<div>
 							<h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
-								{t('home.quickActions.program.title')}
+								{t('home.quickActions.abstracts.title')}
 							</h3>
 							<p className="text-white/80 text-sm sm:text-base">
-								{t('home.quickActions.program.description')}
+								{t('home.quickActions.abstracts.description')}
 							</p>
 						</div>
 					</div>
@@ -91,8 +91,8 @@ export function QuickActions() {
 							asChild
 							className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-white/20 w-full justify-between group"
 						>
-							<Link href="/program">
-								<span>{t('home.quickActions.program.action')}</span>
+							<Link href="/abstracts">
+								<span>{t('home.quickActions.abstracts.action')}</span>
 								<motion.span variants={arrowVariants} className="inline-block">
 									<ArrowRight className="h-4 w-4 ml-2" />
 								</motion.span>

@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 interface HeroSectionProps {
 	congressTitle: string;
 	congressDate: string;
+	congressEndDate: string;
 	congressLocation: string;
 	registrationProgress: number;
 	congressRegistrationOpen: boolean | undefined;
@@ -18,6 +19,7 @@ interface HeroSectionProps {
 export function HeroSection({
 	congressTitle,
 	congressDate,
+	congressEndDate,
 	congressLocation,
 	registrationProgress,
 	congressRegistrationOpen,
@@ -123,7 +125,9 @@ export function HeroSection({
 									d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
 								/>
 							</svg>
-							<span>{formatDate(congressDate)}</span>
+							<span>
+								{formatDate(congressDate)} - {formatDate(congressEndDate)}
+							</span>
 						</div>
 						<div className="hidden sm:block w-1.5 h-1.5 rounded-full bg-white/50" />
 						<div className="flex items-center">

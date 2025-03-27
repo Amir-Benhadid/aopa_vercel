@@ -4,7 +4,7 @@
 		"tagline": "Advancing Eye Care Together",
 		"logoAlt": "Ophthalmology Association Logo",
 		"logoAltWithNumber": "Ophthalmology Association Logo {{number}}",
-		"footerDescription": "Liberal Algerian Ophthalmologists Association."
+		"footerDescription": "Association of Algerian Private Ophthalmologists."
 	},
 	"navigation": {
 		"home": "Home",
@@ -239,58 +239,75 @@
 			"later": "Complete Later"
 		},
 		"validation": {
-			"nameRequired": "Name is required",
-			"surnameRequired": "Surname is required",
-			"genderRequired": "Gender is required",
+			"nameRequired": "First name is required",
+			"surnameRequired": "Last name is required",
+			"emailRequired": "Email is required",
+			"emailInvalid": "Invalid email address",
 			"statusRequired": "Status is required",
-			"professionRequired": "Profession is required",
-			"professionalStatusRequired": "Professional status is required"
+			"specialtyRequired": "Specialty is required",
+			"phoneRequired": "Phone number is required",
+			"streetRequired": "Street is required",
+			"cityRequired": "City is required",
+			"countryRequired": "Country is required",
+			"civilityRequired": "Civility is required",
+			"oldPasswordRequired": "Current password is required",
+			"newPasswordRequired": "New password is required",
+			"confirmPasswordRequired": "Password confirmation is required",
+			"passwordMinLength": "Password must be at least 8 characters",
+			"passwordMismatch": "Passwords don't match"
 		},
 		"errors": {
 			"selectImage": "You must select an image to upload.",
-			"uploadFailed": "Error uploading avatar",
-			"updateFailed": "Profile update failed"
+			"uploadFailed": "Avatar upload failed",
+			"updateFailed": "Profile update failed",
+			"emailUpdateFailed": "Email update failed",
+			"emailUnchanged": "Please enter a different email address",
+			"emailExists": "A user with this email is already registered",
+			"passwordUpdateFailed": "Password update failed",
+			"wrongPassword": "The current password is incorrect",
+			"sessionExpired": "Your session has expired. Please log in again",
+			"authRequired": "Authentication required. Please log in again to change your email",
+			"invalidResetLink": "Invalid password reset link. Please request a new one.",
+			"expiredResetLink": "The password reset link has expired. Please request a new one."
 		},
 		"success": {
-			"avatarUploaded": "Avatar uploaded successfully",
-			"profileUpdated": "Profile updated successfully"
+			"profileUpdated": "Profile updated successfully",
+			"avatarUploaded": "Profile picture updated successfully",
+			"emailVerificationSent": "Verification email sent. Please check your inbox",
+			"passwordUpdated": "Password updated successfully"
 		},
 		"form": {
 			"firstName": "First Name",
 			"lastName": "Last Name",
 			"email": "Email",
 			"phone": "Phone",
-			"institution": "Institution",
-			"department": "Department",
-			"position": "Position",
-			"bio": "Biography",
-			"address": "Address",
+			"street": "Street",
 			"city": "City",
 			"country": "Country",
-			"save": "Save Changes",
+			"specialty": "Specialty",
+			"selectSpecialty": "Select specialty",
+			"status": "Status",
+			"selectStatus": "Select status",
+			"civility": "Civility",
+			"selectCivility": "Select civility",
+			"save": "Save changes",
 			"saving": "Saving...",
+			"updatingEmail": "Updating email...",
 			"profilePicture": "Profile Picture",
 			"profilePictureDescription": "Upload a profile picture to personalize your account",
 			"changePhoto": "Change Photo",
 			"uploadPhoto": "Upload Photo",
-			"gender": "Gender",
-			"selectGender": "Select Gender",
-			"status": "Status",
-			"selectStatus": "Select Status",
-			"profession": "Profession",
-			"professionalStatus": "Professional Status",
-			"genders": {
-				"male": "Male",
-				"female": "Female",
-				"other": "Other"
-			},
+			"uploading": "Uploading...",
+			"accountSettings": "Account Settings",
+			"updateEmail": "Update Email",
+			"changePassword": "Change Password",
 			"statuses": {
-				"practicing": "Practicing",
+				"liberal": "Liberal",
+				"public": "Public",
 				"resident": "Resident",
-				"fellow": "Fellow",
-				"professor": "Professor",
-				"retired": "Retired",
-				"student": "Student"
+				"orthoptiste": "Orthoptist",
+				"optometrist": "Optometrist",
+				"optician": "Optician"
 			},
 			"specialties": {
 				"ophthalmology": "Ophthalmology",
@@ -301,7 +318,29 @@
 				"oculoplastics": "Oculoplastics",
 				"neuro_ophthalmology": "Neuro-ophthalmology",
 				"other": "Other"
-			}
+			},
+			"civilities": {
+				"mr": "Mr",
+				"mme": "Mrs",
+				"dr": "Dr"
+			},
+			"emailVerified": "Email verified",
+			"emailNotVerified": "Email not verified"
+		},
+		"emailChange": {
+			"title": "Update Email Address",
+			"description": "Enter your new email address. A verification link will be sent to confirm the change.",
+			"newEmail": "New Email Address",
+			"update": "Update Email"
+		},
+		"passwordChange": {
+			"title": "Change Password",
+			"oldPassword": "Current Password",
+			"newPassword": "New Password",
+			"confirmPassword": "Confirm New Password",
+			"update": "Update Password",
+			"updating": "Updating...",
+			"description": "For security, please enter your current password and a new strong password."
 		}
 	},
 	"languages": {
@@ -349,7 +388,8 @@
 		"clearSearch": "Clear search",
 		"backToHome": "Back to Home",
 		"allYears": "All Years",
-		"allCategories": "All Categories"
+		"allCategories": "All Categories",
+		"backToLogin": "Back to Login"
 	},
 	"congress": {
 		"registrationOpen": "Registration Open",
@@ -500,6 +540,11 @@
 				"title": "My Profile",
 				"description": "Update your personal information",
 				"action": "Go to Profile"
+			},
+			"abstracts": {
+				"title": "My Abstracts",
+				"description": "Submit, view your abstracts",
+				"action": "View Abstracts"
 			}
 		},
 		"featuredActivities": {
@@ -944,5 +989,34 @@
 				"description": "Expand your business through strategic partnerships"
 			}
 		}
+	},
+	"validation": {
+		"required": "Required",
+		"invalidEmail": "Invalid email address",
+		"passwordMin": "Password must be at least 8 characters",
+		"passwordsMatch": "Passwords must match"
+	},
+	"resetPassword": {
+		"title": "Reset Password",
+		"enterNewPassword": "Enter your new password below",
+		"newPassword": "New Password",
+		"confirmPassword": "Confirm Password",
+		"updateButton": "Update Password",
+		"updatingButton": "Updating Password...",
+		"invalidLinkTitle": "Invalid Reset Link",
+		"invalidLinkMessage": "This password reset link is invalid or has expired.",
+		"requestNewMessage": "Please request a new password reset link from the login page.",
+		"goToLogin": "Go to Login",
+		"resetPassword": "Reset Password",
+		"updatingTitle": "Updating Password",
+		"updatingMessage": "Please wait while we update your password...",
+		"successTitle": "Password Updated",
+		"successMessage": "Your password has been successfully updated! You can now log in with your new password.",
+		"failedTitle": "Password Reset Failed",
+		"genericError": "Failed to reset password. Please try again.",
+		"expiredTokenError": "This password reset link has expired. Please request a new one.",
+		"invalidTokenError": "Invalid password reset link. Please request a new one.",
+		"requestNewLink": "Request New Link",
+		"forEmail": "For: {{email}}"
 	}
 }

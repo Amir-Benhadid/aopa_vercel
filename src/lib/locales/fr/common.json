@@ -4,7 +4,7 @@
 		"tagline": "Améliorer ensemble les soins oculaires",
 		"logoAlt": "Logo de l'Association d'Ophtalmologie",
 		"logoAltWithNumber": "Logo de l'Association d'Ophtalmologie {{number}}",
-		"footerDescription": "Club des ophtalmologistes libéraux algeriens."
+		"footerDescription": "Association des Ophtalmologistes Privés Algeriens."
 	},
 	"navigation": {
 		"home": "Accueil",
@@ -19,7 +19,7 @@
 		"logout": "Déconnexion",
 		"dashboard": "Tableau de bord",
 		"events": "Événements",
-		"abstracts": "Résumés",
+		"abstracts": "Abstracts",
 		"news": "Actualités",
 		"resources": "Ressources",
 		"help": "Aide",
@@ -45,7 +45,7 @@
 		"upcomingEvent": "Événement à venir",
 		"previousEvent": "Événement précédent",
 		"previousCongress": {
-			"label": "Congrès précédent"
+			"label": "Notre dernier événement"
 		}
 	},
 	"auth": {
@@ -116,11 +116,11 @@
 		"backToLogin": "Retour à la connexion"
 	},
 	"abstracts": {
-		"title": "Résumés",
-		"newAbstract": "Soumettre un nouveau résumé",
-		"search": "Rechercher des résumés...",
+		"title": "Abstracts",
+		"newAbstract": "Soumettre un nouvel abstract",
+		"search": "Rechercher des abstracts...",
 		"submitted": "Soumis",
-		"typeChanged": "Type de résumé changé en {{type}}",
+		"typeChanged": "Type de l'abstract changé en {{type}}",
 		"fileSelected": "Fichier \"{{name}}\" sélectionné pour le téléchargement",
 		"downloadingTemplate": "Téléchargement du modèle...",
 		"templateDownloaded": "Modèle téléchargé avec succès",
@@ -133,7 +133,7 @@
 		"Reject": "Rejeter",
 		"Start Review": "Commencer la révision",
 		"authorInfo": "Informations sur l'auteur",
-		"backToAbstracts": "Retour aux résumés",
+		"backToAbstracts": "Retour aux abstracts",
 		"coAuthors": "Co-auteurs",
 		"details": "Détails",
 		"mainAuthor": "Auteur principal",
@@ -154,23 +154,23 @@
 			"oral": "Oral"
 		},
 		"submission": {
-			"title": "Soumettre un nouveau résumé",
-			"subtitle": "Remplissez les détails ci-dessous pour soumettre votre résumé",
+			"title": "Soumettre un nouvel abstract",
+			"subtitle": "Remplissez les détails ci-dessous pour soumettre votre abstract",
 			"guidelines": {
-				"title": "Directives de soumission des résumés",
-				"subtitle": "Veuillez consulter les directives suivantes avant de soumettre votre résumé",
-				"maxLength": "Longueur maximale du résumé : 300 mots",
+				"title": "Directives de soumission des abstracts",
+				"subtitle": "Veuillez consulter les directives suivantes avant de soumettre votre abstract",
+				"maxLength": "Longueur maximale de l'abstract : 300 mots",
 				"deadline": "Date limite de soumission : {{date}}",
-				"presentingAuthor": "Un auteur présentateur par résumé",
+				"presentingAuthor": "Un auteur présentateur par abstract",
 				"maxCoAuthors": "Maximum de 5 co-auteurs autorisés",
 				"requiredFields": "Tous les champs sont obligatoires",
-				"review": "Les résumés seront examinés par notre comité scientifique"
+				"review": "Les abstracts seront examinés par notre comité scientifique"
 			},
 			"form": {
 				"title": "Titre",
-				"titlePlaceholder": "Entrez le titre du résumé",
+				"titlePlaceholder": "Entrez le titre de l'abstract",
 				"introduction": "Introduction",
-				"introductionPlaceholder": "Entrez l'introduction du résumé",
+				"introductionPlaceholder": "Entrez l'introduction de l'abstract",
 				"materials": "Matériels",
 				"results": "Résultats",
 				"observations": "Observations",
@@ -178,10 +178,10 @@
 				"discussion": "Discussion",
 				"type": "Type",
 				"theme": "Thème",
-				"themePlaceholder": "Entrez le thème du résumé",
+				"themePlaceholder": "Entrez le thème de l'abstract",
 				"coAuthors": "Co-auteurs",
 				"coAuthorsPlaceholder": "Entrez les co-auteurs (séparés par des virgules)",
-				"submit": "Soumettre le résumé",
+				"submit": "Soumettre l'abstract",
 				"submitting": "Soumission en cours...",
 				"cancel": "Annuler",
 				"resultsPlaceholder": "Entrez les résultats",
@@ -208,14 +208,14 @@
 			}
 		},
 		"success": {
-			"title": "Résumé soumis",
-			"message": "Votre résumé a été soumis avec succès pour révision.",
-			"viewAbstracts": "Voir mes résumés"
+			"title": "Abstract soumis",
+			"message": "Votre abstract a été soumis avec succès pour révision.",
+			"viewAbstracts": "Voir mes abstracts"
 		},
 		"error": {
 			"title": "Erreur",
-			"incompleteProfile": "Veuillez compléter votre profil avant de soumettre un résumé.",
-			"abstractNotFound": "Résumé non trouvé"
+			"incompleteProfile": "Veuillez compléter votre profil avant de soumettre un abstract.",
+			"abstractNotFound": "Abstract non trouvé"
 		},
 		"statusMessages": {
 			"approved": "Approuvé",
@@ -243,56 +243,76 @@
 		"validation": {
 			"nameRequired": "Le nom est requis",
 			"surnameRequired": "Le nom de famille est requis",
+			"emailRequired": "L'e-mail est requis",
+			"emailInvalid": "Adresse e-mail invalide",
 			"genderRequired": "Le genre est requis",
 			"statusRequired": "Le statut est requis",
 			"professionRequired": "La profession est requise",
-			"professionalStatusRequired": "Le statut professionnel est requis"
+			"professionalStatusRequired": "Le statut professionnel est requis",
+			"specialtyRequired": "La spécialité est requise",
+			"streetRequired": "La rue est requise",
+			"cityRequired": "La ville est requise",
+			"countryRequired": "Le pays est requis",
+			"civilityRequired": "La civilité est requise",
+			"oldPasswordRequired": "Le mot de passe actuel est requis",
+			"newPasswordRequired": "Le nouveau mot de passe est requis",
+			"confirmPasswordRequired": "La confirmation du mot de passe est requise",
+			"passwordMinLength": "Le mot de passe doit comporter au moins 8 caractères",
+			"passwordMismatch": "Les mots de passe ne correspondent pas"
 		},
 		"errors": {
-			"selectImage": "Vous devez sélectionner une image à télécharger.",
-			"uploadFailed": "Erreur lors du téléchargement de l'avatar",
-			"updateFailed": "La mise à jour du profil a échoué"
+			"selectImage": "Vous devez sélectionner une image à télécharger",
+			"uploadFailed": "Échec du téléchargement de l'avatar",
+			"updateFailed": "La mise à jour du profil a échoué",
+			"emailUpdateFailed": "La mise à jour de l'e-mail a échoué",
+			"emailUnchanged": "Veuillez entrer une adresse e-mail différente",
+			"emailExists": "Un utilisateur avec cette adresse e-mail est déjà enregistré",
+			"passwordUpdateFailed": "La mise à jour du mot de passe a échoué",
+			"wrongPassword": "Le mot de passe actuel est incorrect",
+			"sessionExpired": "Votre session a expiré. Veuillez vous reconnecter",
+			"authRequired": "Authentification requise. Veuillez vous reconnecter pour changer votre e-mail",
+			"invalidResetLink": "Lien de réinitialisation de mot de passe invalide. Veuillez en demander un nouveau.",
+			"expiredResetLink": "Le lien de réinitialisation du mot de passe a expiré. Veuillez en demander un nouveau."
 		},
 		"success": {
 			"avatarUploaded": "Avatar téléchargé avec succès",
-			"profileUpdated": "Profil mis à jour avec succès"
+			"profileUpdated": "Profil mis à jour avec succès",
+			"emailVerificationSent": "E-mail de vérification envoyé. Veuillez vérifier votre boîte de réception",
+			"passwordUpdated": "Mot de passe mis à jour avec succès"
 		},
 		"form": {
 			"firstName": "Prénom",
 			"lastName": "Nom de famille",
 			"email": "E-mail",
 			"phone": "Téléphone",
-			"institution": "Institution",
-			"department": "Département",
-			"position": "Poste",
-			"bio": "Biographie",
 			"address": "Adresse",
 			"city": "Ville",
-			"country": "Pays",
+			"specialty": "Spécialité",
+			"selectSpecialty": "Sélectionnez la spécialité",
+			"status": "Statut",
+			"selectStatus": "Sélectionnez le statut",
+			"civility": "Civilité",
+			"selectCivility": "Sélectionnez la civilité",
 			"save": "Enregistrer les modifications",
 			"saving": "Enregistrement...",
 			"profilePicture": "Photo de profil",
 			"profilePictureDescription": "Téléchargez une photo de profil pour personnaliser votre compte",
 			"changePhoto": "Changer de photo",
 			"uploadPhoto": "Télécharger la photo",
-			"gender": "Genre",
-			"selectGender": "Sélectionnez le genre",
-			"status": "Statut",
-			"selectStatus": "Sélectionnez le statut",
-			"profession": "Profession",
-			"professionalStatus": "Statut professionnel",
-			"genders": {
-				"male": "Masculin",
-				"female": "Féminin",
-				"other": "Autre"
-			},
+			"updatingEmail": "Mise à jour de l'e-mail...",
+			"changePassword": "Changer le mot de passe",
+			"updateEmail": "Mettre à jour l'e-mail",
+			"accountSettings": "Paramètres du compte",
+			"emailVerified": "E-mail vérifié",
+			"emailNotVerified": "E-mail non vérifié",
+			"street": "Rue",
 			"statuses": {
-				"practicing": "Praticien",
+				"liberal": "Libéral",
+				"public": "Public",
 				"resident": "Résident",
-				"fellow": "Spécialiste",
-				"professor": "Professeur",
-				"retired": "Retraité",
-				"student": "Étudiant"
+				"orthoptiste": "Orthoptiste",
+				"optometrist": "Optométriste",
+				"optician": "Opticien"
 			},
 			"specialties": {
 				"ophthalmology": "Ophtalmologie",
@@ -303,7 +323,27 @@
 				"oculoplastics": "Oculoplastie",
 				"neuro_ophthalmology": "Neuro-ophtalmologie",
 				"other": "Autre"
+			},
+			"civilities": {
+				"mr": "M.",
+				"mme": "Mme",
+				"dr": "Dr"
 			}
+		},
+		"emailChange": {
+			"title": "Mettre à jour l'adresse e-mail",
+			"description": "Entrez votre nouvelle adresse e-mail. Un lien de vérification sera envoyé pour confirmer le changement.",
+			"newEmail": "Nouvelle adresse e-mail",
+			"update": "Mettre à jour l'e-mail"
+		},
+		"passwordChange": {
+			"title": "Changer le mot de passe",
+			"oldPassword": "Mot de passe actuel",
+			"newPassword": "Nouveau mot de passe",
+			"confirmPassword": "Confirmer le nouveau mot de passe",
+			"update": "Mettre à jour le mot de passe",
+			"updating": "Mise à jour...",
+			"description": "Pour des raisons de sécurité, veuillez entrer votre mot de passe actuel et un nouveau mot de passe fort."
 		}
 	},
 	"languages": {
@@ -351,7 +391,8 @@
 		"clearSearch": "Effacer la recherche",
 		"backToHome": "Retour à l'accueil",
 		"allYears": "Toutes les années",
-		"allCategories": "Toutes les catégories"
+		"allCategories": "Toutes les catégories",
+		"backToLogin": "Retour à la connexion"
 	},
 	"congress": {
 		"registrationOpen": "Inscription ouverte",
@@ -374,7 +415,7 @@
 		"eventVideos": "Vidéos de l'événement",
 		"location": "Lieu",
 		"registrationDeadline": "Date limite d'inscription",
-		"abstractDeadline": "Date limite de soumission des résumés",
+		"abstractDeadline": "Date limite de soumission des abstracts",
 		"joinUs": "Rejoignez-nous à l'événement",
 		"registrationCTA": "Réservez votre place pour cet événement ophtalmologique important. Inscrivez-vous dès maintenant pour échanger avec des collègues et apprendre des experts.",
 		"share": "Partager cet événement",
@@ -418,7 +459,7 @@
 		"open": "Ouvert",
 		"closed": "Fermé",
 		"registration": "Inscription",
-		"submitAbstract": "Soumettre le résumé",
+		"submitAbstract": "Soumettre l'abstract",
 		"program": "Programme",
 		"programDetails": "Détails du programme",
 		"startsToday": "Commence aujourd'hui",
@@ -432,7 +473,7 @@
 		"daysSince": "Jours depuis",
 		"eventNotFound": "Événement non trouvé",
 		"eventVideos": "Vidéos de l'événement",
-		"abstractDeadline": "Date limite des résumés",
+		"abstractDeadline": "Date limite des abstracts",
 		"alternativeOptions": "Options alternatives",
 		"contactSupport": "Contacter le support",
 		"contactUs": "Nous contacter",
@@ -493,6 +534,11 @@
 				"title": "Mon profil",
 				"description": "Mettez à jour vos informations personnelles",
 				"action": "Aller au profil"
+			},
+			"abstracts": {
+				"title": "Mes abstracts",
+				"description": "Consultez, soumettez vos abstracts",
+				"action": "Voir les abstracts"
 			}
 		},
 		"featuredActivities": {
@@ -530,7 +576,8 @@
 		},
 		"annualReports": {
 			"title": "Rapports annuels",
-			"subtitle": "Consultez nos réalisations et jalons annuels",
+			"subtitle": "Consultez nos ouvrages et publications",
+			"description": "Déscription",
 			"fileSize": "Taille du fichier",
 			"viewAllReports": "Voir tous les rapports",
 			"backgroundAlt": "Image de fond médicale",
@@ -552,13 +599,13 @@
 		},
 		"previousEvents": {
 			"title": "Événements précédents",
-			"subtitle": "Découvrez nos anciens congrès et ateliers",
+			"subtitle": "Découvrez nos anciens événements",
 			"viewAllEvents": "Voir tous les événements",
 			"viewDetails": "Voir les détails",
 			"checkBackLater": "Revenez plus tard",
 			"noPastEvents": "Aucun événement passé",
 			"previousCongress": {
-				"label": "Congrès précédent"
+				"label": "Notre dernier événement"
 			},
 			"congress2023": {
 				"title": "Congrès annuel 2023",
@@ -597,8 +644,8 @@
 			"dataLoadFailed": "Échec du chargement des données. Veuillez réessayer plus tard."
 		},
 		"congressGallery": {
-			"title": "Galerie du congrès",
-			"subtitle": "Découvrez des moments de nos congrès d'ophtalmologie à travers le monde.",
+			"title": "Galerie",
+			"subtitle": "Découvrez des moments de nos congrès.",
 			"imageAlt": "Image de la galerie du congrès"
 		},
 		"upcomingCongress": {
@@ -607,11 +654,11 @@
 			"viewDetails": "Voir les détails"
 		},
 		"previousCongress": {
-			"label": "Congrès précédent"
+			"label": "Notre dernier événement"
 		},
 		"partners": {
 			"title": "Partenaires",
-			"subtitle": "Rejoignez l'Association d'Ophtalmologie et devenez un partenaire aujourd'hui!",
+			"subtitle": "Cet espace est pour vous!",
 			"advertiseTitle": "Faites vos publicités avec nous",
 			"advertiseDescription": "Nous sommes toujours à la recherche de nouvelles façons de promouvoir notre association et de progresser ensemble. Si vous avez une idée brillante, nous aimerions savoir de vous.",
 			"becomePartner": "Devenez un partenaire"
@@ -623,11 +670,11 @@
 		"search": "Rechercher...",
 		"stats": {
 			"totalMembers": "Nombre total de membres",
-			"activeAbstracts": "Résumés actifs",
+			"activeAbstracts": "Abstracts actifs",
 			"upcomingEvents": "Événements à venir",
 			"publications": "Publications",
 			"vsLastMonth": "par rapport au mois dernier",
-			"abstracts": "Résumés",
+			"abstracts": "Abstracts",
 			"activities": "Activités",
 			"congresses": "Congrès",
 			"media": "Médias",
@@ -650,7 +697,7 @@
 		},
 		"navigation": {
 			"overview": "Aperçu",
-			"abstracts": "Résumés",
+			"abstracts": "Abstracts",
 			"events": "Événements",
 			"analytics": "Analyses",
 			"messages": "Messages",
@@ -668,7 +715,7 @@
 		},
 		"editProfile": "Modifier le profil",
 		"empty": {
-			"abstracts": "Aucun résumé disponible",
+			"abstracts": "Aucun abstract disponible",
 			"activities": "Aucune activité disponible",
 			"congresses": "Aucun congrès disponible"
 		},
@@ -676,12 +723,12 @@
 		"noDescription": "Aucune description disponible",
 		"quickActions": "Actions rapides",
 		"recent": {
-			"abstracts": "Résumés récents",
+			"abstracts": "Abstracts récents",
 			"activities": "Activités récentes",
 			"congresses": "Congrès récents"
 		},
 		"viewAll": {
-			"abstracts": "Voir tous les résumés",
+			"abstracts": "Voir tous les abstracts",
 			"activities": "Voir toutes les activités",
 			"congresses": "Voir tous les congrès",
 			"media": "Voir tous les médias",
@@ -765,11 +812,12 @@
 	},
 	"archives": {
 		"title": "Archives",
-		"description": "Parcourez notre collection d'événements passés, d'affiches électroniques et de webinaires.",
+		"explore": "Explorez",
+		"description": "Parcourez notre collection d'événements passés, d'e-posters et de webinaires.",
 		"pastEvents": "Événements passés",
 		"pastEventsDescription": "Découvrez nos précédents congrès et événements.",
-		"ePosters": "Affiches électroniques",
-		"ePostersDescription": "Parcourez notre collection d'affiches électroniques d'événements passés.",
+		"ePosters": "E-Posters",
+		"ePostersDescription": "Parcourez notre collection d'e-posters d'événements passés.",
 		"webinars": "Webinaires",
 		"webinarsDescription": "Regardez les webinaires enregistrés et les présentations de nos experts. Restez informé des dernières avancées en ophtalmologie.",
 		"viewMore": "Voir plus",
@@ -946,5 +994,34 @@
 				"description": "Développez votre activité grâce à des partenariats stratégiques"
 			}
 		}
+	},
+	"validation": {
+		"required": "Obligatoire",
+		"invalidEmail": "Adresse e-mail invalide",
+		"passwordMin": "Le mot de passe doit comporter au moins 8 caractères",
+		"passwordsMatch": "Les mots de passe doivent correspondre"
+	},
+	"resetPassword": {
+		"title": "Réinitialiser le mot de passe",
+		"enterNewPassword": "Entrez votre nouveau mot de passe ci-dessous",
+		"newPassword": "Nouveau mot de passe",
+		"confirmPassword": "Confirmer le mot de passe",
+		"updateButton": "Mettre à jour le mot de passe",
+		"updatingButton": "Mise à jour du mot de passe...",
+		"invalidLinkTitle": "Lien de réinitialisation invalide",
+		"invalidLinkMessage": "Ce lien de réinitialisation de mot de passe est invalide ou a expiré.",
+		"requestNewMessage": "Veuillez demander un nouveau lien de réinitialisation depuis la page de connexion.",
+		"goToLogin": "Aller à la connexion",
+		"resetPassword": "Réinitialiser le mot de passe",
+		"updatingTitle": "Mise à jour du mot de passe",
+		"updatingMessage": "Veuillez patienter pendant la mise à jour de votre mot de passe...",
+		"successTitle": "Mot de passe mis à jour",
+		"successMessage": "Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+		"failedTitle": "Échec de la réinitialisation du mot de passe",
+		"genericError": "Échec de la réinitialisation du mot de passe. Veuillez réessayer.",
+		"expiredTokenError": "Ce lien de réinitialisation de mot de passe a expiré. Veuillez en demander un nouveau.",
+		"invalidTokenError": "Lien de réinitialisation de mot de passe invalide. Veuillez en demander un nouveau.",
+		"requestNewLink": "Demander un nouveau lien",
+		"forEmail": "Pour : {{email}}"
 	}
 }
