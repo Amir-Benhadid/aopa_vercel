@@ -65,6 +65,10 @@
 	--withdrawn-card-text: #64748b;
 }
 
+/* Disable dark mode styles - we're not using them anymore */
+/* The dark mode selector will never be applied since we've modified the ThemeProvider */
+/* But we're keeping this commented out for reference */
+/*
 [data-theme='dark'] {
 	--background: #000000;
 	--foreground: #ffffff;
@@ -84,7 +88,6 @@
 	--primary-800: #e0f2fe;
 	--primary-900: #f0f9ff;
 
-	/* Dark mode versions */
 	--workshop-card-color: #92400e20;
 	--workshop-card-text: #f59e0b;
 
@@ -97,7 +100,6 @@
 	--networking-card-color: #16653420;
 	--networking-card-text: #4ade80;
 
-	/* Dark mode versions */
 	--submitted-card-color: #1e3a8a20;
 	--submitted-card-text: #60a5fa;
 
@@ -113,17 +115,32 @@
 	--final-version-card-color: #4c1d9520;
 	--final-version-card-text: #a78bfa;
 
-	/* Dark mode versions */
 	--reviewing-card-color: #92400e20;
 	--reviewing-card-text: #fbbf24;
 
 	--withdrawn-card-color: #1e293b20;
 	--withdrawn-card-text: #94a3b8;
 }
+*/
 
 body {
 	color: var(--foreground);
 	background: var(--background);
+}
+
+/* Override any dark mode media queries */
+@media (prefers-color-scheme: dark) {
+	/* Force light mode styles even when user prefers dark mode */
+	:root {
+		/* Keep all the light theme variables */
+		color-scheme: light;
+	}
+
+	/* Ensure body uses light mode colors */
+	body {
+		background-color: var(--background);
+		color: var(--foreground);
+	}
 }
 
 /* In a global stylesheet or Tailwind's @layer utilities */

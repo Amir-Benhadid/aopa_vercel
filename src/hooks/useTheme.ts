@@ -3,11 +3,12 @@
 import { useTheme as useNextTheme } from 'next-themes';
 
 export function useTheme() {
-	const { theme, setTheme, systemTheme } = useNextTheme();
+	const { setTheme } = useNextTheme();
 
+	// Always return light theme and isDark as false, regardless of actual theme
 	return {
-		theme: theme === 'system' ? systemTheme : theme,
+		theme: 'light',
 		setTheme,
-		isDark: theme === 'dark' || (theme === 'system' && systemTheme === 'dark'),
+		isDark: false,
 	};
 }

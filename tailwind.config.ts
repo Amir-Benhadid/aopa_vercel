@@ -6,7 +6,8 @@ const config: Config = {
 		'./src/components/**/*.{js,ts,jsx,tsx,mdx}',
 		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
 	],
-	darkMode: ['class', '[data-theme="dark"]'],
+	// Set darkMode to 'media' but we'll override it in CSS to never apply
+	darkMode: 'class',
 	theme: {
 		extend: {
 			colors: {

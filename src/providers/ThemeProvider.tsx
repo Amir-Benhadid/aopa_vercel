@@ -1,6 +1,6 @@
 'use client';
 
-import { darkTheme, lightTheme } from '@/styles/theme';
+import { lightTheme } from '@/styles/theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import { ThemeProvider as NextThemeProvider, useTheme } from 'next-themes';
@@ -12,10 +12,9 @@ function ThemeWrapper({ children }: { children: ReactNode }) {
 	const [currentTheme, setCurrentTheme] = useState(lightTheme);
 
 	// Update MUI theme when Next.js theme changes
+	// Force light theme always for now
 	useEffect(() => {
-		if (theme) {
-			setCurrentTheme(theme === 'dark' ? darkTheme : lightTheme);
-		}
+		setCurrentTheme(lightTheme);
 	}, [theme]);
 
 	return (
@@ -42,8 +41,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 	return (
 		<NextThemeProvider
 			attribute="data-theme"
-			defaultTheme="system"
-			enableSystem
+			defaultTheme="light"
+			enableSystem={false}
+			forcedTheme="light"
 		>
 			<ThemeWrapper>{children}</ThemeWrapper>
 		</NextThemeProvider>
