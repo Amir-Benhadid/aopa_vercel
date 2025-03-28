@@ -96,7 +96,13 @@ export function DashboardPage() {
 	const formatTimeRemaining = (targetDate: string): string => {
 		const now = new Date();
 		const target = new Date(targetDate);
-		const diffTime = Math.abs(target.getTime() - now.getTime());
+
+		// Calculate date 3 months before congress start
+		const threeMonthsBefore = new Date(target);
+		threeMonthsBefore.setMonth(target.getMonth() - 3);
+
+		// Use 3 months before as the target date
+		const diffTime = Math.abs(threeMonthsBefore.getTime() - now.getTime());
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
 		return diffDays > 1

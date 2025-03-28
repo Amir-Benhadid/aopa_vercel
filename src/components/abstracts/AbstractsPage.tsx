@@ -96,6 +96,11 @@ export function AbstractsPage() {
 		}
 	}, [refetch, user?.id]);
 
+	// Log the congresses data for debugging
+	useEffect(() => {
+		console.log('Abstracts page received congresses:', congresses);
+	}, [congresses]);
+
 	const handleSearch = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			setSearchTerm(e.target.value);
@@ -185,7 +190,13 @@ export function AbstractsPage() {
 							value={congressFilter}
 							onValueChange={handleCongressFilterChange}
 							options={[
-								{ value: 'all', label: t('abstracts.filters.allCongresses') },
+								{
+									value: 'all',
+									label: t(
+										'abstracts.filters.allCongresses',
+										'All congresses (2025+)'
+									),
+								},
 								...(congresses?.map((congress) => ({
 									value: congress.id,
 									label: congress.name,

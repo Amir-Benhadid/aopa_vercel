@@ -23,6 +23,7 @@ interface User {
 	email: string;
 	name?: string;
 	surname?: string;
+	role?: string;
 }
 
 // Define Auth State for better type safety and predictability
@@ -83,6 +84,7 @@ const formatUser = (supabaseUser: SupabaseUser | null): User | null => {
 		email: supabaseUser.email || '',
 		name: supabaseUser.user_metadata?.name,
 		surname: supabaseUser.user_metadata?.surname,
+		role: supabaseUser.user_metadata?.role, // Role will be set from accounts table
 	};
 };
 
@@ -184,6 +186,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				debug(`SIGNED_IN [${currentCount}]`);
 				const formattedUser = formatUser(session.user);
 				if (formattedUser) {
+					// Fetch user role from database
+					try {
+						const { data: accountData, error: accountError } = await supabase
+							.from('accounts')
+							.select('role')
+							.eq('user_id', formattedUser.id)
+							.single();
+
+						if (!accountError && accountData) {
+							// Add role to user object
+							formattedUser.role = accountData.role;
+							debug('User role fetched from accounts:', accountData.role);
+						} else {
+							debug('Could not fetch user role, defaulting to basic');
+							formattedUser.role = 'basic';
+						}
+					} catch (roleError) {
+						debug('Error fetching user role:', roleError);
+						formattedUser.role = 'basic';
+					}
+
 					setAuthState({
 						status: 'authenticated',
 						user: formattedUser,
@@ -196,6 +219,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				debug(`TOKEN_REFRESHED [${currentCount}]`);
 				const formattedUser = formatUser(session.user);
 				if (formattedUser) {
+					// Refresh the role when token is refreshed
+					try {
+						const { data: accountData, error: accountError } = await supabase
+							.from('accounts')
+							.select('role')
+							.eq('user_id', formattedUser.id)
+							.single();
+
+						if (!accountError && accountData) {
+							// Add role to user object
+							formattedUser.role = accountData.role;
+							debug('User role refreshed:', accountData.role);
+						}
+					} catch (roleError) {
+						debug('Error refreshing user role:', roleError);
+					}
+
 					setAuthState({
 						status: 'authenticated',
 						user: formattedUser,
@@ -234,6 +274,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 					debug('Session found for user:', session.user.email);
 					const formattedUser = formatUser(session.user);
 					if (formattedUser) {
+						// Fetch user role from database
+						try {
+							const { data: accountData, error: accountError } = await supabase
+								.from('accounts')
+								.select('role')
+								.eq('user_id', formattedUser.id)
+								.single();
+
+							if (!accountError && accountData) {
+								// Add role to user object
+								formattedUser.role = accountData.role;
+								debug('User role fetched from accounts:', accountData.role);
+							} else {
+								debug('Could not fetch user role, defaulting to basic');
+								formattedUser.role = 'basic';
+							}
+						} catch (roleError) {
+							debug('Error fetching user role:', roleError);
+							formattedUser.role = 'basic';
+						}
+
 						setAuthState({
 							status: 'authenticated',
 							user: formattedUser,

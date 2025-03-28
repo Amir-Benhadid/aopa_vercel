@@ -1,5 +1,6 @@
 'use client';
 
+import { ProtectedContent } from '@/components/common/ProtectedContent';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import FlipbookPDFViewer from '@/components/ui/pdfViewer';
@@ -57,7 +58,6 @@ export default function CongressDetailPage() {
 	const [currentHeroImage, setCurrentHeroImage] = useState(0);
 	const heroSlideInterval = useRef<NodeJS.Timeout | null>(null);
 	const slideInterval = useRef<NodeJS.Timeout | null>(null);
-	const [hasAccess, setHasAccess] = useState(false);
 	const [activeTab, setActiveTab] = useState('info');
 
 	// Function to shuffle array (Fisher-Yates algorithm)
@@ -387,31 +387,6 @@ export default function CongressDetailPage() {
 		};
 	}, [congressImages]);
 
-	// Check user access to videos
-	useEffect(() => {
-		async function checkAccess() {
-			if (!congress?.id) return;
-
-			try {
-				const res = await fetch(
-					`/api/checkUserAccess?congressId=${congress.id}`,
-					{
-						cache: 'no-store',
-					}
-				);
-
-				if (res.ok) {
-					const data = await res.json();
-					setHasAccess(data.hasAccess);
-				}
-			} catch (err) {
-				console.error('Error checking user access:', err);
-			}
-		}
-
-		checkAccess();
-	}, [congress]);
-
 	if (isLoading) {
 		return (
 			<LoadingSpinner
@@ -462,6 +437,17 @@ export default function CongressDetailPage() {
 
 	// Calculate days until congress
 	const today = new Date();
+
+	// Calculate date 3 months before congress start (for abstract submission)
+	const threeMonthsBefore = new Date(startDate);
+	threeMonthsBefore.setMonth(startDate.getMonth() - 3);
+	const abstractDeadline = threeMonthsBefore.toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
+
+	// Calculate days until the actual congress start date
 	const daysUntil = Math.ceil(
 		(startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 	);
@@ -634,7 +620,7 @@ export default function CongressDetailPage() {
 									</button>
 								)}
 
-								{congressVideos.length > 0 && hasAccess && (
+								{congressVideos.length > 0 && (
 									<button
 										onClick={() => setActiveTab('videos')}
 										className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
@@ -880,9 +866,11 @@ export default function CongressDetailPage() {
 							)}
 
 							{/* Videos Tab - Only shown if user has access */}
-							{activeTab === 'videos' &&
-								congressVideos.length > 0 &&
-								hasAccess && (
+							{activeTab === 'videos' && congressVideos.length > 0 && (
+								<ProtectedContent
+									congressId={params.id as string}
+									contentType="webinar"
+								>
 									<div>
 										<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
 											<div className="bg-red-100 dark:bg-red-800/30 p-2 rounded-lg mr-3">
@@ -931,51 +919,57 @@ export default function CongressDetailPage() {
 											</table>
 										</div>
 									</div>
-								)}
+								</ProtectedContent>
+							)}
 
 							{/* E-Posters Tab */}
 							{activeTab === 'eposters' && ePosters.length > 0 && (
-								<div>
-									<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-										<div className="bg-purple-100 dark:bg-purple-800/30 p-2 rounded-lg mr-3">
-											<FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-										</div>
-										{t('congress.eposters') || 'E-Posters'}
-									</h2>
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-										{ePosters.map((poster, index) => {
-											const posterName = path
-												.basename(poster, '.pdf')
-												.replace(/_/g, ' ');
-											return (
-												<div
-													key={index}
-													className="bg-white dark:bg-gray-700 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-												>
-													<div className="p-6">
-														<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-															{posterName}
-														</h3>
+								<ProtectedContent
+									congressId={params.id as string}
+									contentType="eposter"
+								>
+									<div>
+										<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+											<div className="bg-purple-100 dark:bg-purple-800/30 p-2 rounded-lg mr-3">
+												<FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+											</div>
+											{t('congress.eposters') || 'E-Posters'}
+										</h2>
+										<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+											{ePosters.map((poster, index) => {
+												const posterName = path
+													.basename(poster, '.pdf')
+													.replace(/_/g, ' ');
+												return (
+													<div
+														key={index}
+														className="bg-white dark:bg-gray-700 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+													>
+														<div className="p-6">
+															<h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+																{posterName}
+															</h3>
 
-														<Link
-															href={`/archives/events/${
-																params.id
-															}/eposters/${encodeURIComponent(
-																path.basename(poster)
-															)}`}
-															passHref
-														>
-															<Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-																<FileText className="w-4 h-4 mr-2" />
-																{t('congress.viewPoster') || 'View Poster'}
-															</Button>
-														</Link>
+															<Link
+																href={`/archives/events/${
+																	params.id
+																}/eposters/${encodeURIComponent(
+																	path.basename(poster)
+																)}`}
+																passHref
+															>
+																<Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+																	<FileText className="w-4 h-4 mr-2" />
+																	{t('congress.viewPoster') || 'View Poster'}
+																</Button>
+															</Link>
+														</div>
 													</div>
-												</div>
-											);
-										})}
+												);
+											})}
+										</div>
 									</div>
-								</div>
+								</ProtectedContent>
 							)}
 
 							{/* Program Tab */}

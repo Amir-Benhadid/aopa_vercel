@@ -113,6 +113,7 @@
 		"backToLogin": "Back to Login"
 	},
 	"abstracts": {
+		"noAbstracts": "No abstracts found",
 		"title": "Abstracts",
 		"newAbstract": "Submit New Abstract",
 		"search": "Search abstracts...",
@@ -233,6 +234,8 @@
 		"personalInfo": "Personal Information",
 		"academicInfo": "Academic Information",
 		"contactInfo": "Contact Information",
+		"editProfile": "Edit Profile",
+		"completeProfile": "Complete Profile",
 		"setup": {
 			"title": "Complete Your Profile",
 			"description": "Please take a moment to complete your profile information. This will help us personalize your experience.",
@@ -349,6 +352,18 @@
 		"french": "French",
 		"arabic": "Arabic"
 	},
+	"content": {
+		"restricted": "Restricted content",
+		"loginToAccess": "You need to login to access this content",
+		"accessRequirements": "To access this content, you need one of the following:",
+		"adminRole": "Have an admin role",
+		"activeCotisation": "Have an active cotisation",
+		"paidRegistration": "Have a paid registration for this event",
+		"paidRegistrationAny": "Have a paid registration for any event",
+		"paidRegistrationEposter": "Have a paid registration for this event to view its e-posters",
+		"paidRegistrationWebinar": "Have a paid registration for this event to view its webinars",
+		"registerForEvent": "Register for this event"
+	},
 	"common": {
 		"loading": "Loading...",
 		"error": "An error occurred",
@@ -394,6 +409,15 @@
 	"congress": {
 		"registrationOpen": "Registration Open",
 		"date": "Date",
+		"dates": "Dates",
+		"information": "Information",
+		"photos": "Photos",
+		"videos": "Videos",
+		"documents": "Documents",
+		"viewAll": "View All",
+		"checkBackLater": "Veuillez vérifier plus tard pour la disponibilité de cette ressource.",
+		"comingSoon": "Bientôt disponible",
+		"eposters": "E-Posters",
 		"type": "Type",
 		"hybridNote": "(lives available the day of the event)",
 		"registerNow": "Register Now",
@@ -850,7 +874,15 @@
 		"viewAllPosters": "View All Posters",
 		"viewAllWebinars": "View All Webinars",
 		"viewDetails": "View Details",
-		"viewDocument": "View Document"
+		"viewDocument": "View Document",
+		"dates": "Dates",
+		"information": "Information",
+		"photos": "Photos",
+		"videos": "Videos",
+		"documents": "Documents",
+		"viewAll": "View All",
+		"checkBackLater": "Please check back later for the availability of this resource.",
+		"comingSoon": "Coming Soon"
 	},
 	"reports": {
 		"download": "Download",

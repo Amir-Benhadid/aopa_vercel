@@ -16,6 +16,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 interface DashboardLayoutProps {
 	children: ReactNode;
@@ -73,6 +74,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 	const router = useRouter();
 	const pathname = usePathname();
 	const [newMessageCount, setNewMessageCount] = useState(0);
+	const [userRole, setUserRole] = useState<string | null>(null);
+	const [isCheckingRole, setIsCheckingRole] = useState(true);
 
 	// Determine active tab based on current path
 	const getActiveTabFromPath = (path: string) => {
@@ -132,8 +135,85 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 		};
 	}, [isAuthenticated]);
 
+	// Check user role from accounts table
+	useEffect(() => {
+		if (!isAuthenticated || !user) {
+			setIsCheckingRole(false);
+			return;
+		}
+
+		const checkUserRole = async () => {
+			try {
+				setIsCheckingRole(true);
+
+				// First check if the role is already in the user object from auth
+				if (user.role) {
+					setUserRole(user.role);
+					setIsCheckingRole(false);
+					return;
+				}
+
+				// If not, fetch from the database
+				const { data, error } = await supabase
+					.from('accounts')
+					.select('role')
+					.eq('user_id', user.id)
+					.single();
+
+				if (error) {
+					console.error('Error fetching user role:', error);
+					toast.error(
+						t('dashboard.roleCheckError', 'Failed to verify access rights')
+					);
+					router.push('/');
+					return;
+				}
+
+				if (data) {
+					setUserRole(data.role);
+				} else {
+					setUserRole('basic'); // Default to basic if no role found
+				}
+			} catch (error) {
+				console.error('Error in role check:', error);
+				toast.error(t('dashboard.accessDenied', 'Access denied'));
+				router.push('/');
+			} finally {
+				setIsCheckingRole(false);
+			}
+		};
+
+		checkUserRole();
+	}, [isAuthenticated, user, router, t]);
+
+	// Check if user has basic role and redirect if needed
+	useEffect(() => {
+		if (userRole === 'basic' && !isLoading && !isCheckingRole) {
+			console.log(t('dashboard.accessDenied', 'Access denied for basic user'));
+			toast.error(
+				t('dashboard.accessDenied', 'You do not have access to the dashboard')
+			);
+			router.push('/');
+		}
+	}, [userRole, isLoading, isCheckingRole, router, t]);
+
+	// If user role is not admin, redirect to home page
+	if (userRole !== 'admin') {
+		console.log(
+			t('dashboard.accessDenied', 'Access denied for non-admin user')
+		);
+		// Use useEffect to handle redirection after render
+		useEffect(() => {
+			toast.error(
+				t('dashboard.accessDenied', 'You do not have access to the dashboard')
+			);
+			router.push('/');
+		}, []);
+		return null;
+	}
+
 	// If loading, show loading spinner
-	if (isLoading) {
+	if (isLoading || isCheckingRole) {
 		return (
 			<LoadingSpinner
 				message={t('dashboard.loading', 'Loading dashboard...')}
@@ -145,8 +225,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 	}
 
 	// If not authenticated after loading is complete, don't render dashboard content
-	// This shouldn't happen normally because middleware should redirect,
-	// but this provides a fallback just in case
 	if (!isAuthenticated && !isLoading) {
 		console.log(
 			t(

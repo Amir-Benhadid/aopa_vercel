@@ -35,7 +35,7 @@ interface LoadingSpinnerProps {
 
 export function LoadingSpinner({
 	message,
-	background = 'gradient',
+	background = 'transparent',
 	size = 'default',
 	color = 'primary',
 	fullScreen = false,
@@ -61,10 +61,9 @@ export function LoadingSpinner({
 
 	// Background styles
 	const backgroundClasses = {
-		gradient:
-			'bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30',
+		gradient: 'bg-transparent',
 		transparent: 'bg-transparent',
-		white: 'bg-white dark:bg-gray-900',
+		white: 'bg-transparent',
 	};
 
 	// Spinner colors

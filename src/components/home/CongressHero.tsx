@@ -92,20 +92,25 @@ export function CongressHero({ congress }: CongressHeroProps) {
 
 							<div className="flex items-center text-gray-600 dark:text-gray-300">
 								<Users className="h-5 w-5 mr-3 text-blue-600 dark:text-blue-400" />
-								<span>{t(`congress.type.${congress.congress_type}`)}</span>
+								<span>{t(`congressTypes.${congress.congress_type}`)}</span>
 							</div>
 						</div>
 
 						<div className="flex flex-col sm:flex-row gap-4">
-							<Button size="lg" asChild>
-								<Link href={`/congress/${congress.id}/register`}>
-									{t('congress.registerNow')}
-								</Link>
-							</Button>
-							<Button variant="outline" size="lg" asChild>
-								<Link href={`/congress/${congress.id}`}>
-									{t('congress.learnMore')}
-								</Link>
+							{congress.registration && (
+								<Button size="lg" asChild>
+									<Link href={`/congress/${congress.id}/register`}>
+										{t('congress.registerNow')}
+									</Link>
+								</Button>
+							)}
+							<Button
+								variant="outline"
+								size="lg"
+								asChild
+								className="whitespace-nowrap"
+							>
+								<Link href={`/upcoming-event`}>{t('congress.learnMore')}</Link>
 							</Button>
 						</div>
 					</motion.div>
@@ -124,13 +129,15 @@ export function CongressHero({ congress }: CongressHeroProps) {
 						<div className="grid grid-cols-2 gap-4 mb-8">
 							<div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
 								<div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-									{new Date(congress.registration_deadline) > new Date()
-										? Math.ceil(
-												(new Date(congress.registration_deadline).getTime() -
-													new Date().getTime()) /
-													(1000 * 60 * 60 * 24)
-										  )
-										: 0}
+									{(() => {
+										// Calculate days until congress start date
+										const startDate = new Date(congress.start_date);
+										const now = new Date();
+										const diffTime = startDate.getTime() - now.getTime();
+										return diffTime > 0
+											? Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+											: 0;
+									})()}
 								</div>
 								<div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
 									{t('congress.daysLeft')}
@@ -148,18 +155,15 @@ export function CongressHero({ congress }: CongressHeroProps) {
 								</div>
 							</div>
 
-							<div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
+							<div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center col-span-2">
 								<div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-									{formatDate(congress.registration_deadline)}
-								</div>
-								<div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-									{t('congress.registrationDeadline')}
-								</div>
-							</div>
-
-							<div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-center">
-								<div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-									{formatDate(congress.abstract_submission_deadline)}
+									{(() => {
+										// Calculate date 3 months before congress start
+										const startDate = new Date(congress.start_date);
+										const threeMonthsBefore = new Date(startDate);
+										threeMonthsBefore.setMonth(startDate.getMonth() - 3);
+										return formatDate(threeMonthsBefore.toISOString());
+									})()}
 								</div>
 								<div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
 									{t('congress.abstractDeadline')}

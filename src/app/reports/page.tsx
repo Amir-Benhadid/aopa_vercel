@@ -283,21 +283,6 @@ export default function ReportsPage() {
 									</div>
 								</div>
 								<div className="p-5 flex-1 flex flex-col">
-									{/* File Size */}
-									<div className="flex items-center mb-4">
-										<div className="flex-shrink-0 bg-primary-50 dark:bg-primary-900/20 p-2 rounded-full mr-3">
-											<FileText className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-										</div>
-										<div>
-											<h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-												{t('home.annualReports.fileSize', 'File Size')}
-											</h4>
-											<p className="text-gray-900 dark:text-white text-sm">
-												{report.fileSize}
-											</p>
-										</div>
-									</div>
-
 									{/* Publication Date */}
 									{report.published_at && (
 										<div className="flex items-center mb-4">

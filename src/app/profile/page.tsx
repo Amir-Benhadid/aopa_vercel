@@ -6,12 +6,14 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function ProfileContent() {
 	const { user, isAuthenticated, isLoading } = useAuth();
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [profile, setProfile] = useState<any>(null);
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		// Only fetch profile if user is authenticated
@@ -87,7 +89,7 @@ function ProfileContent() {
 			<div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
 				<div className="px-6 py-8">
 					<h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-						{profile ? 'Edit Profile' : 'Complete Your Profile'}
+						{profile ? t('profile.editProfile') : t('profile.completeProfile')}
 					</h1>
 
 					<ProfileForm initialData={profile} />

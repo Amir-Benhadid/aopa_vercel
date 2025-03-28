@@ -116,6 +116,7 @@
 		"backToLogin": "Retour à la connexion"
 	},
 	"abstracts": {
+		"noAbstracts": "Aucun abstract trouvé",
 		"title": "Abstracts",
 		"newAbstract": "Soumettre un nouvel abstract",
 		"search": "Rechercher des abstracts...",
@@ -235,6 +236,8 @@
 		"personalInfo": "Informations personnelles",
 		"academicInfo": "Informations académiques",
 		"contactInfo": "Informations de contact",
+		"editProfile": "Modifier le profil",
+		"completeProfile": "Compléter le profil",
 		"setup": {
 			"title": "Complétez votre profil",
 			"description": "Veuillez prendre un moment pour compléter les informations de votre profil. Cela nous aidera à personnaliser votre expérience.",
@@ -352,9 +355,21 @@
 		"french": "Français",
 		"arabic": "Arabe"
 	},
+	"content": {
+		"restricted": "Contenu restreint",
+		"loginToAccess": "Vous devez vous connecter pour accéder à ce contenu",
+		"accessRequirements": "Pour accéder à ce contenu, vous devez remplir l'une des conditions suivantes :",
+		"adminRole": "Avoir un rôle d'administrateur",
+		"activeCotisation": "Avoir une cotisation active",
+		"paidRegistration": "Avoir une inscription payée pour cet événement",
+		"paidRegistrationAny": "Avoir une inscription payée pour n'importe quel événement",
+		"paidRegistrationEposter": "Avoir une inscription payée pour cet événement pour voir ses e-posters",
+		"paidRegistrationWebinar": "Avoir une inscription payée pour cet événement pour voir ses webinaires",
+		"registerForEvent": "S'inscrire à cet événement"
+	},
 	"common": {
 		"loading": "Chargement...",
-		"error": "Une erreur s'est produite",
+		"error": "Une erreur est survenue",
 		"retry": "Réessayer",
 		"save": "Enregistrer",
 		"cancel": "Annuler",
@@ -397,6 +412,15 @@
 	"congress": {
 		"registrationOpen": "Inscription ouverte",
 		"date": "Date",
+		"dates": "Dates",
+		"information": "Information",
+		"photos": "Photos",
+		"videos": "Vidéos",
+		"documents": "Documents",
+		"viewAll": "Voir tout",
+		"checkBackLater": "Veuillez vérifier plus tard pour la disponibilité de cette ressource.",
+		"comingSoon": "Bientôt disponible",
+		"eposters": "E-Posters",
 		"type": "Type",
 		"hybridNote": "(disponible le jour de l'événement)",
 		"registerNow": "Inscrivez-vous maintenant",
@@ -855,7 +879,9 @@
 		"viewAll": "Voir tout",
 		"eposters": "E-Posters",
 		"about": "A propos de l'événement",
-		"past": "Terminé"
+		"past": "Terminé",
+		"comingSoon": "Bientôt disponible",
+		"checkBackLater": "Veuillez vérifier plus tard pour la disponibilité de cette ressource."
 	},
 	"reports": {
 		"download": "Télécharger",
@@ -875,7 +901,8 @@
 		"showing": "Affichage",
 		"sortBy": "Trier par",
 		"title": "Titre du rapport",
-		"year": "Année"
+		"year": "Année",
+		"archiveDescription": "Parcourez notre collection de rapports annuels documentant nos progrès, nos réalisations et nos orientations futures."
 	},
 	"activity": {
 		"aboutEvent": "À propos de l'événement",

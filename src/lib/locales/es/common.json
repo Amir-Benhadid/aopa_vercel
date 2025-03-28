@@ -252,6 +252,24 @@
 			"description": "Por seguridad, introduzca su contraseña actual y una nueva contraseña segura."
 		}
 	},
+	"languages": {
+		"english": "Inglés",
+		"spanish": "Español",
+		"french": "Francés",
+		"arabic": "Árabe"
+	},
+	"content": {
+		"restricted": "Contenido restringido",
+		"loginToAccess": "Necesitas iniciar sesión para acceder a este contenido",
+		"accessRequirements": "Para acceder a este contenido, necesitas una de las siguientes condiciones:",
+		"adminRole": "Tener un rol de administrador",
+		"activeCotisation": "Tener una cotización activa",
+		"paidRegistration": "Tener una inscripción pagada para este evento",
+		"paidRegistrationAny": "Tener una inscripción pagada para cualquier evento",
+		"paidRegistrationEposter": "Tener una inscripción pagada para este evento para ver sus e-posters",
+		"paidRegistrationWebinar": "Tener una inscripción pagada para este evento para ver sus webinars",
+		"registerForEvent": "Inscribirse a este evento"
+	},
 	"common": {
 		"loading": "Cargando...",
 		"error": "Ha ocurrido un error",
@@ -602,27 +620,9 @@
 		"watchWebinar": "Ver Webinar",
 		"back": "Volver"
 	},
-	"languages": {
-		"english": "Inglés",
-		"spanish": "Español",
-		"french": "Francés",
-		"arabic": "Árabe"
-	},
 	"activities": {
 		"price": "Precio",
 		"speakers": "Ponentes",
-		"date": "Fecha y Hora",
-		"location": "Ubicación",
-		"register": "Registrarse",
-		"viewDetails": "Ver Detalles",
-		"upcoming": "Próximas Actividades",
-		"past": "Actividades Pasadas",
-		"featured": "Actividades Destacadas",
-		"all": "Todas las Actividades",
-		"noActivities": "No se encontraron actividades",
-		"filterBy": "Filtrar por",
-		"sortBy": "Ordenar por",
-		"type": "Tipo",
-		"allTypes": "Todos los Tipos"
+		"date": "Fecha y Hora"
 	}
 }

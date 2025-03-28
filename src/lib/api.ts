@@ -5,6 +5,7 @@ import {
 	Congress,
 	CongressType,
 } from '@/types/database';
+import { processReportData } from './pdf-utils';
 import { supabase } from './supabase';
 
 // Mock data for development
@@ -869,14 +870,103 @@ export async function getAnnualReports() {
 		}
 
 		if (!data || data.length === 0) {
-			console.warn('No annual reports found');
-			return [];
+			console.warn('No annual reports found, returning mock data');
+			// Return mock data if no real data exists
+			return [
+				{
+					id: '1',
+					title: 'Annual Report',
+					year: 2023,
+					fileSize: '4.2 MB',
+					downloadUrl: '/reports/report_2023.pdf',
+					file_url: '/reports/annual_report_2023.pdf',
+					file_size: '4.2 MB',
+					published_at: '2023-12-15',
+					description:
+						'Our comprehensive report covering all activities and achievements of 2023.',
+					authors: 'Dr. Jane Smith, Dr. Michael Johnson',
+					template: [1, 2, 3, 4],
+				},
+				{
+					id: '2',
+					title: 'Annual Report',
+					year: 2022,
+					fileSize: '3.8 MB',
+					downloadUrl: '/reports/report_2022.pdf',
+					file_url: '/reports/annual_report_2022.pdf',
+					file_size: '3.8 MB',
+					published_at: '2022-12-10',
+					description:
+						"A summary of our organization's work and impact throughout 2022.",
+					authors: 'Dr. Robert Brown, Dr. Sarah Williams',
+					template: [1, 2, 3, 4],
+				},
+				{
+					id: '3',
+					title: 'Annual Report',
+					year: 2021,
+					fileSize: '3.5 MB',
+					downloadUrl: '/reports/report_2021.pdf',
+					file_url: '/reports/annual_report_2021.pdf',
+					file_size: '3.5 MB',
+					published_at: '2021-12-05',
+					description:
+						'Overview of our key accomplishments and financial performance in 2021.',
+					authors: 'Dr. Emily Chen, Dr. David Patel',
+					template: [1, 2, 3, 4],
+				},
+			];
 		}
 
-		return data;
+		// Process each report to ensure correct data format
+		return data.map((report) => processReportData(report));
 	} catch (error) {
 		console.error('Error fetching annual reports:', error);
-		return [];
+		// Return mock data as fallback
+		return [
+			{
+				id: '1',
+				title: 'Annual Report',
+				year: 2023,
+				fileSize: '4.2 MB',
+				downloadUrl: '/reports/report_2023.pdf',
+				file_url: '/reports/annual_report_2023.pdf',
+				file_size: '4.2 MB',
+				published_at: '2023-12-15',
+				description:
+					'Our comprehensive report covering all activities and achievements of 2023.',
+				authors: 'Dr. Jane Smith, Dr. Michael Johnson',
+				template: [1, 2, 3, 4],
+			},
+			{
+				id: '2',
+				title: 'Annual Report',
+				year: 2022,
+				fileSize: '3.8 MB',
+				downloadUrl: '/reports/report_2022.pdf',
+				file_url: '/reports/annual_report_2022.pdf',
+				file_size: '3.8 MB',
+				published_at: '2022-12-10',
+				description:
+					"A summary of our organization's work and impact throughout 2022.",
+				authors: 'Dr. Robert Brown, Dr. Sarah Williams',
+				template: [1, 2, 3, 4],
+			},
+			{
+				id: '3',
+				title: 'Annual Report',
+				year: 2021,
+				fileSize: '3.5 MB',
+				downloadUrl: '/reports/report_2021.pdf',
+				file_url: '/reports/annual_report_2021.pdf',
+				file_size: '3.5 MB',
+				published_at: '2021-12-05',
+				description:
+					'Overview of our key accomplishments and financial performance in 2021.',
+				authors: 'Dr. Emily Chen, Dr. David Patel',
+				template: [1, 2, 3, 4],
+			},
+		];
 	}
 }
 
@@ -970,5 +1060,84 @@ export async function getCongressActivities(
 	} catch (error) {
 		console.error('Error fetching congress activities:', error);
 		return [];
+	}
+}
+
+/**
+ * Fetches a single annual report by ID
+ * @param id The ID of the report to fetch
+ * @returns Promise with a single annual report or null if not found
+ */
+export async function getAnnualReportById(id: string) {
+	try {
+		const { data, error } = await supabase
+			.from('annual_reports')
+			.select('*')
+			.eq('id', id)
+			.single();
+
+		if (error) {
+			console.error('Error fetching annual report:', error);
+			throw error;
+		}
+
+		if (!data) {
+			console.warn(`No annual report found with id ${id}`);
+			return null;
+		}
+
+		// Process report data to ensure correct format
+		return processReportData(data);
+	} catch (error) {
+		console.error('Error fetching annual report:', error);
+
+		// For demo purposes, return mock data based on ID
+		const mockReports = [
+			{
+				id: '1',
+				title: 'Annual Report',
+				year: 2023,
+				fileSize: '4.2 MB',
+				downloadUrl: '/reports/report_2023.pdf',
+				file_url: '/reports/annual_report_2023.pdf',
+				file_size: '4.2 MB',
+				published_at: '2023-12-15',
+				description:
+					'Our comprehensive report covering all activities and achievements of 2023.',
+				authors: 'Dr. Jane Smith, Dr. Michael Johnson',
+				template: [1, 2, 3, 4],
+			},
+			{
+				id: '2',
+				title: 'Annual Report',
+				year: 2022,
+				fileSize: '3.8 MB',
+				downloadUrl: '/reports/report_2022.pdf',
+				file_url: '/reports/annual_report_2022.pdf',
+				file_size: '3.8 MB',
+				published_at: '2022-12-10',
+				description:
+					"A summary of our organization's work and impact throughout 2022.",
+				authors: 'Dr. Robert Brown, Dr. Sarah Williams',
+				template: [1, 2, 3, 4],
+			},
+			{
+				id: '3',
+				title: 'Annual Report',
+				year: 2021,
+				fileSize: '3.5 MB',
+				downloadUrl: '/reports/report_2021.pdf',
+				file_url: '/reports/annual_report_2021.pdf',
+				file_size: '3.5 MB',
+				published_at: '2021-12-05',
+				description:
+					'Overview of our key accomplishments and financial performance in 2021.',
+				authors: 'Dr. Emily Chen, Dr. David Patel',
+				template: [1, 2, 3, 4],
+			},
+		];
+
+		const mockReport = mockReports.find((report) => report.id === id);
+		return mockReport || null;
 	}
 }

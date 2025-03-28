@@ -285,6 +285,12 @@ export default function UpcomingEventPage() {
 
 	// Calculate days until congress
 	const today = new Date();
+
+	// Calculate date 3 months before congress start (for abstract submission)
+	const threeMonthsBefore = new Date(startDate);
+	threeMonthsBefore.setMonth(startDate.getMonth() - 3);
+
+	// Calculate days until the actual congress start date
 	const daysUntil = Math.ceil(
 		(startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 	);
@@ -840,26 +846,6 @@ export default function UpcomingEventPage() {
 											</div>
 										</div>
 									</li>
-									{congress.registration_deadline && (
-										<li className="flex items-start">
-											<div className="bg-primary-50 p-3 rounded-full mr-4">
-												<Clock className="w-6 h-6 text-primary-600" />
-											</div>
-											<div>
-												<div className="font-medium text-gray-900">
-													{t('congress.registrationDeadline')}
-												</div>
-												<div className="text-gray-600 mt-1">
-													{formatDate(congress.registration_deadline)}
-												</div>
-												{isUpcoming && !congress.registration && (
-													<div className="text-amber-600 text-sm mt-1 font-medium">
-														{t('congress.registrationClosed')}
-													</div>
-												)}
-											</div>
-										</li>
-									)}
 									{congress.abstract_submission_deadline && (
 										<li className="flex items-start">
 											<div className="bg-primary-50 p-3 rounded-full mr-4">

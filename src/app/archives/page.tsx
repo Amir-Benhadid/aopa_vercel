@@ -1,6 +1,7 @@
 'use client';
 
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { ProtectedContent } from '@/components/common/ProtectedContent';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
 	Archive,
@@ -12,6 +13,7 @@ import {
 	Video,
 } from 'lucide-react';
 import Link from 'next/link';
+import path from 'path';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -166,11 +168,16 @@ function ArchivesContent() {
 						if (response.ok) {
 							const files = await response.json();
 							const filteredFiles = files.filter((file: string) =>
-								file.toLowerCase().endsWith('.pdf')
+								/\.(pdf|ppt|pptx|doc|docx|xls|xlsx)$/i.test(file)
 							);
 							filteredFiles.forEach((file: string, index: number) => {
 								const posterPath = `${ePostersPath}/${file}`;
-								const posterName = file.replace(/_/g, ' ').replace('.pdf', '');
+								// Get file extension for later use
+								const fileExt = path.extname(file).toLowerCase();
+								// Remove file extension correctly
+								const posterName = path
+									.basename(file, fileExt)
+									.replace(/_/g, ' ');
 								let category = 'General';
 								let title = posterName;
 								if (posterName.includes(' - ')) {
@@ -650,193 +657,319 @@ function ArchivesContent() {
 						</div>
 					)}
 					{selectedTab === 'eposters' && (
-						<div>
-							{filteredEPosters.length === 0 ? (
-								<div className="text-center py-12">
-									<FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-									<h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
-										{t('archives.noPostersFound')}
-									</h3>
-									<p className="text-gray-500 dark:text-gray-400">
-										{t('archives.tryDifferentSearch')}
-									</p>
-								</div>
-							) : (
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-									{filteredEPosters.map((eposter) => (
-										<motion.div
-											key={eposter.id}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.3 }}
-											className="group"
-										>
-											<a
-												href={eposter.path}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="block h-full"
+						<ProtectedContent>
+							<div>
+								{filteredEPosters.length === 0 ? (
+									<div className="text-center py-12">
+										<FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+										<h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+											{t('archives.noPostersFound')}
+										</h3>
+										<p className="text-gray-500 dark:text-gray-400">
+											{t('archives.tryDifferentSearch')}
+										</p>
+									</div>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+										{filteredEPosters.map((eposter) => (
+											<motion.div
+												key={eposter.id}
+												initial={{ opacity: 0, y: 20 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ duration: 0.3 }}
+												className="group"
 											>
-												<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
-													<div className="h-40 bg-gradient-to-br from-blue-500 to-primary-600 relative">
-														<div className="absolute inset-0 flex items-center justify-center">
-															<FileText className="w-16 h-16 text-white/70" />
-														</div>
-														<div className="absolute top-3 right-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 text-xs font-medium py-1 px-2 rounded-full">
-															PDF
-														</div>
-														<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-															<div className="flex items-center">
-																<span className="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 text-xs px-2 py-1 rounded">
-																	{eposter.year}
-																</span>
-																{eposter.category && (
-																	<span className="ml-2 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-1 rounded">
-																		{eposter.category}
+												<a
+													href={eposter.path}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="block h-full"
+												>
+													<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
+														<div className="h-40 relative">
+															{(() => {
+																// Use path.extname to correctly get file extension
+																const fileExt = path
+																	.extname(eposter.path)
+																	.toLowerCase();
+
+																switch (fileExt) {
+																	case '.pdf':
+																		return (
+																			<div className="h-full bg-gradient-to-br from-red-500 to-red-600 relative">
+																				<div className="absolute inset-0 flex items-center justify-center">
+																					<FileText className="w-16 h-16 text-white/70" />
+																				</div>
+																			</div>
+																		);
+																	case '.ppt':
+																	case '.pptx':
+																		return (
+																			<div className="h-full bg-gradient-to-br from-orange-500 to-orange-600 relative">
+																				<div className="absolute inset-0 flex items-center justify-center">
+																					<FileText className="w-16 h-16 text-white/70" />
+																				</div>
+																			</div>
+																		);
+																	case '.doc':
+																	case '.docx':
+																		return (
+																			<div className="h-full bg-gradient-to-br from-blue-500 to-blue-600 relative">
+																				<div className="absolute inset-0 flex items-center justify-center">
+																					<FileText className="w-16 h-16 text-white/70" />
+																				</div>
+																			</div>
+																		);
+																	case '.xls':
+																	case '.xlsx':
+																		return (
+																			<div className="h-full bg-gradient-to-br from-green-500 to-green-600 relative">
+																				<div className="absolute inset-0 flex items-center justify-center">
+																					<FileText className="w-16 h-16 text-white/70" />
+																				</div>
+																			</div>
+																		);
+																	default:
+																		return (
+																			<div className="h-full bg-gradient-to-br from-gray-500 to-gray-600 relative">
+																				<div className="absolute inset-0 flex items-center justify-center">
+																					<FileText className="w-16 h-16 text-white/70" />
+																				</div>
+																			</div>
+																		);
+																}
+															})()}
+															<div className="absolute top-3 right-3 bg-white dark:bg-gray-800 text-xs font-medium py-1 px-2 rounded-full">
+																{(() => {
+																	// Use path.extname to correctly get file extension
+																	const fileExt = path
+																		.extname(eposter.path)
+																		.toLowerCase();
+
+																	switch (fileExt) {
+																		case '.pdf':
+																			return (
+																				<span className="text-red-600 dark:text-red-400">
+																					PDF
+																				</span>
+																			);
+																		case '.ppt':
+																		case '.pptx':
+																			return (
+																				<span className="text-orange-600 dark:text-orange-400">
+																					PPT
+																				</span>
+																			);
+																		case '.doc':
+																		case '.docx':
+																			return (
+																				<span className="text-blue-600 dark:text-blue-400">
+																					DOC
+																				</span>
+																			);
+																		case '.xls':
+																		case '.xlsx':
+																			return (
+																				<span className="text-green-600 dark:text-green-400">
+																					XLS
+																				</span>
+																			);
+																		default:
+																			return (
+																				<span className="text-gray-600 dark:text-gray-400">
+																					DOC
+																				</span>
+																			);
+																	}
+																})()}
+															</div>
+															<div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+																<div className="flex items-center">
+																	<span className="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 text-xs px-2 py-1 rounded">
+																		{eposter.year}
 																	</span>
-																)}
+																	{eposter.category && (
+																		<span className="ml-2 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-1 rounded">
+																			{eposter.category}
+																		</span>
+																	)}
+																</div>
+															</div>
+														</div>
+														<div className="p-5 flex-grow">
+															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+																{eposter.title}
+															</h3>
+															<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+																{eposter.congressTitle}
+															</p>
+															{eposter.authors && (
+																<p className="text-gray-500 dark:text-gray-500 text-xs italic">
+																	{eposter.authors}
+																</p>
+															)}
+														</div>
+														<div className="px-5 pb-5 pt-0">
+															<div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+																{(() => {
+																	const fileExt = path
+																		.extname(eposter.path)
+																		.toLowerCase();
+
+																	switch (fileExt) {
+																		case '.pdf':
+																			return t('archives.viewPoster');
+																		case '.ppt':
+																		case '.pptx':
+																			return t(
+																				'archives.viewPresentation',
+																				'View Presentation'
+																			);
+																		case '.doc':
+																		case '.docx':
+																			return t(
+																				'archives.viewDocument',
+																				'View Document'
+																			);
+																		case '.xls':
+																		case '.xlsx':
+																			return t(
+																				'archives.viewSpreadsheet',
+																				'View Spreadsheet'
+																			);
+																		default:
+																			return t(
+																				'archives.viewDocument',
+																				'View Document'
+																			);
+																	}
+																})()}
+																<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
 															</div>
 														</div>
 													</div>
-													<div className="p-5 flex-grow">
-														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-															{eposter.title}
-														</h3>
-														<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-															{eposter.congressTitle}
-														</p>
-														{eposter.authors && (
-															<p className="text-gray-500 dark:text-gray-500 text-xs italic">
-																{eposter.authors}
-															</p>
-														)}
-													</div>
-													<div className="px-5 pb-5 pt-0">
-														<div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
-															{t('archives.viewPoster')}
-															<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-														</div>
-													</div>
-												</div>
-											</a>
-										</motion.div>
-									))}
-								</div>
-							)}
-							{filteredEPosters.length > 0 && (
-								<div className="mt-8 text-center">
-									<Link href="/archives/eposters">
-										<Button variant="outline" className="mx-auto">
-											{t('archives.viewAllPosters')}
-											<ArrowRight className="w-4 h-4 ml-2" />
-										</Button>
-									</Link>
-								</div>
-							)}
-						</div>
+												</a>
+											</motion.div>
+										))}
+									</div>
+								)}
+								{filteredEPosters.length > 0 && (
+									<div className="mt-8 text-center">
+										<Link href="/archives/eposters">
+											<Button variant="outline" className="mx-auto">
+												{t('archives.viewAllPosters')}
+												<ArrowRight className="w-4 h-4 ml-2" />
+											</Button>
+										</Link>
+									</div>
+								)}
+							</div>
+						</ProtectedContent>
 					)}
 					{selectedTab === 'webinars' && (
-						<div>
-							{webinars.length === 0 ? (
-								<div className="text-center py-12">
-									<Video className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-									<h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
-										{t('archives.noWebinarsFound')}
-									</h3>
-									<p className="text-gray-500 dark:text-gray-400">
-										{t('archives.comingSoon')}
-									</p>
-									<p className="text-gray-500 dark:text-gray-400 mt-2">
-										{t('archives.checkBackLater')}
-									</p>
-								</div>
-							) : (
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-									{webinars.map((webinar: any) => (
-										<motion.div
-											key={webinar.id}
-											initial={{ opacity: 0, y: 20 }}
-											animate={{ opacity: 1, y: 0 }}
-											transition={{ duration: 0.3 }}
-											className="group"
-										>
-											<a
-												href={webinar.videoUrl}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="block h-full"
+						<ProtectedContent>
+							<div>
+								{webinars.length === 0 ? (
+									<div className="text-center py-12">
+										<Video className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+										<h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+											{t('archives.noWebinarsFound')}
+										</h3>
+										<p className="text-gray-500 dark:text-gray-400">
+											{t('archives.comingSoon')}
+										</p>
+										<p className="text-gray-500 dark:text-gray-400 mt-2">
+											{t('archives.checkBackLater')}
+										</p>
+									</div>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+										{webinars.map((webinar: any) => (
+											<motion.div
+												key={webinar.id}
+												initial={{ opacity: 0, y: 20 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{ duration: 0.3 }}
+												className="group"
 											>
-												<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
-													<div className="h-40 bg-gradient-to-br from-blue-500 to-primary-600 relative">
-														{webinar.thumbnailUrl ? (
-															<img
-																src={webinar.thumbnailUrl}
-																alt={webinar.title}
-																className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-															/>
-														) : (
-															<div className="absolute inset-0 flex items-center justify-center">
-																<Video className="w-16 h-16 text-white/70" />
+												<a
+													href={webinar.videoUrl}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="block h-full"
+												>
+													<div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden h-full flex flex-col">
+														<div className="h-40 bg-gradient-to-br from-blue-500 to-primary-600 relative">
+															{webinar.thumbnailUrl ? (
+																<img
+																	src={webinar.thumbnailUrl}
+																	alt={webinar.title}
+																	className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+																/>
+															) : (
+																<div className="absolute inset-0 flex items-center justify-center">
+																	<Video className="w-16 h-16 text-white/70" />
+																</div>
+															)}
+															<div className="absolute top-3 right-3 bg-black/70 text-white text-xs font-medium py-1 px-2 rounded-full">
+																{webinar.duration}
 															</div>
-														)}
-														<div className="absolute top-3 right-3 bg-black/70 text-white text-xs font-medium py-1 px-2 rounded-full">
-															{webinar.duration}
-														</div>
-														<div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-															<div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-																<div className="w-0 h-0 border-t-8 border-b-8 border-l-12 border-t-transparent border-b-transparent border-l-white ml-1"></div>
+															<div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+																<div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+																	<div className="w-0 h-0 border-t-8 border-b-8 border-l-12 border-t-transparent border-b-transparent border-l-white ml-1"></div>
+																</div>
 															</div>
 														</div>
-													</div>
-													<div className="p-5 flex-grow">
-														<div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-2">
-															<Calendar className="w-4 h-4 mr-1" />
-															<span>
-																{new Date(webinar.date).toLocaleDateString(
-																	'en-US',
-																	{
-																		year: 'numeric',
-																		month: 'long',
-																		day: 'numeric',
-																	}
-																)}
-															</span>
-														</div>
-														<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-															{webinar.title}
-														</h3>
-														<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-															{webinar.presenter}
-														</p>
-														{webinar.description && (
-															<p className="text-gray-500 dark:text-gray-500 text-sm line-clamp-2">
-																{webinar.description}
+														<div className="p-5 flex-grow">
+															<div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-2">
+																<Calendar className="w-4 h-4 mr-1" />
+																<span>
+																	{new Date(webinar.date).toLocaleDateString(
+																		'en-US',
+																		{
+																			year: 'numeric',
+																			month: 'long',
+																			day: 'numeric',
+																		}
+																	)}
+																</span>
+															</div>
+															<h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+																{webinar.title}
+															</h3>
+															<p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+																{webinar.presenter}
 															</p>
-														)}
-													</div>
-													<div className="px-5 pb-5 pt-0">
-														<div className="flex items-center text-primary-600 dark:text-primary-400 text-sm font-medium">
-															{t('archives.watchWebinar')}
-															<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+															{webinar.description && (
+																<p className="text-gray-500 dark:text-gray-500 text-sm line-clamp-2">
+																	{webinar.description}
+																</p>
+															)}
+														</div>
+														<div className="px-5 pb-5 pt-0">
+															<div className="flex items-center text-primary-600 dark:text-primary-400 text-sm font-medium">
+																{t('archives.watchWebinar')}
+																<ExternalLink className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+															</div>
 														</div>
 													</div>
-												</div>
-											</a>
-										</motion.div>
-									))}
-								</div>
-							)}
-							{webinars.length > 0 && (
-								<div className="mt-8 text-center">
-									<Link href="/archives/webinars">
-										<Button variant="outline" className="mx-auto">
-											{t('archives.viewAllWebinars')}
-											<ArrowRight className="w-4 h-4 ml-2" />
-										</Button>
-									</Link>
-								</div>
-							)}
-						</div>
+												</a>
+											</motion.div>
+										))}
+									</div>
+								)}
+								{webinars.length > 0 && (
+									<div className="mt-8 text-center">
+										<Link href="/archives/webinars">
+											<Button variant="outline" className="mx-auto">
+												{t('archives.viewAllWebinars')}
+												<ArrowRight className="w-4 h-4 ml-2" />
+											</Button>
+										</Link>
+									</div>
+								)}
+							</div>
+						</ProtectedContent>
 					)}
 				</div>
 			</div>
