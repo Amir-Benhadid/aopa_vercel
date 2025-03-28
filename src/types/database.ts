@@ -228,6 +228,7 @@ export interface Report {
 	title: string;
 	published_at: Date;
 	description: string;
+	introduction?: string;
 	authors: string;
 }
 

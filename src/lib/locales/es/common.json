@@ -624,5 +624,14 @@
 		"price": "Precio",
 		"speakers": "Ponentes",
 		"date": "Fecha y Hora"
+	},
+	"pdf": {
+		"loading": "Cargando PDF...",
+		"pageCounter": "Página {{current}} de {{total}}",
+		"download": "Descargar",
+		"pageAlt": "Página {{number}}",
+		"previous": "Anterior",
+		"next": "Siguiente",
+		"bookPageCounter": "{{current}} de {{total}}"
 	}
 }

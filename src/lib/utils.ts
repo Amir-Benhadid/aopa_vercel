@@ -11,12 +11,14 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Formats a date string into a human-readable format
  * @param dateString - The date string to format
- * @param locale - The locale to use for formatting (default: 'en-US')
+ * @param locale - The locale to use for formatting (default: 'fr')
  * @returns Formatted date string
  */
-export function formatDate(dateString: string, locale = 'en-US'): string {
+export function formatDate(dateString: string, locale = 'fr'): string {
 	try {
 		const date = new Date(dateString);
+
+		// Use Intl.DateTimeFormat for localized date formatting
 		return new Intl.DateTimeFormat(locale, {
 			year: 'numeric',
 			month: 'long',

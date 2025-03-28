@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
+import { fallbackImage, getCoverImagePath } from '@/lib/imageUtils';
 import { Report } from '@/types/database';
 import { motion } from 'framer-motion';
 import { Calendar, Download, Users } from 'lucide-react';
@@ -44,11 +45,8 @@ export function AnnualReports({ reports }: AnnualReportsProps) {
 
 	// Function to get cover image based on report title
 	const getCoverImage = (title: string) => {
-		return `/reports/${title.toLowerCase().replace(' ', '_')}.svg`;
+		return getCoverImagePath(title);
 	};
-
-	// Fallback image if the specific year image doesn't exist
-	const fallbackImage = '/reports/annual_report_default.jpg';
 
 	// Format date if available
 	const formatDate = (dateString?: Date | string): string => {

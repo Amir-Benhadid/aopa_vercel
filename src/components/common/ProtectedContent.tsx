@@ -77,21 +77,15 @@ export function ProtectedContent({
 						</p>
 						<ul className="space-y-2 text-left mx-auto max-w-md mb-6">
 							<li className="flex items-center text-gray-600 dark:text-gray-300">
-								<div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full mr-3">
+								<div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full mr-3 w-8 h-8 flex items-center justify-center">
 									<span className="text-blue-600 dark:text-blue-400">1</span>
-								</div>
-								{t('content.adminRole', 'Have an admin role')}
-							</li>
-							<li className="flex items-center text-gray-600 dark:text-gray-300">
-								<div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full mr-3">
-									<span className="text-blue-600 dark:text-blue-400">2</span>
 								</div>
 								{t('content.activeCotisation', 'Have an active cotisation')}
 							</li>
 							{congressId && (
 								<li className="flex items-center text-gray-600 dark:text-gray-300">
-									<div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full mr-3">
-										<span className="text-blue-600 dark:text-blue-400">3</span>
+									<div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-full mr-3 w-8 h-8 flex items-center justify-center">
+										<span className="text-blue-600 dark:text-blue-400">2</span>
 									</div>
 									{contentType === 'general'
 										? t(

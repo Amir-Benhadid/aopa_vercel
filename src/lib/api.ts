@@ -751,7 +751,7 @@ export async function getPastCongresses(): Promise<Congress[]> {
 				)
 			`
 			)
-			.eq('state', 0)
+			.neq('state', 2)
 			.order('end_date', { ascending: false });
 
 		console.log('pastCongressesData', data);

@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { getAnnualReports } from '@/lib/api';
+import { fallbackImage, getCoverImagePath } from '@/lib/imageUtils';
 import { motion } from 'framer-motion';
 import {
 	Calendar,
@@ -90,11 +91,8 @@ export default function ReportsPage() {
 
 	// Function to get cover image based on report title
 	const getCoverImage = (title: string) => {
-		return `/reports/${title.toLowerCase().replace(' ', '_')}.svg`;
+		return getCoverImagePath(title);
 	};
-
-	// Fallback image if the specific year image doesn't exist
-	const fallbackImage = '/reports/annual_report_default.jpg';
 
 	// Format date if available
 	const formatDate = (dateString?: string) => {
@@ -139,13 +137,20 @@ export default function ReportsPage() {
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900">
 			{/* Header */}
-			<div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
-				<div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
-					<div className="text-center">
-						<h1 className="text-3xl md:text-4xl font-bold mb-4">
+			<div className="relative py-16 bg-white dark:bg-gray-900 overflow-hidden">
+				<div className="absolute inset-0 opacity-5">
+					<div className="absolute inset-0 bg-grid-primary-700/[0.1] [mask-image:linear-gradient(0deg,transparent,black)]"></div>
+				</div>
+				<div className="container mx-auto px-4 relative z-10">
+					<div className="max-w-3xl">
+						<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 mb-6">
+							<FileText className="w-4 h-4 mr-2" />
+							{t('reports.explore', 'Explore Publications')}
+						</div>
+						<h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
 							{t('reports.allReports', 'Annual Reports Archive')}
 						</h1>
-						<p className="text-xl text-blue-100 max-w-3xl mx-auto">
+						<p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl">
 							{t(
 								'reports.archiveDescription',
 								'Browse our collection of annual reports documenting our progress, achievements, and future directions.'
@@ -153,6 +158,7 @@ export default function ReportsPage() {
 						</p>
 					</div>
 				</div>
+				<div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent"></div>
 			</div>
 
 			{/* Search and Filters */}

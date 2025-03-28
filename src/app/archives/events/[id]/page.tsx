@@ -991,9 +991,7 @@ export default function CongressDetailPage() {
 														? [congress.program_file]
 														: ['/programs/programme.pdf']
 												}
-												bookMode={
-													pdfFiles.length > 1 || (!hasAffiche && hasProgramme)
-												}
+												bookMode={true}
 											/>
 										</div>
 									</div>

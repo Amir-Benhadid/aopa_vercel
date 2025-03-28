@@ -446,14 +446,14 @@ export default function UpcomingEventPage() {
 			{isUpcoming && (
 				<div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-4">
 					<div className="container mx-auto px-4">
-						<div className="flex flex-col md:flex-row items-center justify-between">
-							<div className="flex items-center mb-4 md:mb-0">
-								<Clock className="w-6 h-6 mr-3 animate-pulse" />
+						<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+							<div className="flex items-center">
+								<Clock className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 animate-pulse" />
 								<div>
-									<span className="text-primary-100">
+									<span className="text-sm sm:text-base text-primary-100">
 										{t('congress.startsIn')}
 									</span>
-									<span className="ml-2 text-2xl font-bold">
+									<span className="ml-2 text-xl sm:text-2xl font-bold">
 										{daysUntil} {t('congress.days')}
 									</span>
 								</div>
@@ -461,14 +461,15 @@ export default function UpcomingEventPage() {
 							{congress.registration ? (
 								<Button
 									asChild
-									className="bg-white text-primary-700 hover:bg-primary-50 px-6 shadow-md"
+									size="sm"
+									className="sm:btn-md w-full sm:w-auto bg-white text-primary-700 hover:bg-primary-50 px-4 sm:px-6 shadow-md"
 								>
 									<Link href="/congress/register">
 										{t('congress.registerNow')}
 									</Link>
 								</Button>
 							) : (
-								<div className="text-primary-100 text-sm md:text-base">
+								<div className="text-sm sm:text-base text-primary-100 text-center sm:text-right">
 									{t('congress.registrationClosedInfo')}
 								</div>
 							)}
@@ -480,10 +481,10 @@ export default function UpcomingEventPage() {
 			{/* Quick Navigation Tabs */}
 			<div className="sticky top-0 z-30 bg-white shadow-md">
 				<div className="container mx-auto px-4">
-					<div className="flex overflow-x-auto no-scrollbar">
+					<div className="flex overflow-x-auto hide-scrollbar">
 						<button
 							onClick={() => setActiveSection('overview')}
-							className={`px-6 py-4 font-medium transition-colors ${
+							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
 								activeSection === 'overview'
 									? 'text-primary-600 border-b-2 border-primary-600'
 									: 'text-gray-600 hover:text-primary-600'
@@ -493,7 +494,7 @@ export default function UpcomingEventPage() {
 						</button>
 						<button
 							onClick={() => setActiveSection('schedule')}
-							className={`px-6 py-4 font-medium transition-colors ${
+							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
 								activeSection === 'schedule'
 									? 'text-primary-600 border-b-2 border-primary-600'
 									: 'text-gray-600 hover:text-primary-600'
@@ -503,7 +504,7 @@ export default function UpcomingEventPage() {
 						</button>
 						<button
 							onClick={() => setActiveSection('speakers')}
-							className={`px-6 py-4 font-medium transition-colors ${
+							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
 								activeSection === 'speakers'
 									? 'text-primary-600 border-b-2 border-primary-600'
 									: 'text-gray-600 hover:text-primary-600'
@@ -513,7 +514,7 @@ export default function UpcomingEventPage() {
 						</button>
 						<button
 							onClick={() => setActiveSection('venue')}
-							className={`px-6 py-4 font-medium transition-colors ${
+							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
 								activeSection === 'venue'
 									? 'text-primary-600 border-b-2 border-primary-600'
 									: 'text-gray-600 hover:text-primary-600'
@@ -521,16 +522,16 @@ export default function UpcomingEventPage() {
 						>
 							{t('congress.venue')}
 						</button>
-						{programmeFile && (
+						{pdfFiles.length > 0 && (
 							<button
 								onClick={() => setActiveSection('programme')}
-								className={`px-6 py-4 font-medium transition-colors ${
+								className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
 									activeSection === 'programme'
 										? 'text-primary-600 border-b-2 border-primary-600'
 										: 'text-gray-600 hover:text-primary-600'
 								}`}
 							>
-								{t('congress.programme')}
+								{t('congress.documents', 'Documents')}
 							</button>
 						)}
 					</div>
@@ -767,23 +768,53 @@ export default function UpcomingEventPage() {
 								</div>
 								<div className="p-6">
 									<div className="aspect-[3/4] relative mb-4 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
-										<FlipbookPDFViewer pdfUrl={programmeFile} />
+										<FlipbookPDFViewer
+											pdfUrl={pdfFiles.filter(
+												(file) =>
+													file.toLowerCase().includes('affiche') ||
+													file.toLowerCase().includes('programme')
+											)}
+										/>
 									</div>
-									<Button
-										variant="outline"
-										className="w-full flex items-center justify-center mt-4 border-primary-200 text-primary-700 hover:bg-primary-50"
-										asChild
-									>
-										<a
-											href={programmeFile}
-											target="_blank"
-											rel="noopener noreferrer"
-											download
-										>
-											<FileText className="w-5 h-5 mr-2" />
-											{t('common.download')}
-										</a>
-									</Button>
+									<div className="flex flex-wrap gap-4 mt-4">
+										{programmeFile && (
+											<Button
+												variant="outline"
+												className="flex-1 flex items-center justify-center border-primary-200 text-primary-700 hover:bg-primary-50"
+												asChild
+											>
+												<a
+													href={programmeFile}
+													target="_blank"
+													rel="noopener noreferrer"
+													download
+												>
+													<FileText className="w-5 h-5 mr-2" />
+													{t(
+														'congress.downloadProgramme',
+														'Download Programme'
+													)}
+												</a>
+											</Button>
+										)}
+										{afficheFile && (
+											<Button
+												variant="outline"
+												className="flex-1 flex items-center justify-center border-primary-200 text-primary-700 hover:bg-primary-50"
+												asChild
+											>
+												<a
+													href={afficheFile}
+													target="_blank"
+													rel="noopener noreferrer"
+													download
+												>
+													<FileText className="w-5 h-5 mr-2" />
+													{t('congress.downloadAffiche', 'Download Poster')}
+												</a>
+											</Button>
+										)}
+									</div>
 								</div>
 							</div>
 						)}
@@ -973,6 +1004,16 @@ export default function UpcomingEventPage() {
 							</div>
 							<div className="p-6">
 								<div className="space-y-3">
+									{pdfFiles.length > 0 && (
+										<Button
+											variant="outline"
+											className="w-full justify-start"
+											onClick={() => setActiveSection('programme')}
+										>
+											<FileText className="w-5 h-5 mr-2" />
+											{t('congress.viewDocuments', 'View Documents')}
+										</Button>
+									)}
 									{programmeFile && (
 										<Button
 											variant="outline"
@@ -983,9 +1024,10 @@ export default function UpcomingEventPage() {
 												href={programmeFile}
 												target="_blank"
 												rel="noopener noreferrer"
+												download
 											>
 												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.downloadProgramme')}
+												{t('congress.downloadProgramme', 'Download Programme')}
 											</a>
 										</Button>
 									)}
@@ -999,9 +1041,10 @@ export default function UpcomingEventPage() {
 												href={afficheFile}
 												target="_blank"
 												rel="noopener noreferrer"
+												download
 											>
 												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.downloadAffiche')}
+												{t('congress.downloadAffiche', 'Download Poster')}
 											</a>
 										</Button>
 									)}
@@ -1017,7 +1060,9 @@ export default function UpcomingEventPage() {
 												});
 											} else {
 												navigator.clipboard.writeText(window.location.href);
-												alert('Link copied to clipboard!');
+												alert(
+													t('congress.linkCopied', 'Link copied to clipboard!')
+												);
 											}
 										}}
 									>

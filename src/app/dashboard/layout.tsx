@@ -197,20 +197,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 		}
 	}, [userRole, isLoading, isCheckingRole, router, t]);
 
-	// If user role is not admin, redirect to home page
-	if (userRole !== 'admin') {
-		console.log(
-			t('dashboard.accessDenied', 'Access denied for non-admin user')
-		);
-		// Use useEffect to handle redirection after render
-		useEffect(() => {
+	// Handle redirection for non-admin users after rendering all hooks
+	useEffect(() => {
+		if (
+			userRole !== null &&
+			userRole !== 'admin' &&
+			!isLoading &&
+			!isCheckingRole
+		) {
+			console.log(
+				t('dashboard.accessDenied', 'Access denied for non-admin user')
+			);
 			toast.error(
 				t('dashboard.accessDenied', 'You do not have access to the dashboard')
 			);
 			router.push('/');
-		}, []);
-		return null;
-	}
+		}
+	}, [userRole, isLoading, isCheckingRole, router, t]);
 
 	// If loading, show loading spinner
 	if (isLoading || isCheckingRole) {
@@ -232,6 +235,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 				'User not authenticated in dashboard layout, should have been redirected by middleware'
 			)
 		);
+		return null;
+	}
+
+	// Don't render content for non-admin users after all hooks
+	if (userRole !== 'admin') {
 		return null;
 	}
 
