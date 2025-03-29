@@ -2,12 +2,11 @@
 	"name": "ophthalmology-association-web",
 	"version": "0.1.0",
 	"private": true,
+	"homepage": "http://aopa.dz",
 	"scripts": {
-		"dev": "next dev",
+		"dev": "node server.js",
 		"build": "next build",
-		"start": "cross-env NODE_ENV=production node server.js",
-		"lint": "next lint",
-		"find-large-files": "node scripts/find-large-files.js 5 public"
+		"start": "NODE_ENV=production node server.js"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.14.0",

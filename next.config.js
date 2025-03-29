@@ -2,70 +2,13 @@
 const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
-	transpilePackages: [
-		'@mui/material',
-		'@mui/system',
-		'@mui/icons-material',
-		'@emotion/react',
-		'@emotion/styled',
-		'framer-motion',
-	],
-	modularizeImports: {
-		'@mui/icons-material': {
-			transform: '@mui/icons-material/{{member}}',
-		},
-		'@mui/material': {
-			transform: '@mui/material/{{member}}',
-		},
-	},
 	images: {
-		domains: ['images.unsplash.com', 'picsum.photos'],
-		remotePatterns: [
-			{
-				protocol: 'http',
-				hostname: 'localhost',
-			},
-			{
-				protocol: 'https',
-				hostname: process.env.VERCEL_URL || 'localhost',
-			},
+		domains: [
+			'images.unsplash.com',
+			'picsum.photos',
+			'localhost',
+			'http://aopa.dz',
 		],
-		unoptimized: true,
-	},
-	experimental: {},
-	serverRuntimeConfig: {
-		cookieOptions: {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'lax',
-			path: '/',
-		},
-	},
-	headers: async () => {
-		return [
-			{
-				source: '/(.*)',
-				headers: [
-					{
-						key: 'Access-Control-Allow-Credentials',
-						value: 'true',
-					},
-					{
-						key: 'Access-Control-Allow-Origin',
-						value: '*',
-					},
-					{
-						key: 'Access-Control-Allow-Methods',
-						value: 'GET,DELETE,PATCH,POST,PUT',
-					},
-					{
-						key: 'Access-Control-Allow-Headers',
-						value:
-							'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
-					},
-				],
-			},
-		];
 	},
 };
 
