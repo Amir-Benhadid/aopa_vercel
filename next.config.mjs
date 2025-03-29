@@ -3,8 +3,10 @@ const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
 	transpilePackages: ['framer-motion'],
+	output: 'export',
+	exportTrailingSlash: true,
 	images: {
-		domains: ['localhost'],
+		unoptimized: true,
 	},
 };
 
