@@ -25,8 +25,6 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const revalidate = 3600;
-
 export default function Home() {
 	const { t, i18n } = useTranslation();
 	const [upcomingCongress, setUpcomingCongress] = useState<Congress | null>(

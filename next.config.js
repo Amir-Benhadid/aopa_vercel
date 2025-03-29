@@ -2,13 +2,13 @@
 const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
-	output: 'standalone',
 	transpilePackages: [
 		'@mui/material',
 		'@mui/system',
 		'@mui/icons-material',
 		'@emotion/react',
 		'@emotion/styled',
+		'framer-motion',
 	],
 	modularizeImports: {
 		'@mui/icons-material': {
@@ -32,9 +32,7 @@ const nextConfig = {
 		],
 		unoptimized: true,
 	},
-	experimental: {
-		// serverActions option removed since they are enabled by default.
-	},
+	experimental: {},
 	serverRuntimeConfig: {
 		cookieOptions: {
 			httpOnly: true,
