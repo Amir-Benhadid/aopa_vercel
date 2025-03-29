@@ -141,6 +141,7 @@
 		"submittedDate": "Date de soumission",
 		"theme": "Thème",
 		"viewPresentation": "Voir la présentation",
+
 		"filters": {
 			"allCongresses": "Tous les congrès",
 			"allStatuses": "Tous les statuts",
@@ -156,11 +157,13 @@
 		},
 		"submission": {
 			"title": "Soumettre un nouvel abstract",
+			"cta": "Soumettre un abstract",
 			"subtitle": "Remplissez les détails ci-dessous pour soumettre votre abstract",
 			"guidelines": {
 				"title": "Directives de soumission des abstracts",
 				"subtitle": "Veuillez consulter les directives suivantes avant de soumettre votre abstract",
 				"maxLength": "Longueur maximale de l'abstract : 300 mots",
+				"deadlineTitle": "Date limite de soumission",
 				"deadline": "Date limite de soumission : {{date}}",
 				"presentingAuthor": "Un auteur présentateur par abstract",
 				"maxCoAuthors": "Maximum de 5 co-auteurs autorisés",
@@ -417,6 +420,7 @@
 		"information": "Information",
 		"photos": "Photos",
 		"videos": "Vidéos",
+		"abstracts": "Abstracts",
 		"documents": "Documents",
 		"viewAll": "Voir tout",
 		"checkBackLater": "Veuillez vérifier plus tard pour la disponibilité de cette ressource.",
@@ -427,7 +431,7 @@
 		"registerNow": "Inscrivez-vous maintenant",
 		"viewProgram": "Voir le programme",
 		"learnMore": "En savoir plus",
-		"startsIn": "Commence dans",
+		"startsIn": "Commence dans {{days}} jours",
 		"days": "jours",
 		"status": "Statut",
 		"completed": "Terminé",

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import FlipbookPDFViewer from '@/components/ui/pdfViewer';
 import { getUpcomingCongress } from '@/lib/api';
-import { formatDate, getCongressFolderPath } from '@/lib/utils';
+import { getCongressFolderPath } from '@/lib/utils';
 import { Congress } from '@/types/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -12,13 +12,12 @@ import {
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
-	Clock,
 	FileText,
 	Globe,
+	Image as ImageIcon,
 	MapPin,
 	Share2,
 	Ticket,
-	Users,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -27,19 +26,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function UpcomingEventPage() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const router = useRouter();
-	const [congress, setCongress] = useState<Congress | null>(null);
+
+	// State declarations
+	const [event, setEvent] = useState<Congress | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [currentImageIndex, setCurrentImageIndex] = useState(0);
-	const [congressImages, setCongressImages] = useState<string[]>([]);
-	const [hasAffiche, setHasAffiche] = useState(false);
-	const [hasProgramme, setHasProgramme] = useState(false);
+
+	const [eventImages, setEventImages] = useState<string[]>([]);
 	const [pdfFiles, setPdfFiles] = useState<string[]>([]);
+	const [registrationOpen, setRegistrationOpen] = useState(false);
+	const [currentImageIndex, setCurrentImageIndex] = useState(0);
 	const [heroImages, setHeroImages] = useState<string[]>([]);
 	const [currentHeroImage, setCurrentHeroImage] = useState(0);
-	const [activeSection, setActiveSection] = useState('overview');
+	const [activeTab, setActiveTab] = useState('info');
+
 	const heroSlideInterval = useRef<NodeJS.Timeout | null>(null);
 	const slideInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -53,15 +55,31 @@ export default function UpcomingEventPage() {
 		return newArray;
 	};
 
+	// Helper: Format date range
+	const formatDateRange = (start: string, end: string) => {
+		const s = new Date(start);
+		const e = new Date(end);
+		const currentLanguage = i18n.language || 'en';
+
+		return `${s.toLocaleDateString(currentLanguage, {
+			month: 'long',
+			day: 'numeric',
+		})} - ${e.toLocaleDateString(currentLanguage, {
+			month: 'long',
+			day: 'numeric',
+			year: 'numeric',
+		})}`;
+	};
+
 	// Setup hero image slideshow
 	useEffect(() => {
-		if (congressImages.length > 0) {
+		if (eventImages.length > 0) {
 			// Get up to 5 random images for the hero slideshow
-			const shuffled = shuffleArray(congressImages);
+			const shuffled = shuffleArray(eventImages);
 			setHeroImages(shuffled.slice(0, Math.min(5, shuffled.length)));
 			setCurrentHeroImage(0);
 		}
-	}, [congressImages]);
+	}, [eventImages]);
 
 	// Handle hero image rotation
 	useEffect(() => {
@@ -85,203 +103,183 @@ export default function UpcomingEventPage() {
 		};
 	}, [heroImages]);
 
+	// Fetch event and media data
 	useEffect(() => {
-		async function fetchCongress() {
+		async function fetchData() {
 			try {
-				const congressData = await getUpcomingCongress();
-
-				if (!congressData) {
-					setError('No upcoming congress found');
+				const data = await getUpcomingCongress();
+				if (!data) {
+					console.warn('No upcoming event found');
+					setError(t('congress.eventNotFound', 'Event not found'));
+					setIsLoading(false);
+					return;
 				} else {
-					setCongress(congressData);
+					setEvent(data);
+					setRegistrationOpen(!!data.registration_open);
 
-					// Try to find the congress folder and load images
-					const folderPath = getCongressFolderPath(congressData);
+					const folderPath = getCongressFolderPath({
+						start_date: data.start_date,
+						title: data.title,
+						location:
+							typeof data.location === 'string'
+								? data.location
+								: data.location?.name ?? '',
+					});
+
 					if (folderPath) {
-						// Check if photos folder exists and load images
+						// Fetch images
 						try {
 							const photosPath = `${folderPath}/photos`;
-
-							// Use our API endpoint to get directory contents
-							const imageFilesResponse = await fetch(
+							const res = await fetch(
 								`/api/getDirectoryContents?path=${encodeURIComponent(
 									photosPath.slice(1)
 								)}`,
-								{
-									cache: 'no-store', // Ensure we don't cache the results
-								}
+								{ cache: 'no-store' }
 							);
-
-							if (imageFilesResponse.ok) {
-								const imageFiles = await imageFilesResponse.json();
-
-								// Filter for JPG images only (not NEF or other formats)
-								const filteredFiles = imageFiles.filter(
-									(file: string) =>
-										file.toLowerCase().endsWith('.jpg') ||
-										file.toLowerCase().endsWith('.jpeg') ||
-										file.toLowerCase().endsWith('.png')
+							if (res.ok) {
+								const imgs: string[] = await res.json();
+								const filtered = imgs.filter((file) =>
+									['.jpg', '.jpeg', '.png'].some((ext) =>
+										file.toLowerCase().endsWith(ext)
+									)
 								);
-
-								// Create full paths for images
-								const images = filteredFiles.map(
-									(file: string) => `${photosPath}/${file}`
-								);
-								setCongressImages(images);
+								setEventImages(filtered.map((file) => `${photosPath}/${file}`));
 							} else {
-								// Fallback to default images if needed
-								setCongressImages(congressData.images || []);
+								setEventImages(data.images || []);
 							}
 						} catch (err) {
-							console.error('Error loading congress images:', err);
-							// Fallback to default images if needed
-							setCongressImages(congressData.images || []);
+							console.error(err);
+							setEventImages(data.images || []);
 						}
 
-						// Check for PDF files (affiche, programme)
+						// Fetch PDFs
 						try {
-							const pdfFilesResponse = await fetch(
-								`/api/getDirectoryContents?path=${encodeURIComponent(
-									folderPath.slice(1)
+							const affichePath = `${folderPath}/affiche.pdf`;
+							const res = await fetch(
+								`/api/fileExists?path=${encodeURIComponent(
+									affichePath.slice(1)
 								)}`,
-								{
-									cache: 'no-store',
-								}
+								{ cache: 'no-store' }
 							);
-
-							if (pdfFilesResponse.ok) {
-								const files = await pdfFilesResponse.json();
-								const pdfs = files.filter((file: string) =>
-									file.toLowerCase().endsWith('.pdf')
-								);
-
-								// Check for specific files
-								const hasAffiche = pdfs.some((file: string) =>
-									file.toLowerCase().includes('affiche')
-								);
-								const hasProgramme = pdfs.some((file: string) =>
-									file.toLowerCase().includes('programme')
-								);
-
-								setHasAffiche(hasAffiche);
-								setHasProgramme(hasProgramme);
-
-								// Create full paths for PDFs
-								const pdfPaths = pdfs.map(
-									(file: string) => `${folderPath}/${file}`
-								);
-								setPdfFiles(pdfPaths);
+							if (res.ok) {
+								const { exists } = await res.json();
+								if (exists) {
+									setPdfFiles((prev) => [...prev, `${folderPath}/affiche.pdf`]);
+								}
 							}
 						} catch (err) {
-							console.error('Error loading PDF files:', err);
+							console.error(err);
+						}
+						try {
+							const programmePath = `${folderPath}/programme.pdf`;
+							const res = await fetch(
+								`/api/fileExists?path=${encodeURIComponent(
+									programmePath.slice(1)
+								)}`,
+								{ cache: 'no-store' }
+							);
+							if (res.ok) {
+								const { exists } = await res.json();
+								if (exists) {
+									setPdfFiles((prev) => [
+										...prev,
+										`${folderPath}/programme.pdf`,
+									]);
+								}
+							}
+						} catch (err) {
+							console.error(err);
 						}
 					}
 				}
 			} catch (err) {
-				console.error('Error fetching upcoming congress:', err);
-				setError('Failed to load congress data');
+				console.error(err);
+				setError('Failed to load event data');
 			} finally {
 				setIsLoading(false);
 			}
 		}
-
-		fetchCongress();
-
-		// Cleanup on unmount
-		return () => {
-			if (slideInterval.current) {
-				clearInterval(slideInterval.current);
-			}
-		};
+		fetchData();
 	}, []);
 
 	const nextImage = () => {
-		if (congressImages.length > 1) {
-			setCurrentImageIndex((prev) => (prev + 1) % congressImages.length);
+		if (eventImages && eventImages.length > 0) {
+			setCurrentImageIndex((prev) =>
+				prev === eventImages.length - 1 ? 0 : prev + 1
+			);
 		}
+		startAutoAdvance();
 	};
 
 	const previousImage = () => {
-		if (congressImages.length > 1) {
-			setCurrentImageIndex(
-				(prev) => (prev - 1 + congressImages.length) % congressImages.length
+		if (eventImages && eventImages.length > 0) {
+			setCurrentImageIndex((prev) =>
+				prev === 0 ? eventImages.length - 1 : prev - 1
 			);
 		}
+		startAutoAdvance();
 	};
 
 	const startAutoAdvance = () => {
 		if (slideInterval.current) {
 			clearInterval(slideInterval.current);
 		}
-
 		slideInterval.current = setInterval(() => {
-			nextImage();
+			setCurrentImageIndex((prev) =>
+				prev === eventImages.length - 1 ? 0 : prev + 1
+			);
 		}, 5000);
 	};
 
 	useEffect(() => {
-		if (congressImages.length > 1) {
+		if (eventImages.length > 1) {
 			startAutoAdvance();
 		}
-
 		return () => {
-			if (slideInterval.current) {
-				clearInterval(slideInterval.current);
-			}
+			if (slideInterval.current) clearInterval(slideInterval.current);
 		};
-	}, [congressImages]);
+	}, [eventImages]);
 
 	if (isLoading) {
 		return (
 			<LoadingSpinner
-				message={t('congress.loading', 'Loading event details...')}
-				background="gradient"
+				message={t('common.loading')}
+				background="transparent"
 				fullScreen={true}
 			/>
 		);
 	}
 
-	if (error || !congress) {
+	if (error || !event) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-screen pt-20 bg-gradient-to-br from-indigo-50 to-blue-50">
-				<div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
-					<div className="text-2xl font-semibold mb-4 text-red-600 text-center">
-						{t('common.error')}
-					</div>
-					<div className="text-gray-600 mb-6 text-center">
-						{error || 'Congress not found'}
-					</div>
-					<div className="flex flex-col sm:flex-row gap-4 justify-center">
-						<Button
-							onClick={() => router.back()}
-							variant="outline"
-							className="flex items-center justify-center"
-						>
-							<ArrowLeft className="w-4 h-4 mr-2" />
-							{t('common.goBack')}
-						</Button>
-						<Link href="/" passHref>
-							<Button className="w-full sm:w-auto">
-								{t('common.returnHome')}
-							</Button>
-						</Link>
-					</div>
+			<div className="flex flex-col items-center justify-center min-h-screen pt-20">
+				<div className="text-2xl font-semibold mb-4 text-red-600">
+					{t('common.error')}
+				</div>
+				<div className="text-gray-600 mb-6">
+					{error || t('congress.eventNotFound', 'Event not found')}
+				</div>
+				<div className="flex space-x-4">
+					<Button
+						onClick={() => router.back()}
+						variant="outline"
+						className="flex items-center"
+					>
+						<ArrowLeft className="w-4 h-4 mr-2" />
+						{t('common.goBack')}
+					</Button>
+					<Link href="/" passHref>
+						<Button>{t('common.backToHome', 'Back to Home')}</Button>
+					</Link>
 				</div>
 			</div>
 		);
 	}
 
 	// Format dates
-	const startDate = new Date(congress.start_date);
-	const endDate = new Date(congress.end_date);
-	const formattedDateRange = `${startDate.toLocaleDateString('en-US', {
-		month: 'long',
-		day: 'numeric',
-	})} - ${endDate.toLocaleDateString('en-US', {
-		month: 'long',
-		day: 'numeric',
-		year: 'numeric',
-	})}`;
+	const startDate = new Date(event.start_date);
+	const endDate = new Date(event.end_date);
+	const formattedDateRange = formatDateRange(event.start_date, event.end_date);
 
 	// Calculate days until congress
 	const today = new Date();
@@ -289,6 +287,11 @@ export default function UpcomingEventPage() {
 	// Calculate date 3 months before congress start (for abstract submission)
 	const threeMonthsBefore = new Date(startDate);
 	threeMonthsBefore.setMonth(startDate.getMonth() - 3);
+	const abstractDeadline = threeMonthsBefore.toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
 
 	// Calculate days until the actual congress start date
 	const daysUntil = Math.ceil(
@@ -296,801 +299,846 @@ export default function UpcomingEventPage() {
 	);
 	const isUpcoming = daysUntil > 0;
 	const isPast = today > endDate;
-	const isActive = congress.state === 2;
-
-	// Find affiche and programme files
-	const afficheFile = pdfFiles.find((file) =>
-		file.toLowerCase().includes('affiche')
-	);
-	const programmeFile = pdfFiles.find((file) =>
-		file.toLowerCase().includes('programme')
-	);
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
-			{/* Hero Banner */}
-			<div className="relative w-full h-[70vh] min-h-[500px] overflow-hidden">
-				<AnimatePresence initial={false}>
-					<motion.div
-						key={currentHeroImage}
-						className="absolute inset-0 z-0"
-						initial={{ opacity: 0, scale: 1.05 }}
-						animate={{ opacity: 1, scale: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 1.2 }}
+		<div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+			{/* Breadcrumb Navigation */}
+			<nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+				<div className="max-w-7xl mx-auto px-4 py-4 flex items-center text-sm">
+					<Link
+						href="/"
+						className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
 					>
-						{heroImages.length > 0 ? (
-							<Image
-								src={heroImages[currentHeroImage]}
-								alt={`${congress.title} - Image ${currentHeroImage + 1}`}
-								fill
-								className="object-cover"
-								priority
-							/>
-						) : (
-							<div className="absolute inset-0 bg-gradient-to-r from-blue-800 to-indigo-900" />
-						)}
-						<div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/70" />
-					</motion.div>
-				</AnimatePresence>
+						{t('common.home')}
+					</Link>
+					<span className="mx-2 text-gray-400">/</span>
+					<span className="text-gray-900 dark:text-white font-medium truncate">
+						{event.title}
+					</span>
+				</div>
+			</nav>
 
-				{/* Hero Content */}
-				<div className="absolute inset-0 flex flex-col justify-end z-10">
-					<div className="container mx-auto px-4 pb-16 md:pb-24">
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.2, duration: 0.8 }}
-							className="max-w-4xl"
-						>
-							<div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-								<span className="text-sm sm:text-base font-medium text-white">
-									{isUpcoming
-										? t('congress.upcomingEvent')
-										: isActive
-										? t('congress.ongoingEvent')
-										: t('congress.pastEvent')}
+			<div className="max-w-7xl mx-auto px-4 py-12">
+				{/* Congress Details Section */}
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5 }}
+					className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8"
+				>
+					{/* Hero Banner */}
+					<div className="relative bg-white dark:bg-gray-800">
+						<div className="max-w-7xl mx-auto px-6 pt-8 pb-6">
+							<div className="flex items-center space-x-2 mb-3">
+								<Button
+									variant="ghost"
+									size="sm"
+									className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 -ml-3"
+									onClick={() => router.back()}
+								>
+									<ArrowLeft className="w-4 h-4 mr-1" />
+									{t('common.back')}
+								</Button>
+								<span className="text-gray-300 dark:text-gray-600">/</span>
+								<span className="text-sm text-gray-500 dark:text-gray-400">
+									{t('congress.upcomingEvent', 'Upcoming Event')}
 								</span>
 							</div>
-
-							<h1 className="text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-sm">
-								{congress.title}
-							</h1>
-
-							<div className="flex flex-wrap items-center gap-6 text-white/90 mb-8">
-								<div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-									<Calendar className="w-5 h-5 mr-2 text-primary-300" />
-									<span>{formattedDateRange}</span>
-								</div>
-								<div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-									<MapPin className="w-5 h-5 mr-2 text-primary-300" />
-									<span>
-										{typeof congress.location === 'string'
-											? congress.location
-											: congress.location.name}
-									</span>
-								</div>
-								<div className="flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-									<Globe className="w-5 h-5 mr-2 text-primary-300" />
-									<span>{t(`congressTypes.${congress.congress_type}`)}</span>
-								</div>
-							</div>
-
-							{isUpcoming && congress.registration && (
-								<div className="flex flex-wrap gap-4">
-									<Button
-										size="lg"
-										asChild
-										className="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-									>
-										<Link href="/congress/register">
-											<Ticket className="w-5 h-5 mr-2" />
-											{t('congress.registerNow')}
-										</Link>
-									</Button>
-									{programmeFile && (
-										<Button
-											variant="outline"
-											size="lg"
-											asChild
-											className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-3 rounded-full backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
-										>
-											<a
-												href={programmeFile}
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.viewProgram')}
-											</a>
-										</Button>
+							<div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+								<div className="flex-1 mb-6 md:mb-0">
+									<div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border border-primary-100 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 mb-4">
+										{new Date(event.start_date).getFullYear()}
+									</div>
+									<h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+										{event.title}
+									</h1>
+									<div className="flex items-center mb-4 text-gray-600 dark:text-gray-300">
+										<Calendar className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" />
+										<span>{formattedDateRange}</span>
+									</div>
+									{event.location && (
+										<div className="flex items-center mb-6 text-gray-600 dark:text-gray-300">
+											<MapPin className="w-5 h-5 mr-2 text-gray-400 dark:text-gray-500" />
+											<span>
+												{typeof event.location === 'object'
+													? event.location.name
+													: event.location}
+											</span>
+										</div>
 									)}
 								</div>
-							)}
-
-							{isUpcoming && !congress.registration && (
-								<div className="flex flex-wrap gap-4">
-									<Button
-										size="lg"
-										variant="outline"
-										className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-3 rounded-full backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
-									>
-										<Users className="w-5 h-5 mr-2" />
-										{t('congress.registrationClosed')}
-									</Button>
-									{programmeFile && (
-										<Button
-											variant="outline"
-											size="lg"
-											asChild
-											className="bg-white/10 hover:bg-white/20 text-white border-white/30 px-8 py-3 rounded-full backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
-										>
-											<a
-												href={programmeFile}
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.viewProgram')}
-											</a>
-										</Button>
-									)}
-								</div>
-							)}
-						</motion.div>
-					</div>
-				</div>
-			</div>
-
-			{/* Countdown Bar */}
-			{isUpcoming && (
-				<div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white py-4">
-					<div className="container mx-auto px-4">
-						<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-							<div className="flex items-center">
-								<Clock className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 animate-pulse" />
-								<div>
-									<span className="text-sm sm:text-base text-primary-100">
-										{t('congress.startsIn')}
-									</span>
-									<span className="ml-2 text-xl sm:text-2xl font-bold">
-										{daysUntil} {t('congress.days')}
-									</span>
+								<div className="md:w-1/3 lg:w-2/5">
+									<div className="relative rounded-lg overflow-hidden shadow-lg h-56 md:h-72 bg-gray-100 dark:bg-gray-700">
+										{heroImages.length > 0 ? (
+											<AnimatePresence initial={false} mode="wait">
+												<motion.div
+													key={currentHeroImage}
+													initial={{ opacity: 0 }}
+													animate={{ opacity: 1 }}
+													exit={{ opacity: 0 }}
+													transition={{
+														duration: 1.2,
+														ease: [0.25, 0.1, 0.25, 1.0],
+														opacity: { duration: 0.8 },
+													}}
+													className="absolute inset-0 z-0"
+												>
+													<Image
+														src={heroImages[currentHeroImage]}
+														alt={event.title}
+														fill
+														className="object-cover"
+														sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+														priority={currentHeroImage === 0}
+													/>
+												</motion.div>
+											</AnimatePresence>
+										) : (
+											<div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800">
+												<Calendar className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+											</div>
+										)}
+										{heroImages.length > 1 && (
+											<div className="absolute bottom-3 right-3 flex space-x-1">
+												<Button
+													size="icon"
+													variant="secondary"
+													className="w-8 h-8 bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70 rounded-full"
+													onClick={() =>
+														setCurrentHeroImage((prev) =>
+															prev === 0 ? heroImages.length - 1 : prev - 1
+														)
+													}
+												>
+													<ChevronLeft className="w-4 h-4" />
+												</Button>
+												<Button
+													size="icon"
+													variant="secondary"
+													className="w-8 h-8 bg-black/30 text-white hover:bg-black/50 dark:bg-black/50 dark:hover:bg-black/70 rounded-full"
+													onClick={() =>
+														setCurrentHeroImage(
+															(prev) => (prev + 1) % heroImages.length
+														)
+													}
+												>
+													<ChevronRight className="w-4 h-4" />
+												</Button>
+											</div>
+										)}
+									</div>
 								</div>
 							</div>
-							{congress.registration ? (
-								<Button
-									asChild
-									size="sm"
-									className="sm:btn-md w-full sm:w-auto bg-white text-primary-700 hover:bg-primary-50 px-4 sm:px-6 shadow-md"
-								>
-									<Link href="/congress/register">
-										{t('congress.registerNow')}
-									</Link>
-								</Button>
-							) : (
-								<div className="text-sm sm:text-base text-primary-100 text-center sm:text-right">
-									{t('congress.registrationClosedInfo')}
-								</div>
-							)}
 						</div>
 					</div>
-				</div>
-			)}
 
-			{/* Quick Navigation Tabs */}
-			<div className="sticky top-0 z-30 bg-white shadow-md">
-				<div className="container mx-auto px-4">
-					<div className="flex overflow-x-auto hide-scrollbar">
-						<button
-							onClick={() => setActiveSection('overview')}
-							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
-								activeSection === 'overview'
-									? 'text-primary-600 border-b-2 border-primary-600'
-									: 'text-gray-600 hover:text-primary-600'
-							}`}
-						>
-							{t('congress.overview')}
-						</button>
-						<button
-							onClick={() => setActiveSection('schedule')}
-							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
-								activeSection === 'schedule'
-									? 'text-primary-600 border-b-2 border-primary-600'
-									: 'text-gray-600 hover:text-primary-600'
-							}`}
-						>
-							{t('congress.schedule')}
-						</button>
-						<button
-							onClick={() => setActiveSection('speakers')}
-							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
-								activeSection === 'speakers'
-									? 'text-primary-600 border-b-2 border-primary-600'
-									: 'text-gray-600 hover:text-primary-600'
-							}`}
-						>
-							{t('congress.speakers')}
-						</button>
-						<button
-							onClick={() => setActiveSection('venue')}
-							className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
-								activeSection === 'venue'
-									? 'text-primary-600 border-b-2 border-primary-600'
-									: 'text-gray-600 hover:text-primary-600'
-							}`}
-						>
-							{t('congress.venue')}
-						</button>
-						{pdfFiles.length > 0 && (
-							<button
-								onClick={() => setActiveSection('programme')}
-								className={`px-4 md:px-6 py-3 md:py-4 text-sm md:text-base font-medium whitespace-nowrap transition-colors ${
-									activeSection === 'programme'
-										? 'text-primary-600 border-b-2 border-primary-600'
-										: 'text-gray-600 hover:text-primary-600'
-								}`}
-							>
-								{t('congress.documents', 'Documents')}
-							</button>
-						)}
-					</div>
-				</div>
-			</div>
+					{/* Tabbed Content Section */}
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, delay: 0.1 }}
+						className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8"
+					>
+						{/* Tabs Navigation */}
+						<div className="border-b border-gray-200 dark:border-gray-700">
+							<nav className="flex overflow-x-auto">
+								<button
+									onClick={() => setActiveTab('info')}
+									className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+										activeTab === 'info'
+											? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+											: 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+									}`}
+								>
+									{t('congress.information')}
+								</button>
 
-			{/* Main Content */}
-			<div className="container mx-auto px-4 py-12">
-				{/* Dynamic Section Content */}
-				<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-					{/* Main Content Column */}
-					<div className="lg:col-span-8">
-						{activeSection === 'overview' && (
-							<div className="space-y-8">
-								{/* About Section */}
-								<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-									<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-										<h2 className="text-2xl font-bold text-white">
-											{t('congress.aboutEvent')}
-										</h2>
-									</div>
-									<div className="p-6">
-										<div className="prose max-w-none">
-											<p className="text-gray-700 whitespace-pre-line text-lg leading-relaxed">
-												{congress?.description}
-											</p>
-										</div>
-									</div>
-								</div>
-
-								{/* Key Highlights */}
-								<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-									<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-										<h2 className="text-2xl font-bold text-white">
-											{t('congress.keyHighlights')}
-										</h2>
-									</div>
-									<div className="p-6">
-										<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-											{/* Add your key highlights here */}
-											<div className="flex items-start space-x-4">
-												<div className="bg-primary-100 p-3 rounded-lg">
-													<Users className="w-6 h-6 text-primary-600" />
-												</div>
-												<div>
-													<h3 className="font-semibold text-gray-900">
-														{t('congress.networkingOpportunities')}
-													</h3>
-													<p className="text-gray-600 mt-1">
-														{t('congress.networkingDescription')}
-													</p>
-												</div>
-											</div>
-											{/* Add more highlights */}
-										</div>
-									</div>
-								</div>
-
-								{/* Photo Gallery */}
-								{congressImages.length > 0 && (
-									<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-										<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-											<h2 className="text-2xl font-bold text-white">
-												{t('congress.gallery')}
-											</h2>
-										</div>
-										<div className="p-6">
-											<div className="relative overflow-hidden rounded-xl aspect-video">
-												<AnimatePresence initial={false}>
-													<motion.div
-														key={currentImageIndex}
-														className="absolute inset-0"
-														initial={{ opacity: 0, scale: 1.05 }}
-														animate={{ opacity: 1, scale: 1 }}
-														exit={{ opacity: 0 }}
-														transition={{ duration: 0.7 }}
-													>
-														<Image
-															src={congressImages[currentImageIndex]}
-															alt={`${congress.title} - Image ${
-																currentImageIndex + 1
-															}`}
-															fill
-															className="object-cover"
-														/>
-													</motion.div>
-												</AnimatePresence>
-
-												{congressImages.length > 1 && (
-													<>
-														<button
-															onClick={previousImage}
-															className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors z-10 backdrop-blur-sm"
-															aria-label="Previous image"
-														>
-															<ChevronLeft className="w-6 h-6" />
-														</button>
-														<button
-															onClick={nextImage}
-															className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors z-10 backdrop-blur-sm"
-															aria-label="Next image"
-														>
-															<ChevronRight className="w-6 h-6" />
-														</button>
-													</>
-												)}
-											</div>
-											<div className="flex justify-center mt-6">
-												<div className="flex space-x-3">
-													{congressImages.map((_, index) => (
-														<button
-															key={index}
-															onClick={() => setCurrentImageIndex(index)}
-															className={`w-3 h-3 rounded-full transition-all duration-300 ${
-																index === currentImageIndex
-																	? 'bg-primary-600 scale-125'
-																	: 'bg-gray-300 hover:bg-gray-400'
-															}`}
-															aria-label={`Go to image ${index + 1}`}
-														/>
-													))}
-												</div>
-											</div>
-										</div>
-									</div>
+								{eventImages.length > 0 && (
+									<button
+										onClick={() => setActiveTab('photos')}
+										className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+											activeTab === 'photos'
+												? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+												: 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+										}`}
+									>
+										{t('congress.photos')}
+									</button>
 								)}
-							</div>
-						)}
 
-						{activeSection === 'schedule' && (
-							<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-								<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-									<h2 className="text-2xl font-bold text-white">
-										{t('congress.schedule')}
-									</h2>
-								</div>
-								<div className="p-6">
-									{/* Add your schedule content here */}
-									<div className="space-y-6">
-										{/* Example schedule item */}
-										<div className="border-l-4 border-primary-600 pl-4">
-											<div className="flex items-center text-sm text-primary-600 mb-1">
-												<Clock className="w-4 h-4 mr-2" />
-												<span>09:00 - 10:30</span>
-											</div>
-											<h3 className="font-semibold text-gray-900">
-												{t('congress.scheduleItem1Title')}
-											</h3>
-											<p className="text-gray-600 mt-1">
-												{t('congress.scheduleItem1Description')}
-											</p>
-										</div>
-										{/* Add more schedule items */}
-									</div>
-								</div>
-							</div>
-						)}
+								{(pdfFiles.filter((file) => file.includes('affiche')).length >
+									0 ||
+									(event.registration_open &&
+										(event.program_file || pdfFiles.length > 0))) && (
+									<button
+										onClick={() => setActiveTab('program')}
+										className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+											activeTab === 'program'
+												? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+												: 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+										}`}
+									>
+										{t('congress.program')}
+									</button>
+								)}
 
-						{activeSection === 'speakers' && (
-							<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-								<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-									<h2 className="text-2xl font-bold text-white">
-										{t('congress.speakers')}
-									</h2>
-								</div>
-								<div className="p-6">
-									{/* Add your speakers content here */}
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-										{/* Example speaker card */}
-										<div className="flex items-start space-x-4">
-											<div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden">
-												{/* Add speaker image */}
-											</div>
-											<div>
-												<h3 className="font-semibold text-gray-900">
-													{t('congress.speakerName')}
-												</h3>
-												<p className="text-primary-600">
-													{t('congress.speakerTitle')}
-												</p>
-												<p className="text-gray-600 mt-2">
-													{t('congress.speakerBio')}
-												</p>
-											</div>
-										</div>
-										{/* Add more speaker cards */}
-									</div>
-								</div>
-							</div>
-						)}
+								<button
+									onClick={() => setActiveTab('abstracts')}
+									className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+										activeTab === 'abstracts'
+											? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+											: 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+									}`}
+								>
+									{t('congress.abstracts')}
+								</button>
 
-						{activeSection === 'venue' && (
-							<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-								<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-									<h2 className="text-2xl font-bold text-white">
-										{t('congress.venue')}
-									</h2>
-								</div>
-								<div className="p-6">
-									{/* Add your venue content here */}
-									<div className="space-y-6">
-										<div className="aspect-video rounded-xl overflow-hidden">
-											{/* Add venue map or image */}
-										</div>
-										<div>
-											<h3 className="font-semibold text-gray-900 mb-2">
-												{t('congress.venueLocation')}
-											</h3>
-											<p className="text-gray-600">
-												{typeof congress?.location === 'string'
-													? congress.location
-													: congress.location.name}
-											</p>
-										</div>
-										<div>
-											<h3 className="font-semibold text-gray-900 mb-2">
-												{t('congress.venueAccessibility')}
-											</h3>
-											<ul className="space-y-2 text-gray-600">
-												{/* Add accessibility information */}
-											</ul>
-										</div>
-									</div>
-								</div>
-							</div>
-						)}
+								<button
+									onClick={() => setActiveTab('registration')}
+									className={`px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+										activeTab === 'registration'
+											? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+											: 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+									}`}
+								>
+									{t('congress.registration')}
+								</button>
+							</nav>
+						</div>
 
-						{activeSection === 'programme' && programmeFile && (
-							<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-								<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-									<h2 className="text-2xl font-bold text-white">
-										{t('congress.programme')}
-									</h2>
-								</div>
-								<div className="p-6">
-									<div className="aspect-[3/4] relative mb-4 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
-										<FlipbookPDFViewer
-											pdfUrl={pdfFiles.filter(
-												(file) =>
-													file.toLowerCase().includes('affiche') ||
-													file.toLowerCase().includes('programme')
-											)}
+						{/* Tab Content */}
+						<div className="p-8">
+							{/* Info Tab */}
+							{activeTab === 'info' && (
+								<div>
+									{/* Description */}
+									<div className="prose dark:prose-invert max-w-none mb-8">
+										<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+											{t('congress.about')}
+										</h2>
+										<div
+											className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed"
+											dangerouslySetInnerHTML={{
+												__html:
+													event.description ||
+													t(
+														'congress.noDescription',
+														'No description available.'
+													),
+											}}
 										/>
 									</div>
-									<div className="flex flex-wrap gap-4 mt-4">
-										{programmeFile && (
-											<Button
-												variant="outline"
-												className="flex-1 flex items-center justify-center border-primary-200 text-primary-700 hover:bg-primary-50"
-												asChild
-											>
-												<a
-													href={programmeFile}
-													target="_blank"
-													rel="noopener noreferrer"
-													download
-												>
-													<FileText className="w-5 h-5 mr-2" />
-													{t(
-														'congress.downloadProgramme',
-														'Download Programme'
-													)}
-												</a>
-											</Button>
-										)}
-										{afficheFile && (
-											<Button
-												variant="outline"
-												className="flex-1 flex items-center justify-center border-primary-200 text-primary-700 hover:bg-primary-50"
-												asChild
-											>
-												<a
-													href={afficheFile}
-													target="_blank"
-													rel="noopener noreferrer"
-													download
-												>
-													<FileText className="w-5 h-5 mr-2" />
-													{t('congress.downloadAffiche', 'Download Poster')}
-												</a>
-											</Button>
-										)}
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
 
-					{/* Sidebar - Important information and CTAs */}
-					<div className="lg:col-span-4 space-y-8">
-						{/* Event Details Card */}
-						<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-								<h2 className="text-2xl font-bold text-white">
-									{t('congress.eventDetails')}
-								</h2>
-							</div>
-							<div className="p-6">
-								<ul className="space-y-6">
-									<li className="flex items-start">
-										<div className="bg-primary-50 p-3 rounded-full mr-4">
-											<Calendar className="w-6 h-6 text-primary-600" />
-										</div>
-										<div>
-											<div className="font-medium text-gray-900">
-												{t('congress.date')}
+									{/* Key Information */}
+									<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+										<div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+											<div className="flex items-center mb-4">
+												<div className="bg-blue-100 dark:bg-blue-800 p-3 rounded-full mr-4">
+													<Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+												</div>
+												<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+													{t('congress.dates')}
+												</h3>
 											</div>
-											<div className="text-gray-600 mt-1">
+											<p className="text-gray-700 dark:text-gray-300">
 												{formattedDateRange}
-											</div>
-										</div>
-									</li>
-									<li className="flex items-start">
-										<div className="bg-primary-50 p-3 rounded-full mr-4">
-											<MapPin className="w-6 h-6 text-primary-600" />
-										</div>
-										<div>
-											<div className="font-medium text-gray-900">
-												{t('congress.location')}
-											</div>
-											<div className="text-gray-600 mt-1">
-												{typeof congress.location === 'string'
-													? congress.location
-													: congress.location.name}
-											</div>
-										</div>
-									</li>
-									<li className="flex items-start">
-										<div className="bg-primary-50 p-3 rounded-full mr-4">
-											<Globe className="w-6 h-6 text-primary-600" />
-										</div>
-										<div>
-											<div className="font-medium text-gray-900">
-												{t('congress.type')}
-											</div>
-											<div className="text-gray-600 mt-1">
-												{t(`congressTypes.${congress.congress_type}`)}
-												{congress.congress_type === 'hybrid' && (
-													<span className="text-sm block text-gray-500 mt-1">
-														{t('congress.hybridNote')}
-													</span>
-												)}
-											</div>
-										</div>
-									</li>
-									{congress.abstract_submission_deadline && (
-										<li className="flex items-start">
-											<div className="bg-primary-50 p-3 rounded-full mr-4">
-												<FileText className="w-6 h-6 text-primary-600" />
-											</div>
-											<div>
-												<div className="font-medium text-gray-900">
-													{t('congress.abstractDeadline')}
-												</div>
-												<div className="text-gray-600 mt-1">
-													{formatDate(congress.abstract_submission_deadline)}
-												</div>
-											</div>
-										</li>
-									)}
-								</ul>
-							</div>
-						</div>
-
-						{/* Registration or Alternative Options */}
-						{isUpcoming && (
-							<>
-								{congress?.registration ? (
-									<div className="bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl shadow-xl overflow-hidden">
-										<div className="p-6 text-white">
-											<h3 className="text-2xl font-bold mb-3">
-												{t('congress.joinUs')}
-											</h3>
-											<p className="text-primary-100 mb-6 leading-relaxed">
-												{t('congress.registrationCTA')}
 											</p>
+											{isUpcoming && (
+												<p className="mt-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
+													{daysUntil === 0
+														? t('congress.startsToday')
+														: daysUntil === 1
+														? t('congress.startsTomorrow')
+														: t('congress.startsIn', { days: daysUntil })}
+												</p>
+											)}
+										</div>
+
+										<div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-6">
+											<div className="flex items-center mb-4">
+												<div className="bg-purple-100 dark:bg-purple-800 p-3 rounded-full mr-4">
+													<MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+												</div>
+												<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+													{t('congress.location')}
+												</h3>
+											</div>
+											<p className="text-gray-700 dark:text-gray-300">
+												{typeof event.location === 'string'
+													? event.location
+													: event.location?.name || ''}
+											</p>
+										</div>
+
+										<div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-6">
+											<div className="flex items-center mb-4">
+												<div className="bg-green-100 dark:bg-green-800 p-3 rounded-full mr-4">
+													<Globe className="w-6 h-6 text-green-600 dark:text-green-400" />
+												</div>
+												<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+													{t('congress.type')}
+												</h3>
+											</div>
+											<p className="text-gray-700 dark:text-gray-300">
+												{t(
+													`congressTypes.${event.congress_type}`,
+													event.congress_type
+												)}
+											</p>
+										</div>
+									</div>
+
+									{/* Action Buttons */}
+									<div className="flex flex-wrap gap-4">
+										{registrationOpen && (
 											<Button
-												className="w-full bg-white text-primary-700 hover:bg-primary-50 shadow-lg"
 												size="lg"
+												className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition-transform hover:scale-105"
 												asChild
 											>
-												<Link href="/congress/register">
+												<Link href="/dashboard/registration">
 													<Ticket className="w-5 h-5 mr-2" />
 													{t('congress.registerNow')}
 												</Link>
 											</Button>
+										)}
+										<Button
+											size="lg"
+											className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg transition-transform hover:scale-105"
+											asChild
+										>
+											<Link href="/abstracts/new">
+												<FileText className="w-5 h-5 mr-2" />
+												{t('abstracts.submission.cta')}
+											</Link>
+										</Button>
+										{event.registration_open && event.program_file && (
+											<Button
+												size="lg"
+												variant="outline"
+												className="border-blue-600 text-blue-600 hover:bg-blue-50 transition-transform hover:scale-105"
+												onClick={() =>
+													window.open(event.program_file, '_blank')
+												}
+											>
+												<FileText className="w-5 h-5 mr-2" />
+												{t('congress.viewProgram')}
+											</Button>
+										)}
+										{pdfFiles.filter((file) => file.includes('affiche'))
+											.length > 0 && (
+											<Button
+												size="lg"
+												variant="outline"
+												className="border-blue-600 text-blue-600 hover:bg-blue-50 transition-transform hover:scale-105"
+												onClick={() => setActiveTab('program')}
+											>
+												<FileText className="w-5 h-5 mr-2" />
+												{t('congress.viewPoster', 'View Poster')}
+											</Button>
+										)}
+										{event.registration_open &&
+											pdfFiles.filter((file) => !file.includes('affiche'))
+												.length > 0 && (
+												<Button
+													size="lg"
+													variant="outline"
+													className="border-blue-600 text-blue-600 hover:bg-blue-50 transition-transform hover:scale-105"
+													onClick={() => setActiveTab('program')}
+												>
+													<FileText className="w-5 h-5 mr-2" />
+													{t('congress.viewProgram')}
+												</Button>
+											)}
+										<Button
+											size="lg"
+											variant="outline"
+											className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-transform hover:scale-105"
+										>
+											<Share2 className="w-5 h-5 mr-2" />
+											{t('congress.share')}
+										</Button>
+									</div>
+								</div>
+							)}
+
+							{/* Photos Tab */}
+							{activeTab === 'photos' && eventImages.length > 0 && (
+								<div>
+									<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+										<div className="bg-amber-100 dark:bg-amber-800/30 p-2 rounded-lg mr-3">
+											<ImageIcon className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+										</div>
+										{t('congress.photos')}
+									</h2>
+
+									<div className="relative aspect-[21/9] w-full">
+										<AnimatePresence initial={false} mode="wait">
+											<motion.div
+												key={currentImageIndex}
+												initial={{ opacity: 0 }}
+												animate={{ opacity: 1 }}
+												exit={{ opacity: 0 }}
+												transition={{
+													duration: 1.2,
+													ease: [0.25, 0.1, 0.25, 1.0],
+													opacity: { duration: 0.8 },
+												}}
+												className="absolute inset-0"
+											>
+												<Image
+													src={eventImages[currentImageIndex]}
+													alt={`Congress Image ${currentImageIndex + 1}`}
+													fill
+													className="object-cover rounded-xl"
+													priority={currentImageIndex === 0}
+													sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+													quality={90}
+												/>
+												<div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl" />
+											</motion.div>
+										</AnimatePresence>
+
+										{/* Carousel Controls */}
+										<div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4">
+											<motion.div
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.95 }}
+												transition={{ duration: 0.2 }}
+											>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={previousImage}
+													className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300"
+												>
+													<ChevronLeft className="h-8 w-8" />
+												</Button>
+											</motion.div>
+											<motion.div
+												whileHover={{ scale: 1.1 }}
+												whileTap={{ scale: 0.95 }}
+												transition={{ duration: 0.2 }}
+											>
+												<Button
+													variant="ghost"
+													size="icon"
+													onClick={nextImage}
+													className="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300"
+												>
+													<ChevronRight className="h-8 w-8" />
+												</Button>
+											</motion.div>
+										</div>
+
+										{/* Carousel Indicators */}
+										<div className="absolute bottom-4 inset-x-0 flex justify-center gap-2">
+											{eventImages.map((_, index) => (
+												<motion.button
+													key={index}
+													onClick={() => setCurrentImageIndex(index)}
+													className={`h-2.5 rounded-full transition-all duration-500 ${
+														currentImageIndex === index
+															? 'bg-white w-8'
+															: 'bg-white/50 w-2.5 hover:bg-white/80'
+													}`}
+													whileHover={{ scale: 1.2 }}
+													whileTap={{ scale: 0.9 }}
+													aria-label={`Go to slide ${index + 1}`}
+												/>
+											))}
+										</div>
+
+										{/* Image Counter */}
+										<div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1.5 rounded-full backdrop-blur-sm text-sm font-medium">
+											{currentImageIndex + 1} / {eventImages.length}
 										</div>
 									</div>
-								) : (
-									<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-										<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-											<h2 className="text-2xl font-bold text-white">
-												{t('congress.alternativeOptions')}
-											</h2>
+								</div>
+							)}
+
+							{/* Program Tab */}
+							{activeTab === 'program' &&
+								(pdfFiles.filter((file) => file.includes('affiche')).length >
+									0 ||
+									(event.registration_open &&
+										(event.program_file || pdfFiles.length > 0))) && (
+									<div>
+										<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+											<div className="bg-primary-100 dark:bg-primary-800/30 p-2 rounded-lg mr-3">
+												<FileText className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+											</div>
+											{t('congress.programDetails')}
+										</h2>
+
+										{/* Program documents cards */}
+										<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+											{/* Show affiche */}
+											{pdfFiles.filter((file) => file.includes('affiche'))
+												.length > 0 && (
+												<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+													<div className="bg-blue-50 dark:bg-blue-900/20 p-4">
+														<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+															{t('congress.poster', 'Congress Poster')}
+														</h3>
+													</div>
+													<div className="p-4">
+														<div className="relative aspect-[3/4] w-full bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
+															<iframe
+																src={pdfFiles.find((file) =>
+																	file.includes('affiche')
+																)}
+																className="absolute inset-0 w-full h-full"
+																title="Congress Poster"
+															/>
+														</div>
+														<div className="mt-4 flex justify-end">
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() =>
+																	window.open(
+																		pdfFiles.find((file) =>
+																			file.includes('affiche')
+																		),
+																		'_blank'
+																	)
+																}
+															>
+																{t('common.openInNewTab', 'Open in new tab')}
+															</Button>
+														</div>
+													</div>
+												</div>
+											)}
+
+											{/* Show program */}
+											{event.registration_open &&
+												(pdfFiles.filter((file) => file.includes('programme'))
+													.length > 0 ||
+													event.program_file) && (
+													<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+														<div className="bg-red-50 dark:bg-red-900/20 p-4">
+															<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+																{t('congress.program', 'Congress Program')}
+															</h3>
+														</div>
+														<div className="p-4">
+															<div className="relative aspect-[3/4] w-full bg-gray-100 dark:bg-gray-700 rounded overflow-hidden">
+																<iframe
+																	src={
+																		pdfFiles.find((file) =>
+																			file.includes('programme')
+																		) || event.program_file
+																	}
+																	className="absolute inset-0 w-full h-full"
+																	title="Congress Program"
+																/>
+															</div>
+															<div className="mt-4 flex justify-end">
+																<Button
+																	variant="outline"
+																	size="sm"
+																	onClick={() =>
+																		window.open(
+																			pdfFiles.find((file) =>
+																				file.includes('programme')
+																			) || event.program_file,
+																			'_blank'
+																		)
+																	}
+																>
+																	{t('common.openInNewTab', 'Open in new tab')}
+																</Button>
+															</div>
+														</div>
+													</div>
+												)}
 										</div>
-										<div className="p-6">
-											<div className="space-y-4">
-												{/* Virtual Attendance Option */}
-												<div className="border border-primary-100 rounded-lg p-4 hover:bg-primary-50 transition-colors">
-													<h3 className="font-semibold text-primary-700 mb-2">
-														{t('congress.virtualAttendance')}
-													</h3>
-													<p className="text-gray-600 mb-3">
-														{t('congress.virtualAttendanceInfo')}
-													</p>
-													<Button
-														variant="outline"
-														size="sm"
-														className="w-full"
-														asChild
-													>
-														<Link href="/congress/virtual-attendance">
-															{t('congress.learnMore')}
-														</Link>
-													</Button>
-												</div>
 
-												{/* Waitlist Option */}
-												<div className="border border-amber-100 rounded-lg p-4 hover:bg-amber-50 transition-colors">
-													<h3 className="font-semibold text-amber-700 mb-2">
-														{t('congress.joinWaitlist')}
-													</h3>
-													<p className="text-gray-600 mb-3">
-														{t('congress.waitlistInfo')}
-													</p>
-													<Button
-														variant="outline"
-														size="sm"
-														className="w-full border-amber-200 text-amber-700"
-														asChild
-													>
-														<Link href="/congress/waitlist">
-															{t('congress.joinWaitlistButton')}
-														</Link>
-													</Button>
-												</div>
+										{/* PDF Viewer for all documents */}
+										<div className="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-inner">
+											<FlipbookPDFViewer
+												pdfUrl={
+													pdfFiles.length > 0
+														? pdfFiles
+														: event.program_file
+														? [event.program_file]
+														: ['/programs/programme.pdf']
+												}
+												bookMode={true}
+											/>
+										</div>
+									</div>
+								)}
 
-												{/* Future Events */}
-												<div className="border border-indigo-100 rounded-lg p-4 hover:bg-indigo-50 transition-colors">
-													<h3 className="font-semibold text-indigo-700 mb-2">
-														{t('congress.upcomingEvents')}
-													</h3>
-													<p className="text-gray-600 mb-3">
-														{t('congress.upcomingEventsInfo')}
-													</p>
-													<Button
-														variant="outline"
-														size="sm"
-														className="w-full border-indigo-200 text-indigo-700"
-														asChild
-													>
-														<Link href="/archives/events">
-															{t('congress.viewEvents')}
-														</Link>
-													</Button>
+							{/* Abstracts Tab */}
+							{activeTab === 'abstracts' && (
+								<div>
+									<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+										<div className="bg-yellow-100 dark:bg-yellow-800/30 p-2 rounded-lg mr-3">
+											<FileText className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+										</div>
+										{t('abstracts.submission.title')}
+									</h2>
+
+									<div className="prose dark:prose-invert max-w-none mb-8">
+										<p className="text-lg text-gray-700 dark:text-gray-300">
+											{t('abstracts.submission.subtitle')}
+										</p>
+
+										<div className="mt-6 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6">
+											<h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+												{t('abstracts.submission.guidelines.title')}
+											</h3>
+											<ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+												<li>
+													{t('abstracts.submission.guidelines.maxLength')}
+												</li>
+												<li>
+													{t(
+														'abstracts.submission.guidelines.presentingAuthor'
+													)}
+												</li>
+												<li>
+													{t('abstracts.submission.guidelines.maxCoAuthors')}
+												</li>
+												<li>
+													{t('abstracts.submission.guidelines.requiredFields')}
+												</li>
+												<li>{t('abstracts.submission.guidelines.review')}</li>
+											</ul>
+
+											<div className="mt-6 flex items-center bg-white dark:bg-gray-800 p-4 rounded-lg border border-yellow-200 dark:border-yellow-900">
+												<Calendar className="h-6 w-6 mr-3 text-yellow-600 dark:text-yellow-400" />
+												<div>
+													<div className="font-medium text-gray-900 dark:text-white">
+														{t('abstracts.submission.guidelines.deadlineTitle')}
+													</div>
+													<div className="text-gray-600 dark:text-gray-400">
+														{t('abstracts.submission.guidelines.deadline', {
+															date: event.abstract_submission_deadline
+																? new Date(
+																		event.abstract_submission_deadline
+																  ).toLocaleDateString(undefined, {
+																		year: 'numeric',
+																		month: 'long',
+																		day: 'numeric',
+																  })
+																: threeMonthsBefore.toLocaleDateString(
+																		undefined,
+																		{
+																			year: 'numeric',
+																			month: 'long',
+																			day: 'numeric',
+																		}
+																  ),
+														})}
+													</div>
 												</div>
 											</div>
 										</div>
 									</div>
-								)}
-							</>
-						)}
 
-						{/* Quick Links */}
-						<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-								<h2 className="text-2xl font-bold text-white">
-									{t('congress.quickLinks')}
-								</h2>
-							</div>
-							<div className="p-6">
-								<div className="space-y-3">
-									{pdfFiles.length > 0 && (
+									<div className="flex justify-center mt-8">
 										<Button
-											variant="outline"
-											className="w-full justify-start"
-											onClick={() => setActiveSection('programme')}
-										>
-											<FileText className="w-5 h-5 mr-2" />
-											{t('congress.viewDocuments', 'View Documents')}
-										</Button>
-									)}
-									{programmeFile && (
-										<Button
-											variant="outline"
-											className="w-full justify-start"
+											size="lg"
+											className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg transition-transform hover:scale-105"
 											asChild
 										>
-											<a
-												href={programmeFile}
-												target="_blank"
-												rel="noopener noreferrer"
-												download
-											>
+											<Link href="/abstracts/new">
 												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.downloadProgramme', 'Download Programme')}
-											</a>
+												{t('abstracts.submission.cta')}
+											</Link>
 										</Button>
-									)}
-									{afficheFile && (
-										<Button
-											variant="outline"
-											className="w-full justify-start"
-											asChild
-										>
-											<a
-												href={afficheFile}
-												target="_blank"
-												rel="noopener noreferrer"
-												download
-											>
-												<FileText className="w-5 h-5 mr-2" />
-												{t('congress.downloadAffiche', 'Download Poster')}
-											</a>
-										</Button>
-									)}
-									<Button
-										variant="outline"
-										className="w-full justify-start"
-										onClick={() => {
-											if (navigator.share) {
-												navigator.share({
-													title: congress?.title,
-													text: congress?.description,
-													url: window.location.href,
-												});
-											} else {
-												navigator.clipboard.writeText(window.location.href);
-												alert(
-													t('congress.linkCopied', 'Link copied to clipboard!')
-												);
-											}
-										}}
-									>
-										<Share2 className="w-5 h-5 mr-2" />
-										{t('congress.shareEvent')}
-									</Button>
+									</div>
 								</div>
-							</div>
-						</div>
+							)}
 
-						{/* Contact Support */}
-						<div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-								<h2 className="text-2xl font-bold text-white">
-									{t('congress.needHelp')}
-								</h2>
-							</div>
-							<div className="p-6">
-								<p className="text-gray-600 mb-4">
-									{t('congress.contactSupport')}
-								</p>
-								<Button variant="outline" className="w-full" asChild>
-									<Link href="/contact">{t('congress.contactUs')}</Link>
-								</Button>
-							</div>
+							{/* Registration Tab */}
+							{activeTab === 'registration' && (
+								<div>
+									<h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+										<div className="bg-emerald-100 dark:bg-emerald-800/30 p-2 rounded-lg mr-3">
+											<Ticket className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+										</div>
+										{t('congress.registration')}
+									</h2>
+
+									<div className="prose dark:prose-invert max-w-none mb-8">
+										{event.registration_open ? (
+											<>
+												<p className="text-lg text-gray-700 dark:text-gray-300">
+													{t(
+														'congress.registrationWelcome',
+														'Registration is now open for this prestigious event. Secure your place today to join ophthalmologists from around the world.'
+													)}
+												</p>
+
+												<div className="mt-6 space-y-6">
+													{/* Registration Packages */}
+													<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+														<div className="bg-emerald-50 dark:bg-emerald-900/20 p-4">
+															<h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+																{t('congress.registrationPackages')}
+															</h3>
+														</div>
+														<div className="p-4">
+															<div className="overflow-x-auto">
+																<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+																	<thead>
+																		<tr>
+																			<th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
+																				{t('congress.package')}
+																			</th>
+																			<th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
+																				{t('congress.earlyBird')}
+																			</th>
+																			<th className="px-4 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">
+																				{t('congress.regular')}
+																			</th>
+																		</tr>
+																	</thead>
+																	<tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+																		<tr>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				{t('congress.fullRegistration')}
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€500
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€650
+																			</td>
+																		</tr>
+																		<tr>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				{t('congress.memberRegistration')}
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€350
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€500
+																			</td>
+																		</tr>
+																		<tr>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				{t('congress.residentRegistration')}
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€200
+																			</td>
+																			<td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+																				€300
+																			</td>
+																		</tr>
+																	</tbody>
+																</table>
+															</div>
+														</div>
+													</div>
+
+													{/* Deadlines */}
+													<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+														<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+															<div className="bg-blue-50 dark:bg-blue-900/20 p-4">
+																<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+																	{t('congress.earlyBirdDeadline')}
+																</h3>
+															</div>
+															<div className="p-4 text-center">
+																<div className="text-xl font-medium text-gray-900 dark:text-white mb-1">
+																	{event.registration_deadline
+																		? new Date(
+																				new Date(
+																					event.registration_deadline
+																				).getTime() -
+																					30 * 24 * 60 * 60 * 1000
+																		  ).toLocaleDateString(undefined, {
+																				year: 'numeric',
+																				month: 'long',
+																				day: 'numeric',
+																		  })
+																		: new Date(
+																				startDate.getTime() -
+																					60 * 24 * 60 * 60 * 1000
+																		  ).toLocaleDateString(undefined, {
+																				year: 'numeric',
+																				month: 'long',
+																				day: 'numeric',
+																		  })}
+																</div>
+															</div>
+														</div>
+														<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+															<div className="bg-red-50 dark:bg-red-900/20 p-4">
+																<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+																	{t('congress.registrationDeadline')}
+																</h3>
+															</div>
+															<div className="p-4 text-center">
+																<div className="text-xl font-medium text-gray-900 dark:text-white mb-1">
+																	{event.registration_deadline
+																		? new Date(
+																				event.registration_deadline
+																		  ).toLocaleDateString(undefined, {
+																				year: 'numeric',
+																				month: 'long',
+																				day: 'numeric',
+																		  })
+																		: new Date(
+																				startDate.getTime() -
+																					7 * 24 * 60 * 60 * 1000
+																		  ).toLocaleDateString(undefined, {
+																				year: 'numeric',
+																				month: 'long',
+																				day: 'numeric',
+																		  })}
+																</div>
+															</div>
+														</div>
+													</div>
+												</div>
+											</>
+										) : (
+											<p className="text-lg text-gray-700 dark:text-gray-300">
+												{t(
+													'congress.registrationSoon',
+													'Registration will open soon. Stay tuned for updates on when you can secure your place.'
+												)}
+											</p>
+										)}
+									</div>
+
+									<div className="flex justify-center mt-8">
+										{event.registration_open ? (
+											<Button
+												size="lg"
+												className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg transition-transform hover:scale-105"
+												asChild
+											>
+												<Link href="/dashboard/registration">
+													<Ticket className="w-5 h-5 mr-2" />
+													{t('congress.registerNow')}
+												</Link>
+											</Button>
+										) : (
+											<Button
+												size="lg"
+												variant="outline"
+												className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 transition-transform hover:scale-105"
+												asChild
+											>
+												<Link href="/contact">{t('congress.contactUs')}</Link>
+											</Button>
+										)}
+									</div>
+								</div>
+							)}
 						</div>
-					</div>
-				</div>
+					</motion.div>
+				</motion.div>
 			</div>
 		</div>
 	);
