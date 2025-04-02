@@ -1,5 +1,6 @@
 import { Layout } from '@/components/layout/Layout';
 import { Providers } from '@/providers/Providers';
+import { Analytics } from '@vercel/analytics/react';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
@@ -31,7 +32,10 @@ export default function RootLayout({
 			</head>
 			<body className={inter.className}>
 				<Providers>
-					<Layout>{children}</Layout>
+					<Layout>
+						{children}
+						<Analytics />
+					</Layout>
 				</Providers>
 			</body>
 		</html>
