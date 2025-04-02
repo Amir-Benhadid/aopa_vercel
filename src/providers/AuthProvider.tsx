@@ -528,47 +528,118 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		[]
 	);
 
-	// Reset password function
+	// Reset password function with improved error handling and logging
 	const resetPassword = useCallback(
 		async (email: string): Promise<AuthResult> => {
-			debug('Reset password attempt for:', email);
-
 			try {
-				// Create the full URL for password reset redirect
-				const redirectUrl = new URL(
-					'/auth/reset-password',
-					window.location.origin
-				).toString();
+				debug('Resetting password for email:', email);
 
-				debug('Reset password with redirect URL:', redirectUrl);
-
-				const { error } = await supabase.auth.resetPasswordForEmail(email, {
-					redirectTo: redirectUrl,
-				});
-
-				if (error) {
-					debug('Reset password error:', error);
+				// Make sure email is valid
+				if (!email || !email.includes('@')) {
+					debug('Reset password failed: Invalid email format');
 					return {
 						success: false,
 						error: {
-							message: error.message,
-							code: getErrorCode(error),
-							description: error.message,
+							message: 'Invalid email format',
+							code: 'auth/invalid-email',
+							description: 'Please provide a valid email address',
 						},
 					};
 				}
 
+				// Check if email looks realistic
+				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+				if (!emailRegex.test(email)) {
+					debug('Reset password failed: Email format suspicious');
+					return {
+						success: false,
+						error: {
+							message: 'Email format suspicious',
+							code: 'auth/invalid-email',
+							description: 'Please check your email format',
+						},
+					};
+				}
+
+				// Log API call attempt
+				debug('Calling Supabase resetPasswordForEmail API');
+				console.log(`[AUTH] Reset password API call with email: ${email}`);
+
+				// Call the API
+				const { error } = await supabase.auth.resetPasswordForEmail(email, {
+					redirectTo: `${window.location.origin}/auth/reset-password`,
+				});
+
+				// Handle API errors
+				if (error) {
+					debug('Reset password API error:', error);
+					console.error('[AUTH] Reset password API error:', error);
+
+					// Map specific error messages to more user-friendly codes
+					if (error.message?.includes('User not found')) {
+						return {
+							success: false,
+							error: {
+								message: error.message || 'User not found',
+								code: 'auth/user-not-found',
+								description: 'No account exists with this email address',
+							},
+						};
+					}
+
+					if (error.message?.includes('rate limit')) {
+						return {
+							success: false,
+							error: {
+								message: error.message || 'Too many requests',
+								code: 'auth/too-many-requests',
+								description: 'Too many attempts. Please try again later.',
+							},
+						};
+					}
+
+					// Extract direct error message from Supabase
+					const errorMessage =
+						typeof error === 'object' && error !== null
+							? error.message || JSON.stringify(error)
+							: String(error);
+
+					// General error fallback with detailed message
+					return {
+						success: false,
+						error: {
+							message: errorMessage,
+							code: getErrorCode(error),
+							// Put technical details after the "Server reported:" indicator
+							// for proper formatting in the UI
+							description:
+								'An error occurred. Server reported: ' + errorMessage,
+						},
+					};
+				}
+
+				// Success case
 				debug('Reset password email sent successfully');
-				return { success: true };
+				console.log('[AUTH] Reset password email sent successfully to:', email);
+				return {
+					success: true,
+					data: {
+						email,
+						message: 'Password reset email sent',
+					},
+				};
 			} catch (error: any) {
-				debug('Unexpected reset password error:', error);
+				// Catch any unexpected errors
+				debug('Unexpected error in resetPassword:', error);
+				console.error('[AUTH] Unexpected error in resetPassword:', error);
 				return {
 					success: false,
 					error: {
-						message:
-							error.message || 'Unknown error occurred during password reset',
-						code: 'auth/unexpected-error',
-						description: error.toString(),
+						message: error.message || 'An unexpected error occurred',
+						code: 'auth/unknown-error',
+						description:
+							'An unexpected error occurred. Server reported: ' +
+							(error.message || 'Unknown error'),
 					},
 				};
 			}

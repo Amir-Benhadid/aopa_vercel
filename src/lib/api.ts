@@ -1141,3 +1141,31 @@ export async function getAnnualReportById(id: string) {
 		return mockReport || null;
 	}
 }
+
+export async function getCongressThemes(): Promise<string[]> {
+	try {
+		// Query the enum values directly using raw SQL
+		const { data, error } = await supabase.rpc('get_theme_type_enum');
+
+		if (error) {
+			console.error('Error fetching theme_type enum:', error);
+			throw error;
+		}
+
+		return data ?? [];
+	} catch (error) {
+		console.error('Fallback to default congress themes due to error:', error);
+		return [
+			'Cataract',
+			'Glaucoma',
+			'Retina',
+			'Cornea',
+			'Pediatric Ophthalmology',
+			'Neuro-Ophthalmology',
+			'Refractive Surgery',
+			'Oculoplastics',
+			'Uveitis',
+			'Other',
+		];
+	}
+}

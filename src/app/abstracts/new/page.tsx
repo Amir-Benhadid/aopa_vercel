@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Textarea } from '@/components/ui/Textarea';
-import { getUpcomingCongress, submitAbstract } from '@/lib/api';
+import {
+	getCongressThemes,
+	getUpcomingCongress,
+	submitAbstract,
+} from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { Dialog, Transition } from '@headlessui/react';
 import { useQuery } from '@tanstack/react-query';
@@ -132,6 +136,20 @@ export default function NewAbstractPage() {
 		retry: 2, // Retry failed requests twice
 	});
 
+	// Fetch congress themes
+	const {
+		data: themes,
+		isLoading: isLoadingThemes,
+		error: themesError,
+	} = useQuery({
+		queryKey: ['congressThemes', activeCongress?.id],
+		queryFn: () => (activeCongress ? getCongressThemes() : Promise.resolve([])),
+		enabled: !!activeCongress,
+		staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+		gcTime: 1000 * 60 * 30, // Keep in garbage collection for 30 minutes
+		retry: 2, // Retry failed requests twice
+	});
+
 	const handleSubmit = async (
 		values: typeof initialValues,
 		{ setSubmitting }: any
@@ -188,7 +206,7 @@ export default function NewAbstractPage() {
 		}
 	};
 
-	if (isLoadingCongress) {
+	if (isLoadingCongress || isLoadingThemes) {
 		return (
 			<LoadingSpinner
 				message={t(
@@ -444,12 +462,49 @@ export default function NewAbstractPage() {
 									placeholder={t('abstracts.submission.form.titlePlaceholder')}
 								/>
 
-								{/* Theme */}
-								<FormField
-									label={t('abstracts.submission.form.theme')}
-									name="theme"
-									placeholder={t('abstracts.submission.form.themePlaceholder')}
-								/>
+								{/* Theme - Updated to use select instead of input */}
+								<Field name="theme">
+									{({ field, meta }: any) => (
+										<div className="space-y-1">
+											<div className="flex items-center justify-between">
+												<div className="flex items-center gap-2">
+													<label
+														className={`text-sm font-medium ${
+															meta.touched && meta.error
+																? 'text-red-500 dark:text-red-400'
+																: 'text-gray-700 dark:text-gray-200'
+														}`}
+													>
+														{t('abstracts.submission.form.theme')}
+													</label>
+													{meta.touched && meta.error && (
+														<span className="text-sm text-red-500 dark:text-red-400">
+															({meta.error})
+														</span>
+													)}
+												</div>
+											</div>
+											<select
+												{...field}
+												className={`w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 bg-white dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-gray-100 ${
+													meta.touched && meta.error
+														? 'border-red-500 focus:ring-red-500'
+														: 'focus:border-blue-500 focus:ring-blue-500'
+												}`}
+											>
+												<option value="">
+													{t('abstracts.submission.form.selectTheme')}
+												</option>
+												{themes &&
+													themes.map((theme, index) => (
+														<option key={index} value={theme}>
+															{theme}
+														</option>
+													))}
+											</select>
+										</div>
+									)}
+								</Field>
 
 								{/* Co-Authors */}
 								<FormField
@@ -504,17 +559,6 @@ export default function NewAbstractPage() {
 									)}
 								/>
 
-								{/* Conclusion */}
-								<FormField
-									label={t('abstracts.submission.form.conclusion')}
-									name="conclusion"
-									as={Textarea}
-									rows={4}
-									placeholder={t(
-										'abstracts.submission.form.conclusionPlaceholder'
-									)}
-								/>
-
 								{/* Discussion */}
 								<FormField
 									label={t('abstracts.submission.form.discussion')}
@@ -523,6 +567,17 @@ export default function NewAbstractPage() {
 									rows={4}
 									placeholder={t(
 										'abstracts.submission.form.discussionPlaceholder'
+									)}
+								/>
+
+								{/* Conclusion - Moved to the end */}
+								<FormField
+									label={t('abstracts.submission.form.conclusion')}
+									name="conclusion"
+									as={Textarea}
+									rows={4}
+									placeholder={t(
+										'abstracts.submission.form.conclusionPlaceholder'
 									)}
 								/>
 

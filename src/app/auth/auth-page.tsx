@@ -12,7 +12,17 @@ import {
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/providers/AuthProvider';
 import { Form, Formik } from 'formik';
-import { Eye, EyeOff, Loader2, Lock, Mail, User, X } from 'lucide-react';
+import {
+	AlertCircle,
+	CheckCircle,
+	Eye,
+	EyeOff,
+	Loader2,
+	Lock,
+	Mail,
+	User,
+	X,
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -89,17 +99,14 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 	// Effect to handle auth state changes
 	useEffect(() => {
 		if (authState.status === 'authenticated') {
+			// Don't immediately redirect - the success dialog should be shown first,
+			// and the redirect will be triggered after the user sees the success message
+
 			// Clear stored form values and failed attempts on successful login
 			clearStoredFormValues('login');
 			setFailedAttempts(0);
-
-			// Close any open dialog
-			closeDialog();
-
-			// Redirect to dashboard
-			router.push('/dashboard');
 		}
-	}, [authState, router, closeDialog]);
+	}, [authState]);
 
 	const handleResendVerification = async (email: string) => {
 		if (isResendingVerification) return;
@@ -118,7 +125,8 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 				showDialog(
 					'success',
 					t('auth.verificationEmailResent'),
-					t('auth.verificationEmailResentMessage')
+					t('auth.verificationEmailResentMessage'),
+					t('common.ok')
 				);
 			} else {
 				showDialog(
@@ -126,14 +134,17 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 					t('auth.verificationEmailResendFailed'),
 					result.error?.description ||
 						result.error?.message ||
-						t('auth.verificationEmailResendFailedMessage')
+						t('auth.verificationEmailResendFailedMessage'),
+					t('common.tryAgain')
 				);
 			}
 		} catch (error: any) {
+			console.error('Resend verification error:', error);
 			showDialog(
 				'error',
 				t('auth.verificationEmailResendFailed'),
-				error.message || t('auth.verificationEmailResendFailedMessage')
+				error.message || t('auth.verificationEmailResendFailedMessage'),
+				t('common.tryAgain')
 			);
 		} finally {
 			setIsResendingVerification(false);
@@ -154,7 +165,29 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 		try {
 			const result = await login(values.email, values.password);
 
-			if (!result.success) {
+			if (result.success) {
+				console.log('Login successful, showing success dialog');
+				showDialog(
+					'success',
+					t('auth.loginSuccess'),
+					t('auth.loginSuccessMessage'),
+					t('common.ok'),
+					() => {
+						// Don't auto-redirect, wait for user acknowledgment
+					}
+				);
+
+				// Add a delay before redirect to ensure dialog is seen
+				setTimeout(() => {
+					if (result.data?.role === 'doctor') {
+						console.log('Redirecting doctor to dashboard');
+						router.push('/dashboard');
+					} else {
+						console.log('Redirecting patient to homepage');
+						router.push('/');
+					}
+				}, 1500);
+			} else {
 				// Increment failed attempts counter for password-related errors
 				if (
 					result.error?.code === 'auth/invalid-login-credentials' ||
@@ -173,7 +206,9 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 							'error',
 							t('auth.signInFailed'),
 							t('auth.wrongPasswordMessage'),
-							failedAttempts >= 2 ? t('auth.resetPassword') : undefined,
+							failedAttempts >= 2
+								? t('auth.resetPassword')
+								: t('common.tryAgain'),
 							failedAttempts >= 2 ? onForgotPassword : undefined
 						);
 						break;
@@ -183,7 +218,8 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						showDialog(
 							'error',
 							t('auth.signInFailed'),
-							t('auth.userNotFoundMessage')
+							t('auth.userNotFoundMessage'),
+							t('common.tryAgain')
 						);
 						break;
 
@@ -213,15 +249,18 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 							t('auth.signInFailed'),
 							result.error?.description ||
 								result.error?.message ||
-								t('auth.signInFailedMessage')
+								t('auth.signInFailedMessage'),
+							t('common.tryAgain')
 						);
 				}
 			}
 		} catch (error: any) {
+			console.error('Sign in error:', error);
 			showDialog(
 				'error',
 				t('auth.signInFailed'),
-				error.message || t('auth.signInFailedMessage')
+				error.message || t('auth.signInFailedMessage'),
+				t('common.tryAgain')
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -259,7 +298,6 @@ const LoginForm = ({ onForgotPassword }: { onForgotPassword: () => void }) => {
 						onSubmit={(e) => {
 							e.preventDefault();
 							formikSubmit(e);
-							return false;
 						}}
 					>
 						<div className="space-y-4">
@@ -353,6 +391,7 @@ const SignupForm = ({
 	setIsFlipped: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
 	const { register, authState, resendVerificationEmail } = useAuth();
+	const router = useRouter();
 	const { showDialog, closeDialog } = useAuthCard();
 	const { t } = useTranslation();
 	const [showPassword, setShowPassword] = useState(false);
@@ -372,13 +411,10 @@ const SignupForm = ({
 	// Effect to handle auth state changes
 	useEffect(() => {
 		if (authState.status === 'authenticated') {
-			// Clear stored form values on successful signup
+			// Don't redirect here - only clear stored values
 			clearStoredFormValues('signup');
-
-			// Close any open dialog
-			closeDialog();
 		}
-	}, [authState, closeDialog]);
+	}, [authState]);
 
 	const handleResendVerification = async (email: string) => {
 		if (isResendingVerification) return;
@@ -397,7 +433,8 @@ const SignupForm = ({
 				showDialog(
 					'success',
 					t('auth.verificationEmailResent'),
-					t('auth.verificationEmailResentMessage')
+					t('auth.verificationEmailResentMessage'),
+					t('common.ok')
 				);
 			} else {
 				showDialog(
@@ -405,14 +442,17 @@ const SignupForm = ({
 					t('auth.verificationEmailResendFailed'),
 					result.error?.description ||
 						result.error?.message ||
-						t('auth.verificationEmailResendFailedMessage')
+						t('auth.verificationEmailResendFailedMessage'),
+					t('common.tryAgain')
 				);
 			}
 		} catch (error: any) {
+			console.error('Resend verification error:', error);
 			showDialog(
 				'error',
 				t('auth.verificationEmailResendFailed'),
-				error.message || t('auth.verificationEmailResendFailedMessage')
+				error.message || t('auth.verificationEmailResendFailedMessage'),
+				t('common.tryAgain')
 			);
 		} finally {
 			setIsResendingVerification(false);
@@ -425,7 +465,11 @@ const SignupForm = ({
 		setIsSubmitting(true);
 		setSavedValues(values);
 		setStoredFormValues('signup', values);
-		showDialog('loading', t('auth.signingUp'), t('auth.signingUpMessage'));
+		showDialog(
+			'loading',
+			t('auth.creatingAccount'),
+			t('auth.creatingAccountMessage')
+		);
 
 		try {
 			const result = await register(
@@ -436,34 +480,51 @@ const SignupForm = ({
 			);
 
 			if (result.success) {
-				// Clear stored form values on successful registration
-				clearStoredFormValues('signup');
-
-				// Check if email verification is needed
-				if (result.data?.emailVerificationNeeded) {
-					showDialog(
-						'success',
-						t('auth.signUpSuccess'),
-						t('auth.verificationEmailSent'),
-						t('auth.resendVerificationEmail'),
-						() => handleResendVerification(values.email)
-					);
-					resetForm();
-					setIsFlipped(false); // Flip back to login form
-				}
-				// If no email verification needed, the authState effect will handle the redirect
-			} else {
+				console.log('Signup successful, showing success dialog');
 				showDialog(
-					'error',
-					t('auth.signUpFailed'),
-					result.error?.message || t('auth.signUpFailedMessage')
+					'success',
+					t('auth.signupSuccess'),
+					t('auth.signupSuccessMessage'),
+					t('common.ok'),
+					() => {
+						// Don't auto-redirect, wait for user acknowledgment
+					}
 				);
+
+				// Add a delay before redirect to ensure dialog is seen
+				setTimeout(() => {
+					console.log('Redirecting to homepage after signup');
+					router.push('/');
+				}, 1500);
+			} else {
+				// Handle specific error codes
+				console.log('Signup failed with error:', result.error);
+				let errorTitle, errorMessage;
+
+				if (result.error?.code === 'auth/email-already-in-use') {
+					errorTitle = t('auth.emailInUse');
+					errorMessage = t('auth.emailInUseMessage');
+				} else if (result.error?.code === 'auth/weak-password') {
+					errorTitle = t('auth.weakPassword');
+					errorMessage = t('auth.weakPasswordMessage');
+				} else {
+					errorTitle = t('auth.signUpFailed');
+					errorMessage =
+						result.error?.description ||
+						result.error?.message ||
+						t('auth.signUpFailedMessage');
+				}
+
+				// Show a clean error dialog without duplicate technical information
+				showDialog('error', errorTitle, errorMessage, t('common.tryAgain'));
 			}
 		} catch (error: any) {
+			console.error('Sign up error:', error);
 			showDialog(
 				'error',
 				t('auth.signUpFailed'),
-				error.message || t('auth.signUpFailedMessage')
+				error.message || t('auth.signUpFailedMessage'),
+				t('common.tryAgain')
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -502,7 +563,6 @@ const SignupForm = ({
 						onSubmit={(e) => {
 							e.preventDefault();
 							formikSubmit(e);
-							return false;
 						}}
 					>
 						<div className="space-y-4">
@@ -652,12 +712,17 @@ export default function AuthPage() {
 	const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 	const [showForgotPassword, setShowForgotPassword] = useState(false);
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
+	const [resetLoadingDialogOpen, setResetLoadingDialogOpen] = useState(false);
+	const [resetSuccessDialogOpen, setResetSuccessDialogOpen] = useState(false);
+	const [resetErrorDialogOpen, setResetErrorDialogOpen] = useState(false);
+	const [resetErrorMessage, setResetErrorMessage] = useState('');
+	const [resetErrorTitle, setResetErrorTitle] = useState('');
 
 	// Hooks
 	const { authState, resetPassword } = useAuth();
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const { showDialog, closeDialog } = useAuthCard();
+	const { showDialog, closeDialog, showProcessDialog } = useAuthCard();
 	const { t } = useTranslation();
 
 	// Check for URL parameters on mount
@@ -675,12 +740,18 @@ export default function AuthPage() {
 			showDialog(
 				'success',
 				t('auth.verificationSuccess'),
-				t('auth.verificationSuccessMessage')
+				t('auth.verificationSuccessMessage'),
+				t('common.ok')
 			);
 		}
 
 		if (error) {
-			showDialog('error', t('auth.error'), decodeURIComponent(error));
+			showDialog(
+				'error',
+				t('auth.error'),
+				decodeURIComponent(error),
+				t('common.tryAgain')
+			);
 		}
 	}, [searchParams, showDialog, t]);
 
@@ -691,51 +762,74 @@ export default function AuthPage() {
 
 	const handleResetPassword = async () => {
 		if (!forgotPasswordEmail || !forgotPasswordEmail.includes('@')) {
-			showDialog(
-				'error',
-				t('auth.invalidEmail'),
-				t('auth.pleaseEnterValidEmail')
-			);
+			setResetErrorTitle(t('auth.invalidEmail'));
+			setResetErrorMessage(t('auth.pleaseEnterValidEmail'));
+			setResetErrorDialogOpen(true);
 			return;
 		}
 
 		if (isResettingPassword) return;
 		setIsResettingPassword(true);
 
-		showDialog(
-			'loading',
-			t('auth.sendingResetLink'),
-			t('auth.sendingResetLinkMessage')
-		);
+		// Step 1: Show loading dialog
+		setResetLoadingDialogOpen(true);
+		setResetSuccessDialogOpen(false);
+		setResetErrorDialogOpen(false);
 
 		try {
+			console.log(
+				'[RESET] Calling resetPassword API with email:',
+				forgotPasswordEmail
+			);
 			const result = await resetPassword(forgotPasswordEmail);
+			console.log(
+				'[RESET] Reset password API result:',
+				JSON.stringify(result, null, 2)
+			);
 
+			// Step 2: Close loading dialog
+			setResetLoadingDialogOpen(false);
+
+			// Step 3: Show appropriate result dialog
 			if (result.success) {
-				showDialog(
-					'success',
-					t('auth.resetLinkSent'),
-					t('auth.resetLinkSentMessage')
+				console.log(
+					'[RESET] Password reset successful, showing success dialog'
 				);
-				setShowForgotPassword(false);
-				setForgotPasswordEmail('');
+				setResetSuccessDialogOpen(true);
 			} else {
-				console.error('Reset password failed:', result.error);
-				showDialog(
-					'error',
-					t('auth.resetLinkFailed'),
-					result.error?.description ||
+				console.log('[RESET] Password reset failed:', result.error);
+
+				// Determine appropriate error message
+				let errorTitle = t('auth.resetLinkFailed');
+				let errorMessage = '';
+
+				if (result.error?.code === 'auth/user-not-found') {
+					errorMessage =
+						result.error.description || t('auth.userNotFoundMessage');
+				} else if (result.error?.code === 'auth/too-many-requests') {
+					errorMessage =
+						result.error.description || t('auth.tooManyRequestsMessage');
+				} else if (result.error?.code === 'auth/invalid-email') {
+					errorMessage =
+						result.error.description || t('auth.invalidEmailMessage');
+				} else {
+					errorMessage =
+						result.error?.description ||
 						result.error?.message ||
-						t('auth.resetLinkFailedMessage')
-				);
+						t('auth.resetLinkFailedMessage');
+				}
+
+				setResetErrorTitle(errorTitle);
+				setResetErrorMessage(errorMessage);
+				setResetErrorDialogOpen(true);
 			}
 		} catch (error: any) {
-			console.error('Reset password error:', error);
-			showDialog(
-				'error',
-				t('auth.resetLinkFailed'),
-				error.message || t('auth.resetLinkFailedMessage')
-			);
+			console.error('[RESET] Unexpected error:', error);
+			setResetLoadingDialogOpen(false);
+
+			setResetErrorTitle(t('auth.resetLinkFailed'));
+			setResetErrorMessage(error.message || t('auth.unexpectedErrorMessage'));
+			setResetErrorDialogOpen(true);
 		} finally {
 			setIsResettingPassword(false);
 		}
@@ -743,9 +837,8 @@ export default function AuthPage() {
 
 	// Effect to handle authentication state
 	useEffect(() => {
-		if (authState.status === 'authenticated') {
-			router.push('/dashboard');
-		}
+		// Do not redirect automatically on auth state change
+		// The redirect should happen after the user sees and acknowledges success dialogs
 	}, [authState, router]);
 
 	// If still loading, show a centered loading spinner
@@ -765,66 +858,193 @@ export default function AuthPage() {
 	return (
 		<div className="min-h-screen flex items-center justify-center ">
 			{/* Forgot Password Dialog */}
-			<Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+			<Dialog
+				open={showForgotPassword}
+				onOpenChange={(open) => {
+					// Always allow closing with X button, just not during processing
+					if (!open && !isResettingPassword) {
+						setShowForgotPassword(false);
+					}
+				}}
+			>
 				<DialogContent className="sm:max-w-md rounded-xl">
 					<DialogHeader>
 						<DialogTitle className="text-center">
 							{t('auth.forgotPassword')}
 						</DialogTitle>
 					</DialogHeader>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							handleResetPassword();
-						}}
-					>
-						<div className="py-4">
-							<p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-								{t('auth.enterEmailForReset')}
-							</p>
-							<TextField
-								name="forgotPasswordEmail"
-								type="email"
-								label={t('auth.email')}
-								value={forgotPasswordEmail}
-								onChange={(e) => setForgotPasswordEmail(e.target.value)}
-								fullWidth
-								startAdornment={
-									<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
-								}
-								className="rounded-lg transition-all duration-300 hover:shadow-md"
-								disabled={isResettingPassword}
-							/>
-						</div>
-						<div className="flex justify-end gap-3">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={() => setShowForgotPassword(false)}
-								className="flex items-center gap-1"
-								disabled={isResettingPassword}
-							>
-								<X className="h-4 w-4" />
-								{t('common.cancel')}
-							</Button>
-							<Button
-								type="submit"
-								size="sm"
-								className="bg-primary-500 hover:bg-primary-600"
-								disabled={isResettingPassword}
-							>
-								{isResettingPassword ? (
-									<div className="flex items-center">
-										<Loader2 className="h-4 w-4 animate-spin mr-2" />
-										{t('common.loading')}
-									</div>
-								) : (
-									t('auth.sendResetLink')
-								)}
-							</Button>
-						</div>
-					</form>
+					<div className="py-4">
+						<p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+							{t('auth.enterEmailForReset')}
+						</p>
+						<TextField
+							name="forgotPasswordEmail"
+							type="email"
+							label={t('auth.email')}
+							value={forgotPasswordEmail}
+							onChange={(e) => setForgotPasswordEmail(e.target.value)}
+							fullWidth
+							startAdornment={
+								<Mail className="text-primary-400 h-5 w-5 group-hover:text-primary-600 transition-colors" />
+							}
+							className="rounded-lg transition-all duration-300 hover:shadow-md"
+							disabled={isResettingPassword}
+							required={true}
+						/>
+					</div>
+					<div className="flex justify-end gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={() => setShowForgotPassword(false)}
+							className="flex items-center gap-1"
+							disabled={isResettingPassword}
+						>
+							<X className="h-4 w-4" />
+							{t('common.cancel')}
+						</Button>
+						<Button
+							id="reset-password-btn"
+							type="button"
+							size="sm"
+							className="bg-primary-500 hover:bg-primary-600"
+							disabled={
+								isResettingPassword ||
+								!forgotPasswordEmail ||
+								!forgotPasswordEmail.includes('@')
+							}
+							onClick={() => {
+								console.log(
+									'Reset button clicked with email:',
+									forgotPasswordEmail
+								);
+								handleResetPassword();
+							}}
+						>
+							{isResettingPassword ? (
+								<div className="flex items-center">
+									<Loader2 className="h-4 w-4 animate-spin mr-2" />
+									{t('common.loading')}
+								</div>
+							) : (
+								t('auth.sendResetLink')
+							)}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Reset Password Loading Dialog */}
+			<Dialog
+				open={resetLoadingDialogOpen}
+				onOpenChange={(open) => {
+					// Allow the X button to close this dialog
+					if (!open) {
+						setResetLoadingDialogOpen(false);
+						// Also cleanup any other open dialogs
+						setResetSuccessDialogOpen(false);
+						setResetErrorDialogOpen(false);
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
+							<span>{t('auth.sendingResetLink')}</span>
+						</DialogTitle>
+					</DialogHeader>
+					<div className="py-4">
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							{t('auth.pleaseWait')} {forgotPasswordEmail}
+						</p>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Reset Password Success Dialog */}
+			<Dialog
+				open={resetSuccessDialogOpen}
+				onOpenChange={(open) => {
+					if (!open) {
+						setResetSuccessDialogOpen(false);
+						setShowForgotPassword(false);
+						setForgotPasswordEmail('');
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<CheckCircle className="w-5 h-5 text-green-500" />
+							<span>{t('auth.resetLinkSent')}</span>
+						</DialogTitle>
+					</DialogHeader>
+					<div className="py-4">
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							{t('auth.resetLinkSentMessage', { email: forgotPasswordEmail })}
+						</p>
+					</div>
+					<div className="flex justify-end">
+						<Button
+							type="button"
+							onClick={() => {
+								setResetSuccessDialogOpen(false);
+								setShowForgotPassword(false);
+								setForgotPasswordEmail('');
+							}}
+							className="bg-green-600 hover:bg-green-700 text-white"
+						>
+							{t('common.ok')}
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+
+			{/* Reset Password Error Dialog */}
+			<Dialog
+				open={resetErrorDialogOpen}
+				onOpenChange={(open) => {
+					// Always allow closing with X button
+					if (!open) {
+						setResetErrorDialogOpen(false);
+					}
+				}}
+			>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<AlertCircle className="w-5 h-5 text-red-500" />
+							<span>{resetErrorTitle}</span>
+						</DialogTitle>
+					</DialogHeader>
+					<div className="py-4">
+						<p className="text-sm text-gray-600 dark:text-gray-300">
+							{resetErrorMessage}
+						</p>
+
+						{/* Debug info in development - only show if we have additional technical details */}
+						{process.env.NODE_ENV === 'development' &&
+							resetErrorMessage.includes('Server reported:') && (
+								<div className="mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+									<p className="text-xs font-mono text-red-800 dark:text-red-300 whitespace-pre-wrap break-all">
+										{resetErrorMessage.split('Server reported:')[1]}
+									</p>
+								</div>
+							)}
+					</div>
+					<div className="flex justify-end">
+						<Button
+							type="button"
+							onClick={() => {
+								setResetErrorDialogOpen(false);
+							}}
+							className="bg-red-600 hover:bg-red-700 text-white"
+						>
+							{t('common.tryAgain')}
+						</Button>
+					</div>
 				</DialogContent>
 			</Dialog>
 

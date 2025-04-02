@@ -23,6 +23,13 @@ interface DialogState {
 	onAction?: () => void;
 }
 
+interface DialogStateConfig {
+	title: string;
+	message: string;
+	actionLabel?: string;
+	onAction?: (result?: any) => void; // Can receive result/error
+}
+
 interface AuthCardProps {
 	children: React.ReactNode;
 	isFlipped: boolean;
@@ -32,7 +39,7 @@ interface AuthCardProps {
 	className?: string;
 }
 
-// Update the context type to include closeDialog function
+// Update the context type
 const AuthCardContext = createContext<{
 	showDialog: (
 		type: FeedbackType,
@@ -42,9 +49,26 @@ const AuthCardContext = createContext<{
 		onAction?: () => void
 	) => void;
 	closeDialog: () => void;
+	// New function to handle async operations with dialog state transitions
+	showProcessDialog: <T extends { success: boolean; data?: any; error?: any }>(
+		operation: () => Promise<T>,
+		loadingConfig: DialogStateConfig,
+		successConfig: DialogStateConfig,
+		// Error config message can be a function to format the error
+		errorConfig: Omit<DialogStateConfig, 'message'> & {
+			message: string | ((error: any) => string);
+		}
+	) => Promise<T>; // Returns the result of the operation
 }>({
 	showDialog: () => {},
 	closeDialog: () => {},
+	showProcessDialog: async () => {
+		// Default implementation returns a failed promise
+		console.error(
+			'[AuthCardContext] showProcessDialog called before initialized'
+		);
+		return { success: false, error: { message: 'Not initialized' } } as any;
+	},
 });
 
 export function AuthCard({
@@ -72,20 +96,50 @@ export function AuthCard({
 			actionLabel?: string,
 			onAction?: () => void
 		) => {
-			setDialog({
-				type,
-				title,
-				message,
-				isOpen: true,
-				actionLabel,
-				onAction,
-			});
+			console.log(`[DIALOG] Request to show ${type} dialog: "${title}"`);
+
+			// Directly set the new dialog state after a short delay
+			// This allows the previous state (e.g., loading) to potentially render first,
+			// and then be replaced by the new state (e.g., success/error).
+			setTimeout(() => {
+				console.log(`[DIALOG] Setting dialog state to: ${type} - "${title}"`);
+				setDialog({
+					type,
+					title,
+					message,
+					isOpen: true,
+					actionLabel,
+					onAction,
+				});
+
+				// Auto-close logic for success messages without actions remains the same
+				if (type === 'success' && (!actionLabel || !onAction)) {
+					console.log(
+						`[DIALOG] Success dialog "${title}" will auto-close after 2.5 seconds`
+					);
+					setTimeout(() => {
+						setDialog((prev) => {
+							// Only close if it's still the same success dialog
+							if (
+								prev.isOpen &&
+								prev.title === title &&
+								prev.type === 'success'
+							) {
+								console.log(`[DIALOG] Auto-closing success dialog: "${title}"`);
+								return { ...prev, isOpen: false };
+							}
+							return prev;
+						});
+					}, 2500);
+				}
+			}, 250); // Slightly increased delay to ensure transition visibility
 		},
-		[]
+		[] // No dependencies needed here as setDialog is stable
 	);
 
 	// Function to close dialog
 	const closeDialog = () => {
+		console.log('Closing dialog explicitly via closeDialog function');
 		setDialog((prev) => ({ ...prev, isOpen: false }));
 	};
 
@@ -162,8 +216,115 @@ export function AuthCard({
 		};
 	}, []);
 
+	// Implementation for the new showProcessDialog function
+	const showProcessDialog = useCallback(
+		async <T extends { success: boolean; data?: any; error?: any }>(
+			operation: () => Promise<T>,
+			loadingConfig: DialogStateConfig,
+			successConfig: DialogStateConfig,
+			errorConfig: Omit<DialogStateConfig, 'message'> & {
+				message: string | ((error: any) => string);
+			}
+		): Promise<T> => {
+			console.log(
+				`[PROCESS_DIALOG] Starting operation: ${loadingConfig.title}`
+			);
+
+			// 1. Show Loading State Immediately
+			setDialog({
+				type: 'loading',
+				title: loadingConfig.title,
+				message: loadingConfig.message,
+				isOpen: true,
+				actionLabel: loadingConfig.actionLabel,
+				onAction: undefined, // Loading state usually doesn't have action
+			});
+
+			let result: T;
+			try {
+				// 2. Execute the operation
+				result = await operation();
+				console.log(
+					`[PROCESS_DIALOG] Operation completed. Success: ${result.success}`
+				);
+
+				// 3. Show Success or Error State
+				if (result.success) {
+					setDialog({
+						type: 'success',
+						title: successConfig.title,
+						message: successConfig.message,
+						isOpen: true,
+						actionLabel: successConfig.actionLabel,
+						onAction: successConfig.onAction
+							? () => successConfig.onAction!(result.data)
+							: undefined,
+					});
+
+					// Auto-close success if applicable
+					if (!successConfig.actionLabel) {
+						setTimeout(() => {
+							setDialog((prev) =>
+								prev.isOpen &&
+								prev.type === 'success' &&
+								prev.title === successConfig.title
+									? { ...prev, isOpen: false }
+									: prev
+							);
+						}, 2500);
+					}
+				} else {
+					// Determine the error message
+					const errorMessage =
+						typeof errorConfig.message === 'function'
+							? errorConfig.message(result.error)
+							: errorConfig.message;
+
+					setDialog({
+						type: 'error',
+						title: errorConfig.title,
+						message: errorMessage,
+						isOpen: true,
+						actionLabel: errorConfig.actionLabel,
+						onAction: errorConfig.onAction
+							? () => errorConfig.onAction!(result.error)
+							: undefined,
+					});
+				}
+			} catch (err: any) {
+				// Handle unexpected errors during the operation itself
+				console.error(
+					`[PROCESS_DIALOG] Unexpected error during operation:`,
+					err
+				);
+				const errorMessage =
+					typeof errorConfig.message === 'function'
+						? errorConfig.message(err) // Pass the caught error
+						: errorConfig.message;
+
+				setDialog({
+					type: 'error',
+					title: errorConfig.title,
+					message: `Unexpected error: ${errorMessage}`, // Indicate it was unexpected
+					isOpen: true,
+					actionLabel: errorConfig.actionLabel,
+					onAction: errorConfig.onAction
+						? () => errorConfig.onAction!(err)
+						: undefined,
+				});
+				// Ensure the promise returns a failure structure
+				result = { success: false, error: err } as T;
+			}
+
+			return result; // Return the result of the operation
+		},
+		[] // setDialog is stable
+	);
+
 	return (
-		<AuthCardContext.Provider value={{ showDialog, closeDialog }}>
+		<AuthCardContext.Provider
+			value={{ showDialog, closeDialog, showProcessDialog }}
+		>
 			<Card
 				className={`w-[95%] max-w-md mx-auto p-4 sm:p-6 md:p-8 shadow-xl bg-white dark:bg-gray-800 border-0 overflow-hidden rounded-lg sm:rounded-xl card-glow flex flex-col justify-between relative ${
 					className || ''
@@ -195,8 +356,39 @@ export function AuthCard({
 			</Card>
 
 			{/* Dialog for messages */}
-			<Dialog open={dialog.isOpen} onOpenChange={closeDialog}>
-				<DialogContent className="sm:max-w-md">
+			<Dialog
+				open={dialog.isOpen}
+				onOpenChange={(open) => {
+					// When open is false, it means the dialog is trying to close
+					if (!open) {
+						// Allow the dialog to close in all cases when the X button or ESC key is used
+						console.log('[DIALOG] Dialog close requested');
+						setDialog((prev) => ({ ...prev, isOpen: false }));
+					} else {
+						// Always allow opening dialogs
+						setDialog((prev) => ({ ...prev, isOpen: true }));
+					}
+				}}
+			>
+				<DialogContent
+					className="sm:max-w-md"
+					// Prevent closing when clicking outside but allow normal close button function
+					onInteractOutside={(e) => {
+						// Only prevent outside clicking for error, loading dialogs, and success dialogs with action
+						if (
+							dialog.type === 'error' ||
+							dialog.type === 'loading' ||
+							(dialog.type === 'success' &&
+								dialog.actionLabel &&
+								dialog.onAction)
+						) {
+							console.log(
+								`[DIALOG] Prevented outside click for ${dialog.type} dialog`
+							);
+							e.preventDefault();
+						}
+					}}
+				>
 					<DialogHeader>
 						<DialogTitle className="flex items-center gap-2">
 							{dialog.type === 'success' && (
@@ -216,17 +408,31 @@ export function AuthCard({
 						<p className="text-sm text-gray-600 dark:text-gray-300">
 							{dialog.message}
 						</p>
+
+						{/* Show debug information in development mode only if we need additional technical details */}
+						{process.env.NODE_ENV === 'development' &&
+							dialog.type === 'error' &&
+							dialog.message.includes('Server reported:') && (
+								<div className="mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+									<p className="text-xs font-mono text-red-800 dark:text-red-300 whitespace-pre-wrap break-all">
+										{dialog.message.split('Server reported:')[1]}
+									</p>
+								</div>
+							)}
 					</div>
 
 					<div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={closeDialog}
-							className="w-full sm:w-auto"
-						>
-							{t('common.close')}
-						</Button>
+						{(!dialog.actionLabel || !dialog.onAction) &&
+							dialog.type !== 'loading' && (
+								<Button
+									type="button"
+									variant={dialog.type === 'success' ? 'default' : 'outline'}
+									onClick={closeDialog}
+									className="w-full sm:w-auto"
+								>
+									{t('common.close')}
+								</Button>
+							)}
 						{dialog.actionLabel && dialog.onAction && (
 							<Button
 								type="button"
@@ -234,7 +440,13 @@ export function AuthCard({
 									dialog.onAction?.();
 									closeDialog();
 								}}
-								className="w-full sm:w-auto"
+								className={`w-full sm:w-auto ${
+									dialog.type === 'success'
+										? 'bg-green-600 hover:bg-green-700'
+										: dialog.type === 'error'
+										? 'bg-red-600 hover:bg-red-700 text-white'
+										: ''
+								}`}
 							>
 								{dialog.actionLabel}
 							</Button>

@@ -92,7 +92,7 @@
 		"sendingResetLink": "Sending Reset Link",
 		"sendingResetLinkMessage": "Please wait while we send you a password reset link...",
 		"resetLinkSent": "Reset Link Sent",
-		"resetLinkSentMessage": "Password reset link has been sent to your email. Please check your inbox.",
+		"resetLinkSentMessage": "Password reset link has been sent to {{email}}. Please check your inbox.",
 		"resetLinkFailed": "Failed to Send Reset Link",
 		"resetLinkFailedMessage": "Failed to send reset email. Please try again.",
 		"goToDashboard": "Go to Dashboard",
@@ -110,7 +110,19 @@
 		"verificationEmailResentMessage": "A new verification email has been sent. Please check your inbox.",
 		"verificationEmailResendFailed": "Failed to Send Verification Email",
 		"verificationEmailResendFailedMessage": "Failed to send verification email. Please try again later.",
-		"backToLogin": "Back to Login"
+		"verificationSuccess": "Email Verified",
+		"verificationSuccessMessage": "Your email has been successfully verified. You can now sign in to your account.",
+		"backToLogin": "Back to Login",
+		"tooManyRequests": "Too Many Attempts",
+		"invalidEmailMessage": "Invalid email format. Please check your input.",
+		"signupSuccess": "Registration Successful",
+		"signupSuccessMessage": "Your account has been successfully created. You will be redirected to the homepage.",
+		"pleaseWait": "Please wait while we process your request for",
+		"loginSuccess": "Login Successful",
+		"loginSuccessMessage": "You have been successfully logged in. You will be redirected.",
+		"unexpectedErrorMessage": "An unexpected error occurred. Please try again later.",
+		"verificationSuccess": "Verification Successful",
+		"verificationSuccessMessage": "Your email address has been successfully verified. You can now log in."
 	},
 	"abstracts": {
 		"noAbstracts": "No abstracts found",
@@ -182,6 +194,7 @@
 				"type": "Type",
 				"theme": "Theme",
 				"themePlaceholder": "Enter abstract theme",
+				"selectTheme": "Select a theme",
 				"coAuthors": "Co-Authors",
 				"coAuthorsPlaceholder": "Enter co-authors (comma-separated)",
 				"submit": "Submit Abstract",
@@ -377,7 +390,7 @@
 		"back": "Back",
 		"next": "Next",
 		"previous": "Previous",
-		"learnMore": "Learn more",
+		"learnMore": "Learn More",
 		"toggleTheme": "Toggle theme",
 		"lightMode": "Light Mode",
 		"darkMode": "Dark Mode",
@@ -404,7 +417,8 @@
 		"backToHome": "Back to Home",
 		"allYears": "All Years",
 		"allCategories": "All Categories",
-		"backToLogin": "Back to Login"
+		"backToLogin": "Back to Login",
+		"ok": "OK"
 	},
 	"congress": {
 		"registrationOpen": "Registration Open",

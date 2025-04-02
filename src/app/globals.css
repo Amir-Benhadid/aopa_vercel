@@ -204,3 +204,80 @@ html {
 	background: rgba(0, 0, 0, 0.5); /* semi-transparent thumb */
 	border-radius: 4px;
 }
+
+/* Hero Carousel 3D Effects */
+.hero-carousel .slick-slide {
+	perspective: 1500px;
+	transform-style: preserve-3d;
+	transition: all 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+	will-change: transform, opacity;
+	backface-visibility: hidden;
+	-webkit-font-smoothing: subpixel-antialiased;
+	transform: translateZ(0);
+}
+
+.hero-carousel .slick-current {
+	z-index: 10;
+	transform: translateZ(0) scale(1) translateX(0) rotateY(0deg);
+	transition-delay: 0.1s;
+}
+
+.hero-carousel .slick-slide[aria-hidden='true'] {
+	transform: translateZ(0) scale(0.85) translateX(10%) rotateY(-10deg);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.hero-carousel .slick-arrow {
+	transition: all 0.3s ease;
+	will-change: transform;
+	transform: translateZ(0);
+}
+
+.hero-carousel .slick-arrow:hover {
+	transform: translateZ(0) scale(1.1);
+}
+
+.hero-carousel .slick-dots li button:before {
+	opacity: 0.5;
+	color: white;
+}
+
+.hero-carousel .slick-dots li.slick-active button:before {
+	opacity: 1;
+	color: white;
+}
+
+/* Fix for slide transitions */
+.hero-carousel .slick-list,
+.hero-carousel .slick-track {
+	will-change: transform;
+	transform: translateZ(0);
+}
+
+/* Enable hardware acceleration for background transitions */
+.gradient-overlay,
+.slide1-bg,
+.slide2-bg {
+	will-change: opacity, background;
+	backface-visibility: hidden;
+	transform: translateZ(0);
+	transition: opacity 0.8s ease-out;
+}
+
+/* Ensure content elements maintain their position during slide transition */
+.hero-carousel .slick-slide > div {
+	height: 100%;
+	transition: transform 0.5s ease-out;
+	transform: translateZ(0);
+}
+
+/* Add animation throttling to prevent jank */
+@media (prefers-reduced-motion: no-preference) {
+	.hero-carousel * {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.6s !important;
+		scroll-behavior: auto !important;
+	}
+}
