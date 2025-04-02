@@ -82,8 +82,8 @@ export function HeroSection({
 		speed: 800,
 		slidesToShow: 1,
 		slidesToScroll: 1,
-		autoplay: false,
-		autoplaySpeed: 6000,
+		autoplay: true,
+		autoplaySpeed: 4000,
 		pauseOnHover: true,
 		fade: false,
 		cssEase: 'cubic-bezier(0.65, 0, 0.35, 1)',
@@ -294,7 +294,7 @@ export function HeroSection({
 									{report.title}
 								</h2>
 								{report.authors && (
-									<p className="text-white/80 mt-1 px-2 max-w-2xl mx-auto text-xs sm:text-sm md:text-base">
+									<p className="text-white/80 mt-1 px-2 max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-justify">
 										{t('home.annualReports.by', 'By')}:{' '}
 										{report.authors
 											.split(',')
@@ -735,10 +735,10 @@ export function HeroSection({
 			<div className="w-full h-full relative z-10">
 				<Slider ref={sliderRef} {...settings} className="h-full hero-carousel">
 					{/* Slide 1 - Congress Information */}
-					<AnnualReportSlide />
 					<CongressSlide />
 
 					{/* Slide 2 - Annual Report */}
+					<AnnualReportSlide />
 				</Slider>
 			</div>
 

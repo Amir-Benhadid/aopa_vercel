@@ -186,7 +186,7 @@ export function TeamAssociationSection() {
 					</div>
 
 					{/* Right side - Main text */}
-					<div className="md:w-2/3">
+					<div className="md:w-2/3 text-justify">
 						<p className="text-gray-700 dark:text-gray-300 leading-relaxed text-base">
 							{t('home.team.presentation')}
 						</p>

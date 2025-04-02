@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { fallbackImage, getCoverImagePath } from '@/lib/imageUtils';
+import { toTitleCase } from '@/lib/utils';
 import { Report } from '@/types/database';
 import { motion } from 'framer-motion';
 import { Calendar, Download, Users } from 'lucide-react';
@@ -129,8 +130,11 @@ export function AnnualReports({ reports }: AnnualReportsProps) {
 											<h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">
 												{t('home.annualReports.authors')}
 											</h4>
-											<p className="text-gray-900 dark:text-white text-sm line-clamp-1">
-												{report.authors}
+											<p className="text-gray-900 dark:text-white text-sm line-clamp-2">
+												{report.authors
+													.split(',')
+													.map((author) => toTitleCase(author.trim()))
+													.join(', ')}
 											</p>
 										</div>
 									</div>

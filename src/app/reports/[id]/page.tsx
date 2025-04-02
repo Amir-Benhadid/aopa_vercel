@@ -263,14 +263,14 @@ export default function ReportDetailPage({
 					{/* Overlapping Pages Display in a horizontal row */}
 					<div className="flex justify-center items-start relative">
 						{/* Pages container with cutoff overflow */}
-						<div className="relative w-full h-[382px] overflow-hidden">
+						<div className="relative w-full h-[300px] sm:h-[382px] overflow-hidden">
 							<div className="flex justify-center items-start absolute top-0 left-0 right-0 pt-4">
 								{/* Books Container - Full width */}
 								<div className="relative w-full flex justify-center">
 									{/* First Page (Far Left) */}
 									{report.template && report.template.length > 0 && (
 										<div
-											className="absolute left-[calc(50%-430px)] top-0 h-[450px] w-[250px] border-2 border-gray-200 bg-white transform translate-y-12"
+											className="absolute left-[calc(50%-180px)] xs:left-[calc(50%-230px)] sm:left-[calc(50%-430px)] top-0 h-[300px] sm:h-[450px] w-[160px] sm:w-[250px] border-2 border-gray-200 bg-white transform translate-y-8 sm:translate-y-12"
 											style={{
 												zIndex: 1,
 												boxShadow:
@@ -299,7 +299,7 @@ export default function ReportDetailPage({
 									{/* Second Page (Left) */}
 									{report.template && report.template.length > 1 && (
 										<div
-											className="absolute left-[calc(50%-300px)] top-0 h-[450px] w-[280px] border-2 border-gray-200 bg-white transform translate-y-6"
+											className="absolute left-[calc(45%-120px)] xs:left-[calc(50%-160px)] sm:left-[calc(50%-300px)] top-0 h-[300px] sm:h-[450px] w-[180px] sm:w-[280px] border-2 border-gray-200 bg-white transform translate-y-4 sm:translate-y-6"
 											style={{
 												zIndex: 2,
 												boxShadow:
@@ -327,7 +327,7 @@ export default function ReportDetailPage({
 
 									{/* Main Cover (Center) */}
 									<div
-										className="absolute left-1/2 top-0 h-[450px] w-[320px] border-2 border-gray-200 bg-white transform -translate-x-1/2"
+										className="absolute left-1/2 top-0 h-[300px] sm:h-[450px] w-[200px] sm:w-[320px] border-2 border-gray-200 bg-white transform -translate-x-1/2"
 										style={{
 											zIndex: 5,
 											boxShadow:
@@ -359,7 +359,7 @@ export default function ReportDetailPage({
 									{/* Third Page (Right) */}
 									{report.template && report.template.length > 2 && (
 										<div
-											className="absolute right-[calc(50%-300px)] top-0 h-[450px] w-[280px] border-2 border-gray-200 bg-white transform translate-y-6"
+											className="absolute right-[calc(45%-120px)] xs:right-[calc(50%-160px)] sm:right-[calc(50%-300px)] top-0 h-[300px] sm:h-[450px] w-[180px] sm:w-[280px] border-2 border-gray-200 bg-white transform translate-y-4 sm:translate-y-6"
 											style={{
 												zIndex: 2,
 												boxShadow:
@@ -388,7 +388,7 @@ export default function ReportDetailPage({
 									{/* Fourth Page (Far Right) */}
 									{report.template && report.template.length > 3 && (
 										<div
-											className="absolute right-[calc(50%-430px)] top-0 h-[450px] w-[250px] border-2 border-gray-200 bg-white transform translate-y-12"
+											className="absolute right-[calc(45%-180px)] xs:right-[calc(50%-230px)] sm:right-[calc(50%-430px)] top-0 h-[300px] sm:h-[450px] w-[160px] sm:w-[250px] border-2 border-gray-200 bg-white transform translate-y-8 sm:translate-y-12"
 											style={{
 												zIndex: 1,
 												boxShadow:
@@ -473,7 +473,7 @@ export default function ReportDetailPage({
 									<h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
 										{t('home.annualReports.authors', 'Auteurs')}
 									</h4>
-									<p className="text-gray-900 dark:text-white font-medium">
+									<p className="text-gray-900 dark:text-white font-medium text-justify">
 										{report.authors
 											.split(',')
 											.map((author) => toTitleCase(author.trim()))
@@ -522,7 +522,7 @@ export default function ReportDetailPage({
 								{t('reports.introduction', 'Introduction')}
 							</h2>
 							<div className="prose dark:prose-invert max-w-none">
-								<p className="text-gray-700 dark:text-gray-300">
+								<p className="text-gray-700 dark:text-gray-300 text-justify">
 									{report.introduction}
 								</p>
 							</div>
