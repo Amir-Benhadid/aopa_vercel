@@ -512,7 +512,9 @@ const FlipbookPDFViewer: React.FC<FlipbookPDFViewerProps> = ({
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							exit={{ opacity: 0 }}
-							className={`relative ${isFullscreen ? 'w-[60%]' : 'w-full'}`}
+							className={`relative ${
+								isFullscreen ? 'w-[60%]' : 'w-full'
+							} no-vertical-scroll`}
 							style={{ zIndex: 1 }}
 						>
 							<HTMLFlipBook

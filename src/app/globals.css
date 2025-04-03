@@ -281,3 +281,10 @@ html {
 		scroll-behavior: auto !important;
 	}
 }
+
+@layer utilities {
+	.no-vertical-scroll {
+		touch-action: none;
+		overscroll-behavior: contain;
+	}
+}
