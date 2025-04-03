@@ -2,7 +2,7 @@
 
 import { FeedbackDialog } from '@/components/auth/FeedbackDialog';
 import { supabase } from '@/lib/supabase';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AtSign, Check, Loader2, Mail, SendIcon, User } from 'lucide-react';
 import { useState } from 'react';
@@ -183,6 +183,11 @@ export default function ContactPage() {
 													className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
 												>
 													{t('contact.form.name') || 'Full Name'}
+													{errors.name && touched.name && (
+														<span className="text-sm text-red-500 dark:text-red-400 ml-2">
+															({errors.name})
+														</span>
+													)}
 												</label>
 												<div className="relative">
 													<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -199,11 +204,6 @@ export default function ContactPage() {
 														}`}
 														placeholder={t('contact.form.name')}
 													/>
-													<ErrorMessage
-														name="name"
-														component="div"
-														className="mt-1 text-xs text-red-600 dark:text-red-400"
-													/>
 												</div>
 											</div>
 
@@ -213,6 +213,11 @@ export default function ContactPage() {
 													className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
 												>
 													{t('contact.form.email') || 'Email Address'}
+													{errors.email && touched.email && (
+														<span className="text-sm text-red-500 dark:text-red-400 ml-2">
+															({errors.email})
+														</span>
+													)}
 												</label>
 												<div className="relative">
 													<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -229,11 +234,6 @@ export default function ContactPage() {
 														}`}
 														placeholder={t('contact.form.email')}
 													/>
-													<ErrorMessage
-														name="email"
-														component="div"
-														className="mt-1 text-xs text-red-600 dark:text-red-400"
-													/>
 												</div>
 											</div>
 										</div>
@@ -244,6 +244,11 @@ export default function ContactPage() {
 												className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
 											>
 												{t('contact.form.subject') || 'Subject'}
+												{errors.subject && touched.subject && (
+													<span className="text-sm text-red-500 dark:text-red-400 ml-2">
+														({errors.subject})
+													</span>
+												)}
 											</label>
 											<div className="relative">
 												<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -260,11 +265,6 @@ export default function ContactPage() {
 													}`}
 													placeholder={t('contact.form.subject')}
 												/>
-												<ErrorMessage
-													name="subject"
-													component="div"
-													className="mt-1 text-xs text-red-600 dark:text-red-400"
-												/>
 											</div>
 										</div>
 
@@ -273,7 +273,12 @@ export default function ContactPage() {
 												htmlFor="message"
 												className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
 											>
-												{t('contact.form.message') || 'Message'}
+												{t('contact.form.message') || 'Your Message'}
+												{errors.message && touched.message && (
+													<span className="text-sm text-red-500 dark:text-red-400 ml-2">
+														({errors.message})
+													</span>
+												)}
 											</label>
 											<Field
 												as="textarea"
@@ -286,11 +291,6 @@ export default function ContactPage() {
 														: 'border-gray-300 dark:border-gray-600'
 												}`}
 												placeholder={t('contact.form.message')}
-											/>
-											<ErrorMessage
-												name="message"
-												component="div"
-												className="mt-1 text-xs text-red-600 dark:text-red-400"
 											/>
 										</div>
 
