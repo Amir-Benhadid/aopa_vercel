@@ -297,9 +297,18 @@ function AbstractCardComponent({ abstract }: { abstract: Abstract }) {
 									emptyFieldMessage
 								) : (
 									<span>
+										{abstract.name && (
+											<>
+												{abstract.name} {abstract.surname}
+											</>
+										)}
+										{abstract.name &&
+											abstract.co_authors &&
+											abstract.co_authors.length > 0 &&
+											', '}
 										{abstract.co_authors && abstract.co_authors.length > 0
-											? `${abstract.co_authors.join(', ')}`
-											: emptyFieldMessage}
+											? abstract.co_authors.join(', ')
+											: ''}
 									</span>
 								)}
 							</div>
@@ -329,7 +338,7 @@ function AbstractCardComponent({ abstract }: { abstract: Abstract }) {
 					</div>
 
 					{/* Actions */}
-					<div className="mt-4 flex flex-wrap gap-3 w-full justify-center">
+					<div className="mt-4 flex flex-wrap gap-3">
 						{showDownloadButton && (
 							<Button
 								size="sm"
@@ -387,31 +396,35 @@ function AbstractCardComponent({ abstract }: { abstract: Abstract }) {
 								{t('abstracts.viewPresentation')}
 							</Button>
 						)}
-
-						{showEditButton && (
-							<Button
-								size="default"
-								variant="default"
-								className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
-								onClick={handleEdit}
-							>
-								<Pencil className="w-4 h-4 mr-1" />
-								{t('common.edit')}
-							</Button>
-						)}
-
-						{showDeleteButton && (
-							<Button
-								size="default"
-								variant="destructive"
-								onClick={handleDeleteClick}
-								className="flex-1"
-							>
-								<Trash2 className="w-4 h-4 mr-1" />
-								{t('common.delete')}
-							</Button>
-						)}
 					</div>
+
+					{/* Draft actions */}
+					{(showEditButton || showDeleteButton) && (
+						<div className="mt-4 grid grid-cols-2 gap-3">
+							{showEditButton && (
+								<Button
+									size="sm"
+									variant="default"
+									className="bg-blue-600 hover:bg-blue-700 text-white"
+									onClick={handleEdit}
+								>
+									<Pencil className="w-4 h-4 mr-1" />
+									{t('common.edit')}
+								</Button>
+							)}
+
+							{showDeleteButton && (
+								<Button
+									size="sm"
+									variant="destructive"
+									onClick={handleDeleteClick}
+								>
+									<Trash2 className="w-4 h-4 mr-1" />
+									{t('common.delete')}
+								</Button>
+							)}
+						</div>
+					)}
 				</div>
 			</Card>
 

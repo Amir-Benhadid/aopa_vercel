@@ -33,6 +33,7 @@ const statusColors: Record<string, string> = {
 		'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
 	'final-version':
 		'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
+	draft: 'bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-400',
 };
 
 // Format status for display
@@ -66,6 +67,7 @@ export default function AbstractsPage() {
 				const data = await fetchFilteredAbstracts({
 					search: searchQuery || undefined,
 					status: statusFilter !== 'all' ? statusFilter : undefined,
+					dashboard: true,
 				});
 
 				setAbstracts(data);
@@ -217,6 +219,16 @@ export default function AbstractsPage() {
 						icon: <RefreshCw className="h-4 w-4" />,
 						className:
 							'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-900/50',
+					},
+				];
+			case 'draft':
+				return [
+					{
+						newStatus: 'submitted' as AbstractStatus,
+						label: 'Submit',
+						icon: <ArrowRight className="h-4 w-4" />,
+						className:
+							'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50',
 					},
 				];
 			case 'approved':

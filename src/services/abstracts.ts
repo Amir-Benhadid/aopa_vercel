@@ -7,13 +7,22 @@ export const fetchFilteredAbstracts = async (filters: {
 	type?: string;
 	congress?: string;
 	userId?: string;
+	dashboard?: boolean;
 }): Promise<Abstract[]> => {
 	try {
-		// Initialize query
-		let query = supabase
-			.from('abstracts')
-			.select('*')
-			.order('created_at', { ascending: false });
+		let query;
+		if (filters.dashboard) {
+			query = supabase
+				.from('abstracts')
+				.select('*')
+				.neq('status', 'draft')
+				.order('created_at', { ascending: false });
+		} else {
+			query = supabase
+				.from('abstracts')
+				.select('*')
+				.order('created_at', { ascending: false });
+		}
 
 		// If userId is provided, filter by the user's account
 		if (filters.userId) {

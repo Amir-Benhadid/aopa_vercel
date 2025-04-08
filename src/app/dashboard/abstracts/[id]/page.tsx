@@ -29,105 +29,6 @@ interface Props {
 	params: { id: string };
 }
 
-// Status badge colors and icons
-const statusConfig = useMemo(
-	() => ({
-		submitted: {
-			color: 'text-blue-700 dark:text-blue-300',
-			bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-			icon: <Clock className="w-5 h-5" />,
-			label: t('abstracts.filters.submitted'),
-		},
-		reviewing: {
-			color: 'text-yellow-700 dark:text-yellow-300',
-			bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
-			icon: <Clock className="w-5 h-5" />,
-			label: t('abstracts.filters.reviewing'),
-		},
-		approved: {
-			color: 'text-green-700 dark:text-green-300',
-			bgColor: 'bg-green-50 dark:bg-green-900/20',
-			icon: <Check className="w-5 h-5" />,
-			label: t('abstracts.filters.approved'),
-		},
-		rejected: {
-			color: 'text-red-700 dark:text-red-300',
-			bgColor: 'bg-red-50 dark:bg-red-900/20',
-			icon: <X className="w-5 h-5" />,
-			label: t('abstracts.filters.rejected'),
-		},
-		'type-change': {
-			color: 'text-indigo-700 dark:text-indigo-300',
-			bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
-			icon: <RefreshCw className="w-5 h-5" />,
-			label: t('abstracts.filters.typeChange'),
-		},
-		'final-version': {
-			color: 'text-purple-700 dark:text-purple-300',
-			bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-			icon: <FileText className="w-5 h-5" />,
-			label: t('abstracts.filters.finalVersion'),
-		},
-		draft: {
-			color: 'text-gray-700 dark:text-gray-300',
-			bgColor: 'bg-gray-50 dark:bg-gray-800/50',
-			icon: <File className="w-5 h-5" />,
-			label: t('abstracts.statusMessages.draft'),
-		},
-	}),
-	[t]
-);
-
-// Get available status transitions based on current status
-const getStatusActions = (status: AbstractStatus) => {
-	switch (status) {
-		case 'submitted':
-			return [
-				{
-					newStatus: 'reviewing' as AbstractStatus,
-					label: t('Start Review'),
-					icon: <ArrowRight className="h-4 w-4" />,
-					className: 'bg-yellow-600 hover:bg-yellow-700',
-				},
-			];
-		case 'reviewing':
-			return [
-				{
-					newStatus: 'approved' as AbstractStatus,
-					label: t('Approve'),
-					icon: <Check className="h-4 w-4" />,
-					className: 'bg-green-600 hover:bg-green-700',
-				},
-				{
-					newStatus: 'rejected' as AbstractStatus,
-					label: t('Reject'),
-					icon: <X className="h-4 w-4" />,
-					className: 'bg-red-600 hover:bg-red-700',
-				},
-				{
-					newStatus: 'type-change' as AbstractStatus,
-					label: t('abstracts.changeType'),
-					icon: <RefreshCw className="h-4 w-4" />,
-					className: 'bg-purple-600 hover:bg-purple-700',
-				},
-			];
-		case 'approved':
-		case 'rejected':
-		case 'type-change':
-		case 'draft':
-			return [
-				{
-					newStatus: 'reviewing' as AbstractStatus,
-					label: t('abstracts.Start Review'),
-					icon: <ArrowRight className="h-4 w-4" />,
-					className: 'bg-yellow-600 hover:bg-yellow-700',
-				},
-			];
-		default:
-			return [];
-	}
-};
-
 export default function AbstractAdminPage({ params }: Props) {
 	const [loading, setLoading] = useState(false);
 	const [abstract, setAbstract] = useState<any>(null);
@@ -136,6 +37,105 @@ export default function AbstractAdminPage({ params }: Props) {
 	const router = useRouter();
 	const { isAuthenticated, user } = useAuth();
 	const { t } = useTranslation();
+
+	// Status badge colors and icons
+	const statusConfig = useMemo(
+		() => ({
+			submitted: {
+				color: 'text-blue-700 dark:text-blue-300',
+				bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+				icon: <Clock className="w-5 h-5" />,
+				label: t('abstracts.filters.submitted'),
+			},
+			reviewing: {
+				color: 'text-yellow-700 dark:text-yellow-300',
+				bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+				icon: <Clock className="w-5 h-5" />,
+				label: t('abstracts.filters.reviewing'),
+			},
+			approved: {
+				color: 'text-green-700 dark:text-green-300',
+				bgColor: 'bg-green-50 dark:bg-green-900/20',
+				icon: <Check className="w-5 h-5" />,
+				label: t('abstracts.filters.approved'),
+			},
+			rejected: {
+				color: 'text-red-700 dark:text-red-300',
+				bgColor: 'bg-red-50 dark:bg-red-900/20',
+				icon: <X className="w-5 h-5" />,
+				label: t('abstracts.filters.rejected'),
+			},
+			'type-change': {
+				color: 'text-indigo-700 dark:text-indigo-300',
+				bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+				icon: <RefreshCw className="w-5 h-5" />,
+				label: t('abstracts.filters.typeChange'),
+			},
+			'final-version': {
+				color: 'text-purple-700 dark:text-purple-300',
+				bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+				icon: <FileText className="w-5 h-5" />,
+				label: t('abstracts.filters.finalVersion'),
+			},
+			draft: {
+				color: 'text-gray-700 dark:text-gray-300',
+				bgColor: 'bg-gray-50 dark:bg-gray-800/50',
+				icon: <File className="w-5 h-5" />,
+				label: t('abstracts.statusMessages.draft'),
+			},
+		}),
+		[t]
+	);
+
+	// Get available status transitions based on current status
+	const getStatusActions = (status: AbstractStatus) => {
+		switch (status) {
+			case 'submitted':
+				return [
+					{
+						newStatus: 'reviewing' as AbstractStatus,
+						label: t('Start Review'),
+						icon: <ArrowRight className="h-4 w-4" />,
+						className: 'bg-yellow-600 hover:bg-yellow-700',
+					},
+				];
+			case 'reviewing':
+				return [
+					{
+						newStatus: 'approved' as AbstractStatus,
+						label: t('Approve'),
+						icon: <Check className="h-4 w-4" />,
+						className: 'bg-green-600 hover:bg-green-700',
+					},
+					{
+						newStatus: 'rejected' as AbstractStatus,
+						label: t('Reject'),
+						icon: <X className="h-4 w-4" />,
+						className: 'bg-red-600 hover:bg-red-700',
+					},
+					{
+						newStatus: 'type-change' as AbstractStatus,
+						label: t('abstracts.changeType'),
+						icon: <RefreshCw className="h-4 w-4" />,
+						className: 'bg-purple-600 hover:bg-purple-700',
+					},
+				];
+			case 'approved':
+			case 'rejected':
+			case 'type-change':
+			case 'draft':
+				return [
+					{
+						newStatus: 'reviewing' as AbstractStatus,
+						label: t('abstracts.Start Review'),
+						icon: <ArrowRight className="h-4 w-4" />,
+						className: 'bg-yellow-600 hover:bg-yellow-700',
+					},
+				];
+			default:
+				return [];
+		}
+	};
 
 	// Fetch abstract data
 	useEffect(() => {
@@ -152,7 +152,6 @@ export default function AbstractAdminPage({ params }: Props) {
 
 				if (error) throw error;
 				setAbstract(data);
-				setStatusActions(getStatusActions(data.status));
 
 				// Fetch admin notes if they exist
 				const { data: notesData } = await supabase

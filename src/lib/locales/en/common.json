@@ -744,7 +744,7 @@
 	"dashboard": {
 		"welcome": "Welcome back",
 		"overview": "Here's an overview of your recent activity and statistics",
-		"search": "Search...",
+		"search": "Search abstracts...",
 		"stats": {
 			"totalMembers": "Total Members",
 			"activeAbstracts": "Active Abstracts",
@@ -838,8 +838,10 @@
 			"description": "Description"
 		},
 		"abstracts": {
-			"title": "Abstracts",
-			"description": "Description"
+			"title": "Abstracts Management",
+			"description": "Review and manage submitted abstracts",
+			"noMatchingAbstracts": "No abstracts found matching your filters. Try adjusting your search criteria.",
+			"noAbstracts": "No abstracts found. Add your first abstract to get started."
 		},
 		"title": "Dashboard"
 	},

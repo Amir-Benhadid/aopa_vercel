@@ -168,8 +168,8 @@
 			"rejected": "Rejeté",
 			"typeChange": "Changement de type de présentation",
 			"finalVersion": "Version finale",
-			"poster": "Poster",
-			"oral": "Oral",
+			"poster": "Affichée",
+			"oral": "Orale",
 			"draft": "Brouillon"
 		},
 		"submission": {
@@ -193,12 +193,12 @@
 				"titlePlaceholder": "Entrez le titre de l'abstract",
 				"introduction": "Introduction",
 				"introductionPlaceholder": "Entrez l'introduction de l'abstract",
-				"materialsPlaceholder": "Entrez les matériaux de l'abstract",
+				"materialsPlaceholder": "Entrez les matériaux et méthodes/Observations de l'abstract",
 				"resultsPlaceholder": "Entrez les résultats de l'abstract",
 				"observationsPlaceholder": "Entrez les observations de l'abstract",
 				"conclusionPlaceholder": "Entrez la conclusion de l'abstract",
 				"discussionPlaceholder": "Entrez la discussion de l'abstract",
-				"materials": "Matériaux",
+				"materials": "Matériaux et méthodes/Observations",
 				"results": "Résultats",
 				"observations": "Observations",
 				"conclusion": "Conclusion",
@@ -222,7 +222,7 @@
 				"discussionRequired": "La discussion est requise",
 				"introductionRequired": "L'introduction est requise",
 				"loadingCongress": "Chargement des informations du congrès",
-				"materialsRequired": "Les matériaux sont requis",
+				"materialsRequired": "Les matériaux et méthodes/observations sont requis",
 				"noActiveCongress": "Aucun congrès actif trouvé",
 				"noActiveCongressMessage": "Il n'y a pas de congrès actif pour le moment",
 				"notLoggedIn": "Vous n'êtes pas connecté",
@@ -742,7 +742,7 @@
 	"dashboard": {
 		"welcome": "Bon retour",
 		"overview": "Voici un aperçu de votre activité récente et de vos statistiques",
-		"search": "Rechercher...",
+		"search": "Rechercher des abstracts...",
 		"stats": {
 			"totalMembers": "Nombre total de membres",
 			"activeAbstracts": "Abstracts actifs",
@@ -781,7 +781,8 @@
 			"congresses": "Congrès",
 			"sponsors": "Sponsors",
 			"reports": "Rapports",
-			"media": "Media"
+			"media": "Media",
+			"contacts": "Contacts"
 		},
 		"add": {
 			"congress": "Ajouter un congrès",
@@ -836,10 +837,20 @@
 			"description": "Activities description"
 		},
 		"abstracts": {
-			"title": "Abstracts",
-			"description": "Abstracts description"
+			"title": "Gestion des Abstracts",
+			"description": "Examiner et gérer les abstracts soumis",
+			"noMatchingAbstracts": "Aucun abstract ne correspond à vos filtres. Essayez d'ajuster vos critères de recherche.",
+			"noAbstracts": "Aucun abstract trouvé. Ajoutez votre premier abstract pour commencer."
 		},
-		"title": "Dashboard"
+		"title": "Dashboard",
+		"contacts": {
+			"title": "Contacts",
+			"subtitle": "Ici sont les messages de contact des utilisateurs",
+			"noMessages": "Aucun message de contact trouvé. Les utilisateurs peuvent vous contacter via le formulaire de contact.",
+			"viewAll": "Voir tous les messages",
+			"noMessageSelected": "Aucun message sélectionné",
+			"selectMessage": "Sélectionnez un message pour voir les détails"
+		}
 	},
 	"contact": {
 		"title": "Contact",
