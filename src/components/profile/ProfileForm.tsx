@@ -60,6 +60,7 @@ export function ProfileForm({
 		country: string;
 		civility: string;
 		email: string;
+		establishment?: string;
 	}>({
 		name: '',
 		surname: '',
@@ -71,18 +72,26 @@ export function ProfileForm({
 		country: 'Morocco',
 		civility: '',
 		email: user?.email || '',
+		establishment: '',
 	});
 	const [emailError, setEmailError] = useState<string | null>(null);
 
 	// Define translated options within component scope
 	const SPECIALTIES = [
 		'ophthalmology',
-		'retina',
-		'glaucoma',
-		'cornea',
-		'pediatric_ophthalmology',
-		'oculoplastics',
-		'neuro_ophthalmology',
+		'internal_medicine',
+		'radiology',
+		'cardiology',
+		'neurology',
+		'pediatrics',
+		'dermatology',
+		'psychiatry',
+		'surgery',
+		'anesthesiology',
+		'gynecology',
+		'orthopedics',
+		'urology',
+		'ent',
 		'other',
 	] as const;
 
@@ -112,6 +121,7 @@ export function ProfileForm({
 		country: string;
 		civility: Civility;
 		email: string;
+		establishment?: string;
 	}
 
 	// Create validation schema with translations
@@ -133,6 +143,14 @@ export function ProfileForm({
 		email: Yup.string()
 			.email(t('profile.validation.emailInvalid'))
 			.required(t('profile.validation.emailRequired')),
+		establishment: Yup.string().when(['status', 'specialty'], {
+			is: (status: string, specialty: string) =>
+				(status === 'public' || status === 'resident') &&
+				specialty === 'ophthalmology',
+			then: (schema) =>
+				schema.required(t('profile.validation.establishmentRequired')),
+			otherwise: (schema) => schema.optional(),
+		}),
 	});
 
 	const passwordChangeSchema = Yup.object().shape({
@@ -184,6 +202,7 @@ export function ProfileForm({
 						street: '',
 						city: '',
 						country: 'Morocco',
+						establishment: accountData.establishment || '',
 					};
 
 					// Add address data if available
@@ -536,6 +555,7 @@ export function ProfileForm({
 				status: values.status,
 				specialty: values.specialty,
 				civility: values.civility,
+				establishment: values.establishment,
 			};
 
 			console.log('Account data prepared:', accountData);
@@ -578,6 +598,7 @@ export function ProfileForm({
 					name: values.name,
 					surname: values.surname,
 					civility: values.civility,
+					establishment: values.establishment,
 				},
 			});
 
@@ -761,92 +782,224 @@ export function ProfileForm({
 								</h3>
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 									<div>
-										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-											{t('profile.form.civility')} *
-										</label>
-										<select
-											name="civility"
-											value={values.civility}
-											onChange={handleChange}
-											className={`w-full h-10 px-3 py-2 border ${
-												errors.civility && touched.civility
-													? 'border-red-500 focus:ring-red-500'
-													: 'border-gray-300 dark:border-gray-600 focus:ring-primary-500'
-											} rounded-md shadow-sm focus:border-primary-500 focus:outline-none dark:bg-gray-700 dark:text-white bg-white`}
-										>
-											<option value="">
-												{t('profile.form.selectCivility')}
-											</option>
-											{translatedCivilities.map(({ value, label }) => (
-												<option key={value} value={value}>
-													{label}
-												</option>
-											))}
-										</select>
-										{errors.civility && touched.civility && (
-											<p className="mt-1 text-xs text-red-500">
-												{errors.civility as string}
-											</p>
-										)}
+										<div className="space-y-1">
+											<div className="flex items-center justify-between">
+												<label
+													className={`text-sm font-medium ${
+														errors.civility && touched.civility
+															? 'text-red-500 dark:text-red-400'
+															: 'text-gray-700 dark:text-gray-200'
+													}`}
+												>
+													{t('profile.form.civility')} *
+												</label>
+												{errors.civility && touched.civility && (
+													<span className="text-sm text-red-500 dark:text-red-400">
+														({errors.civility})
+													</span>
+												)}
+											</div>
+											<div className="relative border rounded-md shadow-sm">
+												<select
+													name="civility"
+													value={values.civility}
+													onChange={handleChange}
+													className={`w-full h-10 pl-3 py-0 bg-transparent appearance-none text-base ${
+														errors.civility && touched.civility
+															? 'border-red-500 focus:ring-red-500'
+															: 'border-0 focus:ring-primary-500'
+													} rounded-md shadow-none focus:outline-none dark:text-white bg-white dark:bg-gray-700`}
+													style={{ height: '2.5rem' }}
+												>
+													<option value="">
+														{t('profile.form.selectCivility')}
+													</option>
+													{translatedCivilities.map(({ value, label }) => (
+														<option key={value} value={value}>
+															{label}
+														</option>
+													))}
+												</select>
+												<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+													<svg
+														className="h-4 w-4 fill-current"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 20 20"
+													>
+														<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+													</svg>
+												</div>
+											</div>
+										</div>
 									</div>
 
 									<div>
-										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-											{t('profile.form.status')} *
-										</label>
-										<select
-											name="status"
-											value={values.status}
-											onChange={handleChange}
-											className={`w-full h-10 px-3 py-2 border ${
-												errors.status && touched.status
-													? 'border-red-500 focus:ring-red-500'
-													: 'border-gray-300 dark:border-gray-600 focus:ring-primary-500'
-											} rounded-md shadow-sm focus:border-primary-500 focus:outline-none dark:bg-gray-700 dark:text-white bg-white`}
-										>
-											<option value="">{t('profile.form.selectStatus')}</option>
-											{translatedStatuses.map(({ value, label }) => (
-												<option key={value} value={value}>
-													{label}
-												</option>
-											))}
-										</select>
-										{errors.status && touched.status && (
-											<p className="mt-1 text-xs text-red-500">
-												{errors.status as string}
-											</p>
-										)}
+										<div className="space-y-1">
+											<div className="flex items-center justify-between">
+												<label
+													className={`text-sm font-medium ${
+														errors.status && touched.status
+															? 'text-red-500 dark:text-red-400'
+															: 'text-gray-700 dark:text-gray-200'
+													}`}
+												>
+													{t('profile.form.status')} *
+												</label>
+												{errors.status && touched.status && (
+													<span className="text-sm text-red-500 dark:text-red-400">
+														({errors.status})
+													</span>
+												)}
+											</div>
+											<div className="relative border rounded-md shadow-sm">
+												<select
+													name="status"
+													value={values.status}
+													onChange={(e) => {
+														handleChange(e);
+														// Reset establishment when changing status
+														if (
+															e.target.value !== 'public' &&
+															e.target.value !== 'resident'
+														) {
+															setFieldValue('establishment', '');
+														}
+													}}
+													disabled={values.specialty !== 'ophthalmology'}
+													className={`w-full h-10 pl-3 py-0 bg-transparent appearance-none text-base ${
+														errors.status && touched.status
+															? 'border-red-500 focus:ring-red-500'
+															: 'border-0 focus:ring-primary-500'
+													} rounded-md shadow-none focus:outline-none dark:text-white bg-white dark:bg-gray-700 ${
+														values.specialty !== 'ophthalmology'
+															? 'opacity-50 cursor-not-allowed'
+															: ''
+													}`}
+													style={{ height: '2.5rem' }}
+												>
+													<option value="">
+														{t('profile.form.selectStatus')}
+													</option>
+													{STATUSES.map((status) => (
+														<option key={status} value={status}>
+															{t(`profile.form.statuses.${status}`)}
+														</option>
+													))}
+												</select>
+												<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+													<svg
+														className="h-4 w-4 fill-current"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 20 20"
+													>
+														<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+													</svg>
+												</div>
+											</div>
+										</div>
 									</div>
 
 									<div>
-										<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-											{t('profile.form.specialty')} *
-										</label>
-										<select
-											name="specialty"
-											value={values.specialty}
-											onChange={handleChange}
-											className={`w-full h-10 px-3 py-2 border ${
-												errors.specialty && touched.specialty
-													? 'border-red-500 focus:ring-red-500'
-													: 'border-gray-300 dark:border-gray-600 focus:ring-primary-500'
-											} rounded-md shadow-sm focus:border-primary-500 focus:outline-none dark:bg-gray-700 dark:text-white bg-white`}
-										>
-											<option value="">
-												{t('profile.form.selectSpecialty')}
-											</option>
-											{translatedSpecialties.map(({ value, label }) => (
-												<option key={value} value={value}>
-													{label}
-												</option>
-											))}
-										</select>
-										{errors.specialty && touched.specialty && (
-											<p className="mt-1 text-xs text-red-500">
-												{errors.specialty as string}
-											</p>
-										)}
+										<div className="space-y-1">
+											<div className="flex items-center justify-between">
+												<label
+													className={`text-sm font-medium ${
+														errors.specialty && touched.specialty
+															? 'text-red-500 dark:text-red-400'
+															: 'text-gray-700 dark:text-gray-200'
+													}`}
+												>
+													{t('profile.form.specialty')} *
+												</label>
+												{errors.specialty && touched.specialty && (
+													<span className="text-sm text-red-500 dark:text-red-400">
+														({errors.specialty})
+													</span>
+												)}
+											</div>
+											<div className="relative border rounded-md shadow-sm">
+												<select
+													name="specialty"
+													value={values.specialty}
+													onChange={(e) => {
+														// Reset status when changing specialty
+														if (e.target.value !== 'ophthalmology') {
+															setFieldValue('status', '');
+															setFieldValue('establishment', '');
+														}
+														handleChange(e);
+													}}
+													className={`w-full h-10 pl-3 py-0 bg-transparent appearance-none text-base ${
+														errors.specialty && touched.specialty
+															? 'border-red-500 focus:ring-red-500'
+															: 'border-0 focus:ring-primary-500'
+													} rounded-md shadow-none focus:outline-none dark:text-white bg-white dark:bg-gray-700`}
+													style={{ height: '2.5rem' }}
+												>
+													<option value="">
+														{t('profile.form.selectSpecialty')}
+													</option>
+													{SPECIALTIES.map((specialty) => (
+														<option key={specialty} value={specialty}>
+															{t(`profile.form.specialties.${specialty}`)}
+														</option>
+													))}
+												</select>
+												<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
+													<svg
+														className="h-4 w-4 fill-current"
+														xmlns="http://www.w3.org/2000/svg"
+														viewBox="0 0 20 20"
+													>
+														<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+													</svg>
+												</div>
+											</div>
+										</div>
 									</div>
+
+									{/* Establishment field - only shown for ophthalmologists with public/resident status */}
+									{values.specialty === 'ophthalmology' &&
+										(values.status === 'public' ||
+											values.status === 'resident') && (
+											<div>
+												<div className="space-y-1">
+													<div className="flex items-center justify-between">
+														<label
+															className={`text-sm font-medium ${
+																errors.establishment && touched.establishment
+																	? 'text-red-500 dark:text-red-400'
+																	: 'text-gray-700 dark:text-gray-200'
+															}`}
+														>
+															{t('profile.form.establishment')} *
+														</label>
+														{errors.establishment && touched.establishment && (
+															<span className="text-sm text-red-500 dark:text-red-400">
+																({errors.establishment})
+															</span>
+														)}
+													</div>
+													<div className="relative border rounded-md shadow-sm">
+														<input
+															type="text"
+															name="establishment"
+															value={values.establishment}
+															onChange={handleChange}
+															placeholder={t(
+																'profile.form.establishmentPlaceholder'
+															)}
+															className={`w-full h-10 pl-3 py-0 bg-transparent appearance-none text-base ${
+																errors.establishment && touched.establishment
+																	? 'border-red-500 focus:ring-red-500'
+																	: 'border-0 focus:ring-primary-500'
+															} rounded-md shadow-none focus:outline-none dark:text-white bg-white dark:bg-gray-700`}
+															style={{ height: '2.5rem' }}
+														/>
+													</div>
+												</div>
+											</div>
+										)}
 								</div>
 							</div>
 

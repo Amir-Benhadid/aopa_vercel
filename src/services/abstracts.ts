@@ -108,3 +108,23 @@ export const deleteAbstract = async (id: string) => {
 
 	if (error) throw error;
 };
+
+export const getAbstractById = async (id: string): Promise<Abstract | null> => {
+	try {
+		const { data, error } = await supabase
+			.from('abstracts')
+			.select('*')
+			.eq('id', id)
+			.single();
+
+		if (error) {
+			console.error('Error fetching abstract by ID:', error);
+			return null;
+		}
+
+		return data;
+	} catch (error) {
+		console.error('Error in getAbstractById:', error);
+		return null;
+	}
+};

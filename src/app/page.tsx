@@ -321,7 +321,24 @@ export default function Home() {
 					<QuickActions />
 				</motion.div>
 
-				{/* Featured Congress Section - Next upcoming event */}
+				{/* Team and Association Section - Build trust */}
+				<motion.div
+					initial={{ opacity: 0, y: 30 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: '-50px' }}
+					transition={{ duration: 0.6 }}
+					className="mt-16 w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-16"
+				>
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+							<div className="p-6 sm:p-8">
+								<TeamAssociationSection />
+							</div>
+						</div>
+					</div>
+				</motion.div>
+
+				{/* Featured Congress Section - Previous event */}
 				{pastCongress && (
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
@@ -431,6 +448,69 @@ export default function Home() {
 					</motion.div>
 				)}
 
+				{/* Previous Events Section - Social proof */}
+				<motion.div
+					initial={{ opacity: 0, y: 30 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: '-50px' }}
+					transition={{ duration: 0.6 }}
+					className="mt-16 w-full"
+				>
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+								<h2 className="text-2xl font-bold text-white">
+									{t('home.previousEvents.title')}
+								</h2>
+							</div>
+							<div className="p-6 sm:p-8">
+								{pastCongresses.length > 0 ? (
+									<>
+										<p className="text-gray-600 dark:text-gray-300 max-w-2xl mb-8">
+											{t('home.previousEvents.subtitle')}
+										</p>
+										<PreviousEvents events={pastCongresses} />
+									</>
+								) : (
+									<div className="text-center py-12 bg-gray-50 dark:bg-gray-700/20 rounded-xl">
+										<h3 className="text-xl font-semibold mb-2">
+											{t('home.previousEvents.noPastEvents')}
+										</h3>
+										<p className="text-gray-500 dark:text-gray-400">
+											{t('home.previousEvents.checkBackLater')}
+										</p>
+									</div>
+								)}
+							</div>
+						</div>
+					</div>
+				</motion.div>
+
+				{/* Annual Reports - Important documents */}
+				<motion.div
+					initial={{ opacity: 0, y: 30 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true, margin: '-50px' }}
+					transition={{ duration: 0.6 }}
+					className="mt-16 w-full"
+				>
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
+								<h2 className="text-2xl font-bold text-white">
+									{t('home.annualReports.title')}
+								</h2>
+							</div>
+							<div className="p-6 sm:p-8">
+								<p className="text-gray-600 dark:text-gray-300 max-w-2xl mb-8">
+									{t('home.annualReports.subtitle')}
+								</p>
+								<AnnualReports reports={annualReports} />
+							</div>
+						</div>
+					</div>
+				</motion.div>
+
 				{/* Visual Gallery Section - Engaging visual content */}
 				{allCongressImages.length > 0 && (
 					<motion.div
@@ -516,44 +596,6 @@ export default function Home() {
 					</motion.div>
 				)}
 
-				{/* Previous Events Section - Social proof */}
-				<motion.div
-					initial={{ opacity: 0, y: 30 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: '-50px' }}
-					transition={{ duration: 0.6 }}
-					className="mt-16 w-full"
-				>
-					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-								<h2 className="text-2xl font-bold text-white">
-									{t('home.previousEvents.title')}
-								</h2>
-							</div>
-							<div className="p-6 sm:p-8">
-								{pastCongresses.length > 0 ? (
-									<>
-										<p className="text-gray-600 dark:text-gray-300 max-w-2xl mb-8">
-											{t('home.previousEvents.subtitle')}
-										</p>
-										<PreviousEvents events={pastCongresses} />
-									</>
-								) : (
-									<div className="text-center py-12 bg-gray-50 dark:bg-gray-700/20 rounded-xl">
-										<h3 className="text-xl font-semibold mb-2">
-											{t('home.previousEvents.noPastEvents')}
-										</h3>
-										<p className="text-gray-500 dark:text-gray-400">
-											{t('home.previousEvents.checkBackLater')}
-										</p>
-									</div>
-								)}
-							</div>
-						</div>
-					</div>
-				</motion.div>
-
 				{/* Partners Showcase Section */}
 				<motion.div
 					initial={{ opacity: 0, y: 30 }}
@@ -564,48 +606,6 @@ export default function Home() {
 				>
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 						<PartnersCarousel />
-					</div>
-				</motion.div>
-
-				{/* Annual Reports - Important documents */}
-				<motion.div
-					initial={{ opacity: 0, y: 30 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: '-50px' }}
-					transition={{ duration: 0.6 }}
-					className="mt-16 w-full"
-				>
-					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-							<div className="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
-								<h2 className="text-2xl font-bold text-white">
-									{t('home.annualReports.title')}
-								</h2>
-							</div>
-							<div className="p-6 sm:p-8">
-								<p className="text-gray-600 dark:text-gray-300 max-w-2xl mb-8">
-									{t('home.annualReports.subtitle')}
-								</p>
-								<AnnualReports reports={annualReports} />
-							</div>
-						</div>
-					</div>
-				</motion.div>
-
-				{/* Team and Association Section - Build trust */}
-				<motion.div
-					initial={{ opacity: 0, y: 30 }}
-					whileInView={{ opacity: 1, y: 0 }}
-					viewport={{ once: true, margin: '-50px' }}
-					transition={{ duration: 0.6 }}
-					className="mt-16 w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 py-16"
-				>
-					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-						<div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-							<div className="p-6 sm:p-8">
-								<TeamAssociationSection />
-							</div>
-						</div>
 					</div>
 				</motion.div>
 

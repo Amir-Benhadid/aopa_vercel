@@ -1,4 +1,8 @@
 import {
+	deleteAbstract as deleteAbstractService,
+	updateAbstract as updateAbstractService,
+} from '@/services/abstracts';
+import {
 	Abstract,
 	Activity,
 	Building,
@@ -7,6 +11,10 @@ import {
 } from '@/types/database';
 import { processReportData } from './pdf-utils';
 import { supabase } from './supabase';
+
+// Re-export the updateAbstract function from services
+export const updateAbstract = updateAbstractService;
+export const deleteAbstract = deleteAbstractService;
 
 // Mock data for development
 const mockCongress: Congress = {
@@ -517,7 +525,6 @@ export interface AbstractSubmission {
 	introduction: string;
 	materials: string;
 	results: string;
-	observations: string;
 	discussion: string;
 	conclusion: string;
 	type: 'poster' | 'oral';
@@ -525,12 +532,26 @@ export interface AbstractSubmission {
 	co_authors: string[];
 }
 
-export async function submitAbstract(
-	data: AbstractSubmission,
+// Types for abstract submission
+export type AbstractStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+
+export const submitAbstract = async (
+	abstractData: {
+		title: string;
+		introduction: string;
+		materials: string;
+		results: string;
+		discussion?: string;
+		conclusion: string;
+		type: 'poster' | 'oral';
+		theme: string;
+		co_authors: string[];
+	},
 	congressId: string,
 	userId: string,
-	userEmail: string
-) {
+	userEmail: string,
+	status: AbstractStatus = 'submitted'
+) => {
 	// Then get the account info
 	const { data: accountData, error: accountError } = await supabase
 		.from('accounts')
@@ -550,22 +571,25 @@ export async function submitAbstract(
 	const { data: insertedAbstract, error: insertError } = await supabase
 		.from('abstracts')
 		.insert({
-			congress_id: congressId,
 			account_id: accountData.id,
-			name: accountData.name,
-			surname: accountData.surname,
+			congress_id: congressId,
+			title: abstractData.title,
+			introduction: abstractData.introduction,
+			materials: abstractData.materials,
+			results: abstractData.results,
+			discussion: abstractData.discussion || '',
+			conclusion: abstractData.conclusion,
+			co_authors: abstractData.co_authors,
+			// Utiliser une valeur par défaut pour theme si vide
+			theme: abstractData.theme || 'Pachychoroïdes',
+			type: abstractData.type,
+			status: status,
+			// Ajouter le champ name requis avec la valeur de l'account
+			name: accountData.name || 'Utilisateur',
+			// Ajouter le champ surname requis avec la valeur de l'account
+			surname: accountData.surname || 'Sans nom',
+			// Ajouter le champ email de l'utilisateur
 			email: userEmail,
-			phone: accountData.phone,
-			title: data.title,
-			introduction: data.introduction,
-			materials: data.materials,
-			results: data.results,
-			discussion: data.discussion,
-			conclusion: data.conclusion,
-			co_authors: data.co_authors,
-			theme: data.theme,
-			type: data.type,
-			status: 'submitted',
 		})
 		.select()
 		.single();
@@ -573,7 +597,7 @@ export async function submitAbstract(
 	if (insertError) throw insertError;
 
 	return insertedAbstract;
-}
+};
 
 /**
  * Fetches upcoming events (activities and congresses) from Supabase

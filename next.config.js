@@ -3,7 +3,7 @@ const nextConfig = {
 	reactStrictMode: true,
 	swcMinify: true,
 	images: {
-		domains: ['images.unsplash.com', 'picsum.photos', 'localhost', 'aopa.dz'],
+		unoptimized: true, // ✅ Important: skip optimization since you're on cPanel
 	},
 };
 

@@ -10,8 +10,10 @@ import {
 	getCongressThemes,
 	getUpcomingCongress,
 	submitAbstract,
+	updateAbstract,
 } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
+import { getAbstractById } from '@/services/abstracts';
 import { Dialog, Transition } from '@headlessui/react';
 import { useQuery } from '@tanstack/react-query';
 import { Field, Form, Formik } from 'formik';
@@ -21,10 +23,12 @@ import {
 	CheckCircle,
 	Info,
 	Loader2,
+	Save,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Fragment, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import * as Yup from 'yup';
 
 // Custom form field component with error handling
@@ -67,11 +71,50 @@ const FormField = ({ label, name, as: Component = Input, ...props }: any) => (
 export default function NewAbstractPage() {
 	const { user } = useAuth();
 	const router = useRouter();
+	const searchParams = useSearchParams();
 	const [showErrorDialog, setShowErrorDialog] = useState(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showProfileSetup, setShowProfileSetup] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
+	const [isDraftSubmitting, setIsDraftSubmitting] = useState(false);
+	const [editMode, setEditMode] = useState(false);
+	const [existingAbstractId, setExistingAbstractId] = useState<string | null>(
+		null
+	);
+	const [existingAbstractData, setExistingAbstractData] = useState<any>(null);
+	const [isLoadingExistingAbstract, setIsLoadingExistingAbstract] =
+		useState(false);
 	const { t } = useTranslation();
+
+	// Récupérer l'ID de l'abstract à éditer depuis l'URL
+	useEffect(() => {
+		const editId = searchParams.get('edit');
+		if (editId) {
+			setEditMode(true);
+			setExistingAbstractId(editId);
+			loadExistingAbstract(editId);
+		}
+	}, [searchParams]);
+
+	// Fonction pour charger les données d'un abstract existant
+	const loadExistingAbstract = async (abstractId: string) => {
+		try {
+			setIsLoadingExistingAbstract(true);
+			const abstract = await getAbstractById(abstractId);
+
+			if (abstract) {
+				setExistingAbstractData(abstract);
+			} else {
+				toast.error(t('abstracts.error.abstractNotFound'));
+				router.push('/abstracts');
+			}
+		} catch (error) {
+			console.error('Error loading existing abstract:', error);
+			toast.error(t('abstracts.error.abstractNotFound'));
+		} finally {
+			setIsLoadingExistingAbstract(false);
+		}
+	};
 
 	const abstractSchema = useMemo(
 		() =>
@@ -88,15 +131,10 @@ export default function NewAbstractPage() {
 				results: Yup.string().required(
 					t('abstracts.submission.error.resultsRequired')
 				),
-				observations: Yup.string().required(
-					t('abstracts.submission.error.observationsRequired')
-				),
 				conclusion: Yup.string().required(
 					t('abstracts.submission.error.conclusionRequired')
 				),
-				discussion: Yup.string().required(
-					t('abstracts.submission.error.discussionRequired')
-				),
+				discussion: Yup.string(),
 				type: Yup.string()
 					.oneOf(['poster', 'oral'])
 					.required(t('abstracts.submission.error.typeRequired')),
@@ -108,21 +146,56 @@ export default function NewAbstractPage() {
 		[t]
 	);
 
-	const initialValues = useMemo(
-		() => ({
+	// Schéma de validation pour le mode brouillon (sans validation des champs requis)
+	const draftSchema = useMemo(
+		() =>
+			Yup.object().shape({
+				title: Yup.string(),
+				introduction: Yup.string(),
+				materials: Yup.string(),
+				results: Yup.string(),
+				conclusion: Yup.string(),
+				discussion: Yup.string(),
+				type: Yup.string().oneOf(['poster', 'oral']),
+				theme: Yup.string(),
+				coAuthors: Yup.string(),
+			}),
+		[]
+	);
+
+	const initialValues = useMemo(() => {
+		// Si nous sommes en mode édition et que nous avons les données de l'abstract existant
+		if (editMode && existingAbstractData) {
+			return {
+				title: existingAbstractData.title || '',
+				introduction: existingAbstractData.introduction || '',
+				materials: existingAbstractData.materials || '',
+				results: existingAbstractData.results || '',
+				conclusion: existingAbstractData.conclusion || '',
+				discussion: existingAbstractData.discussion || '',
+				type: existingAbstractData.type || 'poster',
+				theme: existingAbstractData.theme || '',
+				coAuthors: existingAbstractData.co_authors
+					? Array.isArray(existingAbstractData.co_authors)
+						? existingAbstractData.co_authors.join(', ')
+						: ''
+					: '',
+			};
+		}
+
+		// Valeurs par défaut pour un nouvel abstract
+		return {
 			title: '',
 			introduction: '',
 			materials: '',
 			results: '',
-			observations: '',
 			conclusion: '',
 			discussion: '',
 			type: 'poster',
 			theme: '',
 			coAuthors: '',
-		}),
-		[]
-	);
+		};
+	}, [editMode, existingAbstractData]);
 
 	const {
 		data: activeCongress,
@@ -152,7 +225,8 @@ export default function NewAbstractPage() {
 
 	const handleSubmit = async (
 		values: typeof initialValues,
-		{ setSubmitting }: any
+		{ setSubmitting }: any,
+		isDraft: boolean = false
 	) => {
 		try {
 			if (!user) {
@@ -167,52 +241,120 @@ export default function NewAbstractPage() {
 				return;
 			}
 
-			await submitAbstract(
-				{
-					title: values.title,
-					introduction: values.introduction,
-					materials: values.materials,
-					results: values.results,
-					observations: values.observations,
-					discussion: values.discussion,
-					conclusion: values.conclusion,
-					type: values.type as 'poster' | 'oral',
-					theme: values.theme,
-					co_authors: values.coAuthors
-						.split(',')
-						.map((author) => author.trim())
-						.filter(Boolean),
-				},
-				activeCongress.id,
-				user.id,
-				user.email
-			);
+			// Validation des données selon le mode (brouillon ou soumission complète)
+			if (isDraft) {
+				// Pour le mode brouillon, on utilise draftSchema qui n'a pas de validation required
+				const isValid = await draftSchema.validate(values).catch(() => false);
+				if (isValid === false) {
+					throw new Error(t('abstracts.submission.error.draftSaveFailed'));
+				}
+			} else {
+				// Pour la soumission complète, on utilise abstractSchema avec validation required
+				const isValid = await abstractSchema
+					.validate(values)
+					.catch(() => false);
+				if (isValid === false) {
+					throw new Error(t('abstracts.submission.error.submitFailed'));
+				}
+			}
 
-			// Set flag in localStorage to indicate a new abstract was submitted
-			localStorage.setItem('newAbstractSubmitted', 'true');
+			// Préparer les données de l'abstract
+			const abstractData = {
+				title: values.title,
+				introduction: values.introduction,
+				materials: values.materials,
+				results: values.results,
+				discussion: values.discussion,
+				conclusion: values.conclusion,
+				type: values.type as 'poster' | 'oral',
+				theme: values.theme,
+				co_authors: values.coAuthors
+					.split(',')
+					.map((author: string) => author.trim())
+					.filter(Boolean),
+			};
 
-			// Show success dialog
-			setShowSuccessDialog(true);
+			let updatedAbstract;
+
+			// Si nous sommes en mode édition, mettre à jour l'abstract existant
+			if (editMode && existingAbstractId) {
+				updatedAbstract = await updateAbstract(existingAbstractId, {
+					...abstractData,
+					status: isDraft ? 'draft' : 'submitted',
+				});
+			} else {
+				// Sinon, créer un nouvel abstract
+				updatedAbstract = await submitAbstract(
+					abstractData,
+					activeCongress.id,
+					user.id,
+					user.email,
+					isDraft ? 'draft' : 'submitted'
+				);
+			}
+
+			// Afficher un message différent si c'est un brouillon
+			if (isDraft) {
+				// Montrer un message de succès pour le brouillon
+				toast.success(t('abstracts.success.draftSaved'));
+
+				// Rediriger vers la liste des abstracts
+				router.push('/abstracts');
+			} else {
+				// Pour une soumission complète, continuer comme avant
+				// Set flag in localStorage to indicate a new abstract was submitted
+				localStorage.setItem('newAbstractSubmitted', 'true');
+
+				// Show success dialog
+				setShowSuccessDialog(true);
+			}
 		} catch (error: any) {
 			console.error('Error submitting abstract:', error);
 			if (error.name === 'INCOMPLETE_PROFILE') {
 				setShowProfileSetup(true);
 			} else {
-				setErrorMessage(t('abstracts.submission.error.submitFailed'));
+				setErrorMessage(
+					isDraft
+						? t('abstracts.submission.error.draftSaveFailed')
+						: t('abstracts.submission.error.submitFailed')
+				);
 				setShowErrorDialog(true);
 			}
 		} finally {
 			setSubmitting(false);
+			if (isDraft) {
+				setIsDraftSubmitting(false);
+			}
 		}
 	};
 
-	if (isLoadingCongress || isLoadingThemes) {
+	const handleSaveDraft = async (
+		values: typeof initialValues,
+		formikBag: any
+	) => {
+		setIsDraftSubmitting(true);
+		// Ne pas valider avec validateForm, on laisse handleSubmit gérer la validation
+		await handleSubmit(values, formikBag, true);
+	};
+
+	// Combinaison de tous les états de chargement
+	const isLoading =
+		isLoadingCongress || isLoadingThemes || isLoadingExistingAbstract;
+
+	if (isLoading) {
 		return (
 			<LoadingSpinner
-				message={t(
-					'abstracts.submission.loading',
-					'Loading abstract submission form...'
-				)}
+				message={
+					isLoadingExistingAbstract
+						? t(
+								'abstracts.loading.existingAbstract',
+								'Loading abstract data...'
+						  )
+						: t(
+								'abstracts.submission.loading',
+								'Loading abstract submission form...'
+						  )
+				}
 				background="white"
 				size="default"
 				fullScreen={true}
@@ -287,10 +429,17 @@ export default function NewAbstractPage() {
 					</Button>
 					<div>
 						<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-							{t('abstracts.submission.title')}
+							{editMode
+								? t('abstracts.submission.editTitle', 'Edit Abstract')
+								: t('abstracts.submission.title', 'Submit New Abstract')}
 						</h1>
 						<p className="mt-2 text-gray-600 dark:text-gray-400">
-							{t('abstracts.submission.subtitle')}
+							{editMode
+								? t('abstracts.submission.editSubtitle', 'Update your abstract')
+								: t(
+										'abstracts.submission.subtitle',
+										'Fill in the details below to submit your abstract'
+								  )}
 						</p>
 					</div>
 				</div>
@@ -333,7 +482,7 @@ export default function NewAbstractPage() {
 									<li>
 										{t('abstracts.submission.guidelines.presentingAuthor')}
 									</li>
-									<li>{t('abstracts.submission.guidelines.maxCoAuthors')}</li>
+									<li>{t('abstracts.submission.guidelines.maxSubmissions')}</li>
 									<li>{t('abstracts.submission.guidelines.requiredFields')}</li>
 									<li>{t('abstracts.submission.guidelines.review')}</li>
 								</ul>
@@ -346,8 +495,17 @@ export default function NewAbstractPage() {
 					initialValues={initialValues}
 					validationSchema={abstractSchema}
 					onSubmit={handleSubmit}
+					enableReinitialize={true}
+					key={existingAbstractId || 'new'}
 				>
-					{({ isSubmitting, values }) => (
+					{({
+						isSubmitting,
+						values,
+						setFieldTouched,
+						validateForm,
+						errors,
+						setSubmitting,
+					}) => (
 						<Form className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 							<div className="space-y-6">
 								{/* Type Selection */}
@@ -548,17 +706,6 @@ export default function NewAbstractPage() {
 									)}
 								/>
 
-								{/* Observations */}
-								<FormField
-									label={t('abstracts.submission.form.observations')}
-									name="observations"
-									as={Textarea}
-									rows={4}
-									placeholder={t(
-										'abstracts.submission.form.observationsPlaceholder'
-									)}
-								/>
-
 								{/* Discussion */}
 								<FormField
 									label={t('abstracts.submission.form.discussion')}
@@ -570,7 +717,7 @@ export default function NewAbstractPage() {
 									)}
 								/>
 
-								{/* Conclusion - Moved to the end */}
+								{/* Conclusion */}
 								<FormField
 									label={t('abstracts.submission.form.conclusion')}
 									name="conclusion"
@@ -586,13 +733,39 @@ export default function NewAbstractPage() {
 										type="button"
 										variant="outline"
 										onClick={() => router.back()}
-										disabled={isSubmitting}
+										disabled={isSubmitting || isDraftSubmitting}
+										className="flex items-center gap-2"
 									>
 										{t('common.cancel')}
 									</Button>
+
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => {
+											// Pas besoin de valider avant d'appeler handleSaveDraft
+											// La validation sera faite dans handleSubmit avec draftSchema
+											handleSaveDraft(values, { setSubmitting });
+										}}
+										disabled={isSubmitting || isDraftSubmitting}
+										className="flex items-center gap-2"
+									>
+										{isDraftSubmitting ? (
+											<>
+												<Loader2 className="w-4 h-4 animate-spin" />
+												{t('abstracts.submission.form.savingDraft')}
+											</>
+										) : (
+											<>
+												<Save className="w-4 h-4" />
+												{t('abstracts.submission.form.saveDraft')}
+											</>
+										)}
+									</Button>
+
 									<Button
 										type="submit"
-										disabled={isSubmitting}
+										disabled={isSubmitting || isDraftSubmitting}
 										className="flex items-center gap-2"
 									>
 										{isSubmitting ? (

@@ -136,20 +136,27 @@
 		"templateDownloaded": "Template downloaded successfully",
 		"downloadingFinalVersion": "Downloading your final version...",
 		"finalVersionDownloaded": "Final version downloaded successfully",
-		"getTemplate": "Get Template",
+		"getTemplate": "Download Template",
 		"upload": "Upload",
 		"changeType": "Change Type",
 		"Approve": "Approve",
 		"Reject": "Reject",
 		"Start Review": "Start Review",
-		"authorInfo": "Author Info",
+		"authorInfo": "Author Information",
 		"backToAbstracts": "Back to Abstracts",
 		"coAuthors": "Co-Authors",
 		"details": "Details",
 		"mainAuthor": "Main Author",
-		"submittedDate": "Submitted Date",
+		"submittedDate": "Submission Date",
 		"theme": "Theme",
 		"viewPresentation": "View Presentation",
+		"deleteSuccess": "Abstract deleted successfully",
+		"deleteError": "Error deleting abstract",
+		"deleteDialog": {
+			"title": "Delete Abstract",
+			"message": "Are you sure you want to delete this draft abstract? This action cannot be undone.",
+			"deleting": "Deleting..."
+		},
 		"filters": {
 			"allCongresses": "All Congresses",
 			"allStatuses": "All Statuses",
@@ -161,11 +168,14 @@
 			"typeChange": "Type Change",
 			"finalVersion": "Final Version",
 			"poster": "Poster",
-			"oral": "Oral"
+			"oral": "Oral",
+			"draft": "Draft"
 		},
 		"submission": {
 			"title": "Submit New Abstract",
+			"editTitle": "Edit Abstract",
 			"subtitle": "Fill in the details below to submit your abstract",
+			"editSubtitle": "Update your abstract content",
 			"guidelines": {
 				"title": "Abstract Submission Guidelines",
 				"subtitle": "Please review the following guidelines before submitting your abstract",
@@ -199,7 +209,11 @@
 				"coAuthorsPlaceholder": "Enter co-authors (comma-separated)",
 				"submit": "Submit Abstract",
 				"submitting": "Submitting...",
-				"cancel": "Cancel"
+				"cancel": "Cancel",
+				"saveDraft": "Save as Draft",
+				"savingDraft": "Saving Draft...",
+				"update": "Update Abstract",
+				"updating": "Updating..."
 			},
 			"error": {
 				"conclusionRequired": "Conclusion is required",
@@ -214,15 +228,22 @@
 				"reloadLater": "Please reload later",
 				"resultsRequired": "Results are required",
 				"submitFailed": "Submission failed",
+				"draftSaveFailed": "Failed to save draft",
 				"themeRequired": "Theme is required",
 				"titleRequired": "Title is required",
 				"typeRequired": "Type is required"
-			}
+			},
+			"loading": "Loading abstract submission form..."
+		},
+		"loading": {
+			"existingAbstract": "Loading abstract data..."
 		},
 		"success": {
 			"title": "Abstract Submitted",
 			"message": "Your abstract has been successfully submitted for review.",
-			"viewAbstracts": "View My Abstracts"
+			"viewAbstracts": "View My Abstracts",
+			"draftSaved": "Your abstract draft has been saved successfully",
+			"abstractUpdated": "Abstract updated successfully"
 		},
 		"error": {
 			"title": "Error",
@@ -235,7 +256,8 @@
 			"rejected": "Rejected",
 			"reviewing": "Reviewing",
 			"submitted": "Submitted",
-			"typeChange": "Type changed"
+			"typeChange": "Type changed",
+			"draft": "Draft"
 		},
 		"types": {
 			"oral": "Oral",
@@ -265,12 +287,13 @@
 			"streetRequired": "Street is required",
 			"cityRequired": "City is required",
 			"countryRequired": "Country is required",
-			"civilityRequired": "Civility is required",
+			"civilityRequired": "Title is required",
 			"oldPasswordRequired": "Current password is required",
 			"newPasswordRequired": "New password is required",
 			"confirmPasswordRequired": "Password confirmation is required",
 			"passwordMinLength": "Password must be at least 8 characters",
-			"passwordMismatch": "Passwords don't match"
+			"passwordMismatch": "Passwords don't match",
+			"establishmentRequired": "Establishment is required"
 		},
 		"errors": {
 			"selectImage": "You must select an image to upload.",
@@ -301,11 +324,11 @@
 			"city": "City",
 			"country": "Country",
 			"specialty": "Specialty",
-			"selectSpecialty": "Select specialty",
+			"selectSpecialty": "Select a specialty",
 			"status": "Status",
-			"selectStatus": "Select status",
-			"civility": "Civility",
-			"selectCivility": "Select civility",
+			"selectStatus": "Select a status",
+			"civility": "Title",
+			"selectCivility": "Select a title",
 			"save": "Save changes",
 			"saving": "Saving...",
 			"updatingEmail": "Updating email...",
@@ -323,25 +346,35 @@
 				"resident": "Resident",
 				"orthoptiste": "Orthoptist",
 				"optometrist": "Optometrist",
-				"optician": "Optician"
+				"optician": "Optician",
+				"other": "Other"
 			},
 			"specialties": {
 				"ophthalmology": "Ophthalmology",
-				"retina": "Retina",
-				"glaucoma": "Glaucoma",
-				"cornea": "Cornea",
-				"pediatric_ophthalmology": "Pediatric Ophthalmology",
-				"oculoplastics": "Oculoplastics",
-				"neuro_ophthalmology": "Neuro-ophthalmology",
+				"internal_medicine": "Internal Medicine",
+				"radiology": "Radiology",
+				"cardiology": "Cardiology",
+				"neurology": "Neurology",
+				"pediatrics": "Pediatrics",
+				"dermatology": "Dermatology",
+				"psychiatry": "Psychiatry",
+				"surgery": "Surgery",
+				"anesthesiology": "Anesthesiology",
+				"gynecology": "Gynecology",
+				"orthopedics": "Orthopedics",
+				"urology": "Urology",
+				"ent": "ENT",
 				"other": "Other"
 			},
 			"civilities": {
-				"mr": "Mr",
-				"mme": "Mrs",
-				"dr": "Dr"
+				"mr": "Mr.",
+				"mme": "Mrs.",
+				"dr": "Dr."
 			},
 			"emailVerified": "Email verified",
-			"emailNotVerified": "Email not verified"
+			"emailNotVerified": "Email not verified",
+			"establishment": "Establishment",
+			"establishmentPlaceholder": "Establishment name"
 		},
 		"emailChange": {
 			"title": "Update Email Address",
@@ -418,7 +451,8 @@
 		"allYears": "All Years",
 		"allCategories": "All Categories",
 		"backToLogin": "Back to Login",
-		"ok": "OK"
+		"ok": "OK",
+		"empty": "Empty field"
 	},
 	"congress": {
 		"registrationOpen": "Registration Open",

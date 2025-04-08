@@ -1,6 +1,6 @@
 'use client';
 
-import { AbstractCard } from '@/components/abstracts/AbstractCard';
+import AbstractCard from '@/components/abstracts/AbstractCard';
 import { AbstractCardSkeleton } from '@/components/abstracts/AbstractCardSkeleton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -212,6 +212,7 @@ export function AbstractsPage() {
 							onValueChange={handleStatusFilterChange}
 							options={[
 								{ value: 'all', label: t('abstracts.filters.allStatuses') },
+								{ value: 'draft', label: t('abstracts.filters.draft') },
 								{ value: 'submitted', label: t('abstracts.filters.submitted') },
 								{ value: 'reviewing', label: t('abstracts.filters.reviewing') },
 								{ value: 'approved', label: t('abstracts.filters.approved') },

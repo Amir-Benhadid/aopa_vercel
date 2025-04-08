@@ -36,6 +36,7 @@ export type AbstractType = 'poster' | 'oral';
  * );
  */
 export type AbstractStatus =
+	| 'draft'
 	| 'submitted'
 	| 'reviewing'
 	| 'approved'

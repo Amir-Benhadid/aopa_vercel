@@ -35,46 +35,6 @@ interface NavigationProps {
 	onClose?: () => void;
 }
 
-// Define navigation sections
-const navigationSections = [
-	{
-		title: 'Main',
-		items: [
-			{ href: '/', label: 'Home', icon: <Home className="w-5 h-5" /> },
-			{
-				href: '/dashboard',
-				label: 'Dashboard',
-				icon: <LayoutDashboard className="w-5 h-5" />,
-			},
-			{
-				href: '/abstracts',
-				label: 'Abstracts',
-				icon: <FileText className="w-5 h-5" />,
-			},
-		],
-	},
-	{
-		title: 'Information',
-		items: [
-			{
-				href: '/archives',
-				label: 'Archives',
-				icon: <Archive className="w-5 h-5" />,
-			},
-		],
-	},
-	{
-		title: 'Account',
-		items: [
-			{
-				href: '/profile',
-				label: 'Profile',
-				icon: <User className="w-5 h-5" />,
-			},
-		],
-	},
-];
-
 // Animation variants for the sidebar container
 const sidebarVariants = {
 	collapsed: { width: 100 }, // about 100px when closed
@@ -158,7 +118,6 @@ export function Navigation({
 							},
 					  ]
 					: []),
-				// Show abstracts for all authenticated users
 				...(isAuthenticated
 					? [
 							{

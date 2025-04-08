@@ -4,7 +4,7 @@
 		"tagline": "Améliorer ensemble les soins oculaires",
 		"logoAlt": "Logo de l'Association d'Ophtalmologie",
 		"logoAltWithNumber": "Logo de l'Association d'Ophtalmologie {{number}}",
-		"footerDescription": "Association des Ophtalmologistes Privés Algeriens."
+		"footerDescription": "Association des Ophtalmologistes Privés Algériens."
 	},
 	"navigation": {
 		"home": "Accueil",
@@ -19,7 +19,7 @@
 		"logout": "Déconnexion",
 		"dashboard": "Tableau de bord",
 		"events": "Événements",
-		"abstracts": "Abstracts",
+		"abstracts": "Soumissions",
 		"news": "Actualités",
 		"resources": "Ressources",
 		"help": "Aide",
@@ -130,19 +130,19 @@
 		"title": "Abstracts",
 		"newAbstract": "Soumettre un nouvel abstract",
 		"search": "Rechercher des abstracts...",
-		"submitted": "Soumis",
-		"typeChanged": "Type de l'abstract changé en {{type}}",
+		"submitted": "En attente de revue",
+		"typeChanged": "Type d'abstract changé à {{type}}",
 		"fileSelected": "Fichier \"{{name}}\" sélectionné pour le téléchargement",
 		"downloadingTemplate": "Téléchargement du modèle...",
 		"templateDownloaded": "Modèle téléchargé avec succès",
 		"downloadingFinalVersion": "Téléchargement de votre version finale...",
 		"finalVersionDownloaded": "Version finale téléchargée avec succès",
-		"getTemplate": "Obtenir le modèle",
-		"upload": "Téléverser",
-		"changeType": "Changer le type",
+		"getTemplate": "Télécharger le modèle",
+		"upload": "Télécharger",
+		"changeType": "Changer le type de présentation",
 		"Approve": "Approuver",
 		"Reject": "Rejeter",
-		"Start Review": "Commencer la révision",
+		"Start Review": "Commencer la revue",
 		"authorInfo": "Informations sur l'auteur",
 		"backToAbstracts": "Retour aux abstracts",
 		"coAuthors": "Co-auteurs",
@@ -151,46 +151,59 @@
 		"submittedDate": "Date de soumission",
 		"theme": "Thème",
 		"viewPresentation": "Voir la présentation",
-
+		"deleteSuccess": "Abstract supprimé avec succès",
+		"deleteError": "Erreur lors de la suppression de l'abstract",
+		"deleteDialog": {
+			"title": "Supprimer l'abstract",
+			"message": "Êtes-vous sûr de vouloir supprimer ce brouillon d'abstract ? Cette action ne peut pas être annulée.",
+			"deleting": "Suppression en cours..."
+		},
 		"filters": {
 			"allCongresses": "Tous les congrès",
 			"allStatuses": "Tous les statuts",
-			"allTypes": "Tous les types",
-			"submitted": "Soumis",
-			"reviewing": "En cours de révision",
+			"allTypes": "Tous les types de présentation",
+			"submitted": "En attente de revue",
+			"reviewing": "En revue",
 			"approved": "Approuvé",
 			"rejected": "Rejeté",
-			"typeChange": "Changement de type",
+			"typeChange": "Changement de type de présentation",
 			"finalVersion": "Version finale",
-			"poster": "Affiche",
-			"oral": "Oral"
+			"poster": "Poster",
+			"oral": "Oral",
+			"draft": "Brouillon"
 		},
 		"submission": {
 			"title": "Soumettre un nouvel abstract",
-			"cta": "Soumettre un abstract",
+			"editTitle": "Modifier l'abstract",
 			"subtitle": "Remplissez les détails ci-dessous pour soumettre votre abstract",
+			"editSubtitle": "Mettre à jour le contenu de votre abstract",
 			"guidelines": {
-				"title": "Directives de soumission des abstracts",
+				"title": "Directives de soumission d'abstract",
 				"subtitle": "Veuillez consulter les directives suivantes avant de soumettre votre abstract",
 				"maxLength": "Longueur maximale de l'abstract : 300 mots",
-				"deadlineTitle": "Date limite de soumission",
 				"deadline": "Date limite de soumission : {{date}}",
-				"presentingAuthor": "Un auteur présentateur par abstract",
+				"presentingAuthor": "Un auteur présentant par abstract",
 				"maxCoAuthors": "Maximum de 5 co-auteurs autorisés",
-				"requiredFields": "Tous les champs sont obligatoires",
-				"review": "Les abstracts seront examinés par notre comité scientifique"
+				"requiredFields": "Tous les champs sont obligatoires sauf co-auteurs et discussion",
+				"review": "Les abstracts seront examinés par notre comité scientifique",
+				"maxSubmissions": "Maximum de 2 abstracts par auteur: 1 e-poster et 1 oral ou 2 e-posters"
 			},
 			"form": {
 				"title": "Titre",
 				"titlePlaceholder": "Entrez le titre de l'abstract",
 				"introduction": "Introduction",
 				"introductionPlaceholder": "Entrez l'introduction de l'abstract",
-				"materials": "Matériels",
+				"materialsPlaceholder": "Entrez les matériaux de l'abstract",
+				"resultsPlaceholder": "Entrez les résultats de l'abstract",
+				"observationsPlaceholder": "Entrez les observations de l'abstract",
+				"conclusionPlaceholder": "Entrez la conclusion de l'abstract",
+				"discussionPlaceholder": "Entrez la discussion de l'abstract",
+				"materials": "Matériaux",
 				"results": "Résultats",
 				"observations": "Observations",
 				"conclusion": "Conclusion",
 				"discussion": "Discussion",
-				"type": "Type",
+				"type": "Type de présentation",
 				"theme": "Thème",
 				"themePlaceholder": "Entrez le thème de l'abstract",
 				"selectTheme": "Sélectionnez un thème",
@@ -199,33 +212,40 @@
 				"submit": "Soumettre l'abstract",
 				"submitting": "Soumission en cours...",
 				"cancel": "Annuler",
-				"resultsPlaceholder": "Entrez les résultats",
-				"observationsPlaceholder": "Entrez les observations",
-				"conclusionPlaceholder": "Entrez la conclusion",
-				"discussionPlaceholder": "Entrez la discussion"
+				"saveDraft": "Enregistrer comme brouillon",
+				"savingDraft": "Enregistrement du brouillon...",
+				"update": "Mettre à jour l'abstract",
+				"updating": "Mise à jour en cours..."
 			},
 			"error": {
 				"conclusionRequired": "La conclusion est requise",
 				"discussionRequired": "La discussion est requise",
 				"introductionRequired": "L'introduction est requise",
 				"loadingCongress": "Chargement des informations du congrès",
-				"materialsRequired": "Les matériels sont requis",
+				"materialsRequired": "Les matériaux sont requis",
 				"noActiveCongress": "Aucun congrès actif trouvé",
 				"noActiveCongressMessage": "Il n'y a pas de congrès actif pour le moment",
 				"notLoggedIn": "Vous n'êtes pas connecté",
 				"observationsRequired": "Les observations sont requises",
 				"reloadLater": "Veuillez recharger plus tard",
 				"resultsRequired": "Les résultats sont requis",
-				"submitFailed": "Échec de la soumission",
+				"submitFailed": "La soumission a échoué",
+				"draftSaveFailed": "Échec de l'enregistrement du brouillon",
 				"themeRequired": "Le thème est requis",
 				"titleRequired": "Le titre est requis",
 				"typeRequired": "Le type est requis"
-			}
+			},
+			"loading": "Chargement du formulaire de soumission d'abstract..."
+		},
+		"loading": {
+			"existingAbstract": "Chargement des données de l'abstract..."
 		},
 		"success": {
 			"title": "Abstract soumis",
-			"message": "Votre abstract a été soumis avec succès pour révision.",
-			"viewAbstracts": "Voir mes abstracts"
+			"message": "Votre abstract a été soumis avec succès pour examen.",
+			"viewAbstracts": "Voir mes abstracts",
+			"draftSaved": "Votre brouillon d'abstract a été enregistré avec succès",
+			"abstractUpdated": "Abstract mis à jour avec succès"
 		},
 		"error": {
 			"title": "Erreur",
@@ -234,15 +254,16 @@
 		},
 		"statusMessages": {
 			"approved": "Approuvé",
-			"finalVersion": "Version finale",
+			"finalVersion": "Version Finale",
 			"rejected": "Rejeté",
-			"reviewing": "En cours de révision",
-			"submitted": "Soumis",
-			"typeChange": "Type modifié"
+			"reviewing": "En cours de revue",
+			"submitted": "En attente de revue",
+			"typeChange": "Type de présentation modifié",
+			"draft": "Brouillon"
 		},
 		"types": {
 			"oral": "Oral",
-			"poster": "Affiche"
+			"poster": "Poster"
 		}
 	},
 	"profile": {
@@ -275,7 +296,8 @@
 			"newPasswordRequired": "Le nouveau mot de passe est requis",
 			"confirmPasswordRequired": "La confirmation du mot de passe est requise",
 			"passwordMinLength": "Le mot de passe doit comporter au moins 8 caractères",
-			"passwordMismatch": "Les mots de passe ne correspondent pas"
+			"passwordMismatch": "Les mots de passe ne correspondent pas",
+			"establishmentRequired": "L'établissement est requis"
 		},
 		"errors": {
 			"selectImage": "Vous devez sélectionner une image à télécharger",
@@ -305,47 +327,57 @@
 			"address": "Adresse",
 			"city": "Ville",
 			"specialty": "Spécialité",
-			"selectSpecialty": "Sélectionnez la spécialité",
+			"selectSpecialty": "Sélectionnez une spécialité",
 			"status": "Statut",
-			"selectStatus": "Sélectionnez le statut",
+			"selectStatus": "Sélectionnez un statut",
 			"civility": "Civilité",
-			"selectCivility": "Sélectionnez la civilité",
+			"selectCivility": "Sélectionnez une civilité",
 			"save": "Enregistrer les modifications",
 			"saving": "Enregistrement...",
 			"profilePicture": "Photo de profil",
-			"profilePictureDescription": "Téléchargez une photo de profil pour personnaliser votre compte",
+			"profilePictureDescription": "Votre photo de profil sera visible par les autres utilisateurs.",
 			"changePhoto": "Changer de photo",
-			"uploadPhoto": "Télécharger la photo",
-			"updatingEmail": "Mise à jour de l'e-mail...",
-			"changePassword": "Changer le mot de passe",
-			"updateEmail": "Mettre à jour l'e-mail",
+			"uploadPhoto": "Télécharger une photo",
+			"updatingEmail": "Mise à jour...",
+			"changePassword": "Modifier le mot de passe",
+			"updateEmail": "Modifier l'email",
 			"accountSettings": "Paramètres du compte",
 			"emailVerified": "E-mail vérifié",
 			"emailNotVerified": "E-mail non vérifié",
-			"street": "Rue",
+			"street": "Adresse",
 			"statuses": {
 				"liberal": "Libéral",
 				"public": "Public",
 				"resident": "Résident",
 				"orthoptiste": "Orthoptiste",
 				"optometrist": "Optométriste",
-				"optician": "Opticien"
+				"optician": "Opticien",
+				"other": "Autre"
 			},
 			"specialties": {
 				"ophthalmology": "Ophtalmologie",
-				"retina": "Rétine",
-				"glaucoma": "Glaucome",
-				"cornea": "Cornée",
-				"pediatric_ophthalmology": "Ophtalmologie pédiatrique",
-				"oculoplastics": "Oculoplastie",
-				"neuro_ophthalmology": "Neuro-ophtalmologie",
+				"internal_medicine": "Médecine Interne",
+				"radiology": "Radiologie",
+				"cardiology": "Cardiologie",
+				"neurology": "Neurologie",
+				"pediatrics": "Pédiatrie",
+				"dermatology": "Dermatologie",
+				"psychiatry": "Psychiatrie",
+				"surgery": "Chirurgie",
+				"anesthesiology": "Anesthésiologie",
+				"gynecology": "Gynécologie",
+				"orthopedics": "Orthopédie",
+				"urology": "Urologie",
+				"ent": "ORL",
 				"other": "Autre"
 			},
 			"civilities": {
 				"mr": "M.",
 				"mme": "Mme",
 				"dr": "Dr"
-			}
+			},
+			"establishment": "Établissement",
+			"establishmentPlaceholder": "Nom de l'établissement"
 		},
 		"emailChange": {
 			"title": "Mettre à jour l'adresse e-mail",
@@ -422,7 +454,9 @@
 		"backToHome": "Retour à l'accueil",
 		"allYears": "Toutes les années",
 		"allCategories": "Toutes les catégories",
-		"backToLogin": "Retour à la connexion"
+		"backToLogin": "Retour à la connexion",
+		"type": "Type de présentation",
+		"empty": "Champ vide"
 	},
 	"congress": {
 		"registrationOpen": "Inscription ouverte",
@@ -1065,7 +1099,13 @@
 		"pageAlt": "Page {{number}}",
 		"previous": "Précédent",
 		"next": "Suivant",
-		"bookPageCounter": "{{current}} sur {{total}}"
+		"bookPageCounter": "{{current}} sur {{total}}",
+		"poster": "Affiche",
+		"program": "Programme",
+		"fullscreen": "Plein écran",
+		"exitFullscreen": "Quitter le plein écran",
+		"zoomIn": "Zoom avant",
+		"zoomOut": "Zoom arrière"
 	},
 	"resetPassword": {
 		"title": "Réinitialiser le mot de passe",

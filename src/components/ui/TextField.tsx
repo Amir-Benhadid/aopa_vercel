@@ -44,6 +44,7 @@ interface TextFieldProps {
 	startAdornment?: React.ReactNode;
 	endAdornment?: React.ReactNode;
 	disabled?: boolean;
+	placeholder?: string;
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
