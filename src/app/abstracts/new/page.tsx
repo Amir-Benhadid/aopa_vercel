@@ -26,7 +26,15 @@ import {
 	Save,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, Suspense, useEffect, useMemo, useState } from 'react';
+import React, {
+	Fragment,
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import * as Yup from 'yup';
@@ -68,26 +76,6 @@ const FormField = ({ label, name, as: Component = Input, ...props }: any) => (
 	</Field>
 );
 
-// SearchParamsHandler component that uses useSearchParams
-function SearchParamsHandler({
-	onEditMode,
-}: {
-	onEditMode: (id: string | null) => void;
-}) {
-	const searchParams = useSearchParams();
-
-	useEffect(() => {
-		const editId = searchParams.get('edit');
-		if (editId) {
-			onEditMode(editId);
-		} else {
-			onEditMode(null);
-		}
-	}, [searchParams, onEditMode]);
-
-	return null;
-}
-
 export default function NewAbstractPage() {
 	const { user } = useAuth();
 	const router = useRouter();
@@ -105,37 +93,106 @@ export default function NewAbstractPage() {
 		useState(false);
 	const { t } = useTranslation();
 
-	// Handle edit mode from search params
-	const handleEditMode = (editId: string | null) => {
-		if (editId) {
-			setEditMode(true);
-			setExistingAbstractId(editId);
-			loadExistingAbstract(editId);
-		} else {
-			setEditMode(false);
-			setExistingAbstractId(null);
+	// SearchParamsHandler component that uses useSearchParams
+	const SearchParamsHandler = React.memo(
+		function SearchParamsHandler({
+			onEditMode,
+		}: {
+			onEditMode: (id: string | null) => void;
+		}) {
+			const searchParams = useSearchParams();
+			const editId = searchParams.get('edit');
+			const editIdRef = useRef(editId);
+			const hasProcessedRef = useRef(false);
+
+			useEffect(() => {
+				// Only process if editId changed or we haven't processed it yet
+				if (editIdRef.current !== editId || !hasProcessedRef.current) {
+					console.log('Search params processing, edit ID:', editId);
+					editIdRef.current = editId;
+					hasProcessedRef.current = true;
+					onEditMode(editId);
+				}
+			}, [editId, onEditMode]);
+
+			return null;
+		},
+		(prevProps, nextProps) => {
+			// Custom comparison function to prevent unnecessary re-renders
+			// Only re-render if the onEditMode function reference changes
+			return prevProps.onEditMode === nextProps.onEditMode;
 		}
-	};
+	);
 
-	// Fonction pour charger les données d'un abstract existant
-	const loadExistingAbstract = async (abstractId: string) => {
-		try {
-			setIsLoadingExistingAbstract(true);
-			const abstract = await getAbstractById(abstractId);
-
-			if (abstract) {
-				setExistingAbstractData(abstract);
-			} else {
-				toast.error(t('abstracts.error.abstractNotFound'));
-				router.push('/abstracts');
+	// Fonction pour charger les données d'un abstract existant - memoize with useCallback
+	const loadExistingAbstract = useCallback(
+		async (abstractId: string) => {
+			// If we're already loading or have already loaded this abstract, don't reload
+			if (
+				isLoadingExistingAbstract ||
+				(existingAbstractData && existingAbstractId === abstractId)
+			) {
+				return;
 			}
-		} catch (error) {
-			console.error('Error loading existing abstract:', error);
-			toast.error(t('abstracts.error.abstractNotFound'));
-		} finally {
-			setIsLoadingExistingAbstract(false);
-		}
-	};
+
+			try {
+				setIsLoadingExistingAbstract(true);
+				console.log('Loading abstract with ID:', abstractId);
+
+				const abstract = await getAbstractById(abstractId);
+
+				if (abstract) {
+					setExistingAbstractData(abstract);
+					console.log('Abstract data loaded successfully');
+				} else {
+					console.log('Abstract not found');
+					toast.error(t('abstracts.error.abstractNotFound'));
+					router.push('/abstracts');
+				}
+			} catch (error) {
+				console.error('Error loading existing abstract:', error);
+				toast.error(t('abstracts.error.abstractNotFound'));
+			} finally {
+				setIsLoadingExistingAbstract(false);
+			}
+		},
+		[
+			router,
+			t,
+			isLoadingExistingAbstract,
+			existingAbstractData,
+			existingAbstractId,
+		]
+	);
+
+	// Handle edit mode from search params - use useCallback to stabilize the function reference
+	const handleEditMode = useCallback(
+		(editId: string | null) => {
+			console.log('Edit mode handler called with:', editId);
+
+			// Don't make unnecessary updates if we're already in the right state
+			if (editId) {
+				if (editMode && existingAbstractId === editId) {
+					return; // Already in edit mode with the same ID
+				}
+
+				// Set all states in one go to minimize renders
+				setEditMode(true);
+				setExistingAbstractId(editId);
+
+				// Only load the abstract if we don't already have it
+				if (existingAbstractId !== editId) {
+					loadExistingAbstract(editId);
+				}
+			} else if (editMode) {
+				// Only update if we need to change the mode
+				setEditMode(false);
+				setExistingAbstractId(null);
+				setExistingAbstractData(null);
+			}
+		},
+		[loadExistingAbstract, editMode, existingAbstractId]
+	);
 
 	const abstractSchema = useMemo(
 		() =>
@@ -960,7 +1017,9 @@ export default function NewAbstractPage() {
 			{/* Profile Modal */}
 			<ProfileSetupModal
 				forceOpen={showProfileSetup}
-				onComplete={() => setShowProfileSetup(false)}
+				onComplete={() => {
+					setShowProfileSetup(false);
+				}}
 			/>
 		</div>
 	);
