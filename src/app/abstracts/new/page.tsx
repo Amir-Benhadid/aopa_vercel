@@ -26,7 +26,7 @@ import {
 	Save,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import * as Yup from 'yup';
@@ -68,10 +68,29 @@ const FormField = ({ label, name, as: Component = Input, ...props }: any) => (
 	</Field>
 );
 
+// SearchParamsHandler component that uses useSearchParams
+function SearchParamsHandler({
+	onEditMode,
+}: {
+	onEditMode: (id: string | null) => void;
+}) {
+	const searchParams = useSearchParams();
+
+	useEffect(() => {
+		const editId = searchParams.get('edit');
+		if (editId) {
+			onEditMode(editId);
+		} else {
+			onEditMode(null);
+		}
+	}, [searchParams, onEditMode]);
+
+	return null;
+}
+
 export default function NewAbstractPage() {
 	const { user } = useAuth();
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const [showErrorDialog, setShowErrorDialog] = useState(false);
 	const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 	const [showProfileSetup, setShowProfileSetup] = useState(false);
@@ -86,15 +105,17 @@ export default function NewAbstractPage() {
 		useState(false);
 	const { t } = useTranslation();
 
-	// Récupérer l'ID de l'abstract à éditer depuis l'URL
-	useEffect(() => {
-		const editId = searchParams.get('edit');
+	// Handle edit mode from search params
+	const handleEditMode = (editId: string | null) => {
 		if (editId) {
 			setEditMode(true);
 			setExistingAbstractId(editId);
 			loadExistingAbstract(editId);
+		} else {
+			setEditMode(false);
+			setExistingAbstractId(null);
 		}
-	}, [searchParams]);
+	};
 
 	// Fonction pour charger les données d'un abstract existant
 	const loadExistingAbstract = async (abstractId: string) => {
@@ -422,6 +443,18 @@ export default function NewAbstractPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
+			<Suspense
+				fallback={
+					<LoadingSpinner
+						message={t('common.loading')}
+						background="white"
+						size="default"
+						fullScreen={true}
+					/>
+				}
+			>
+				<SearchParamsHandler onEditMode={handleEditMode} />
+			</Suspense>
 			<div className="max-w-3xl mx-auto">
 				<div className="flex items-center gap-4 mb-8">
 					<Button variant="ghost" className="p-2" onClick={() => router.back()}>
