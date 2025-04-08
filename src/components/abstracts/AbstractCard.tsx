@@ -292,20 +292,10 @@ function AbstractCardComponent({ abstract }: { abstract: Abstract }) {
 								<span className="font-medium block text-sm text-gray-500 dark:text-gray-400">
 									{t('abstracts.submission.form.coAuthors')}
 								</span>
-								{isEmpty(abstract.name) &&
-								(!abstract.co_authors || abstract.co_authors.length === 0) ? (
+								{!abstract.co_authors || abstract.co_authors.length === 0 ? (
 									emptyFieldMessage
 								) : (
 									<span>
-										{abstract.name && (
-											<>
-												{abstract.name} {abstract.surname}
-											</>
-										)}
-										{abstract.name &&
-											abstract.co_authors &&
-											abstract.co_authors.length > 0 &&
-											', '}
 										{abstract.co_authors && abstract.co_authors.length > 0
 											? abstract.co_authors.join(', ')
 											: ''}
