@@ -8,7 +8,7 @@ const key =
 // Create a storage object that safely works in both browser and server contexts
 const storage =
 	typeof window !== 'undefined'
-		? localStorage
+		? window.localStorage
 		: {
 				getItem: () => null,
 				setItem: () => {},
@@ -20,7 +20,7 @@ export const supabase = createClient<Database>(url, key, {
 	auth: {
 		persistSession: true,
 		storageKey: 'sb-auth-token',
-		autoRefreshToken: false,
+		autoRefreshToken: true,
 		detectSessionInUrl: true,
 		flowType: 'pkce',
 		debug: false,

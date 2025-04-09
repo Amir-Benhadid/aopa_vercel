@@ -2,7 +2,7 @@
 	"name": "ophthalmology-association-web",
 	"version": "0.1.0",
 	"private": true,
-	"homepage": "http://aopa.dz",
+	"homepage": "https://aopa.dz",
 	"scripts": {
 		"dev": "node server.js",
 		"build": "next build",
